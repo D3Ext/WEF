@@ -14,5 +14,7 @@ wget "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords
 wget "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/darkweb2017-top10000.txt" -o /opt/WEF/main/wordlists/darkweb2017-top10000.txt
 # wget "kaonashi" -o /opt/WEF/main/wordlists/
 wget "https://raw.githubusercontent.com/LionSec/xerosploit/master/tools/bettercap/modules/replace_images.rb" -o /opt/WEF/main/modules/replace_images.rb
+wget "WEF.sh" -o /opt/WEF/WEF
+chmod +x /opt/WEF/WEF
 wget "WEF.sh" -o /usr/bin/WEF &>/dev/null
 chmod +x /usr/bin/WEF
