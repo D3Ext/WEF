@@ -6,6 +6,7 @@
 
 ## ⭕ REQUIREMENTS:
 You need a few tools, but they are installed automatically if you don't have them installed, however these are:
+
 But don't worry because the framework detect your OS and install the dependencies with your package manager.
 
     aircrack-ng
