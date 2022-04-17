@@ -14,6 +14,7 @@ But don't worry because the framework detect your OS and install the dependencie
     bettercap
     macchanger
     hashcat
+    xterm
     hcxdumptool
 
 ## ⭕ USAGE:
