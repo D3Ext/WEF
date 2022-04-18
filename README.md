@@ -28,3 +28,5 @@ But don't worry because the framework detect your OS and install the dependencie
 **If you consider this project has been useful, I would really appreciate supporting me by giving this repo a star or buying me a coffee.**
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/d3ext)
+
+Copyright © 2022, D3Ext
