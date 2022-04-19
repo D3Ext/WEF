@@ -9,12 +9,14 @@ yellowColour="\e[0;33m\033[1m"
 grayColour="\e[0;37m\033[1m"
 
 # Main Function
-for name in $(ls /opt/WEF/main/captures); do
-  rm /opt/WEF/main/captures/$name/Capture-* 2>/dev/null
-  rm /opt/WEF/main/captures/$name/pkmid_hashes 2>/dev/null
-  rm /opt/WEF/main/captures/$name/pkmid_capture 2>/dev/null
-  rm /opt/WEF/main/captures/$name/rainbowtables 2>/dev/null
-done
+if [ "$(id -u)" == "0" ]; then
+  for name in $(ls /opt/WEF/main/captures); do
+    rm -rf /opt/WEF/main/captures/$name 2>/dev/null
+    rm /opt/WEF/main/logs/* 2>/dev/null
+  done
 
-sleep 0.5
-echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Useless information cleared\n${endColour}"
+  sleep 0.5
+  echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Useless information cleared\n${endColour}"
+else
+  echo -e "${blueColour}[${endColour}${redColour}X${endColour}${blueColour}] PLease, execute the script as root${endColour}"
+fi
