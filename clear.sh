@@ -18,5 +18,5 @@ if [ "$(id -u)" == "0" ]; then
   sleep 0.5
   echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Useless information cleared\n${endColour}"
 else
-  echo -e "${blueColour}[${endColour}${redColour}X${endColour}${blueColour}] PLease, execute the script as root${endColour}"
+  echo -e "${blueColour}[${endColour}${redColour}X${endColour}${blueColour}] Please, execute the script as root${endColour}"
 fi
