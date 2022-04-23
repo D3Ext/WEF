@@ -391,7 +391,7 @@ function report-gen(){
 
 	echo -e "[WEF] WiFi Exploitation Framework" > /opt/WEF/main/captures/$name/log.txt
 	echo -e "---------------------------------" >> /opt/WEF/main/captures/$name/log.txt
-	echo -e "Date of the attack: $actual_data" >> /opt/WEF/main/captures/$name/log.txt
+	echo -e "Date of the attack: $actual_date" >> /opt/WEF/main/captures/$name/log.txt
 	echo -e "Type of attack selected: $type_of_attack" >> /opt/WEF/main/captures/$name/log.txt
 	echo -e "Attack completed against: $name" >> /opt/WEF/main/captures/$name/log.txt
 	echo -e "Duration of the attack: $attack_time" >> /opt/WEF/main/captures/$name/log.txt
