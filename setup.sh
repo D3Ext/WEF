@@ -2,6 +2,7 @@
 
 if [ "$(id -u)" == "0" ]; then
   sleep 0.1
+  dir=$(pwd)
   echo -e "[WEF] Creating the setup for working properly."
   mkdir /opt/WEF 2>/dev/null
   mkdir /opt/WEF/main 2>/dev/null
@@ -20,6 +21,8 @@ if [ "$(id -u)" == "0" ]; then
   chmod +x /opt/WEF/WEF 2>/dev/null
   cp /opt/WEF/WEF /usr/bin/WEF 2>/dev/null
   chmod +x /usr/bin/WEF 2>/dev/null
+  chmod +x /opt/WEF/clear.sh 2>/dev/null
+  rm ${dir}/setup.sh 2>/dev/null
 else
   echo -e "[X] Please, execute the script as root"
   exit 1
