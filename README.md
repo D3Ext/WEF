@@ -2,7 +2,22 @@
 
 -------------------------------------------------
 
-### Wi-Fi Exploitation Framework
+# 📡 WiFi Exploitation Framework 📡
+
+A fully offensive framework to the 802.11 networks and protocol with different types of attacks for WPA,WEP,WPS, automated hash cracking and much more. 
+
+## ⭕ SUPPORTED ATTACKS:
+
+- Deauthentication Attack
+- Authentication Attack
+- Beacon Flood Attack
+- PKMID Attack
+- Pixie Dust Attack
+- Chopchop Attack
+- Replay Attack
+- Michael Exploitation Attack
+- Caffe-Latte Attack
+- Passive/Stealthy Attack
 
 ## ⭕ REQUIREMENTS:
 You need a few tools, but they are installed automatically if you don't have them installed, however these are:
@@ -18,10 +33,16 @@ But don't worry because the framework detect your OS and install the dependencie
     xterm
     hcxdumptool
 
-## ⭕ USAGE:
+## ⭕ INSTALLATION:
+
+    git clone https://github.com/D3Ext/WEF
+    cd WEF
+    chmod +x setup.sh
+    ./setup.sh
 
 ## ⭕ DEMO:
 
+<img src="">
 
 ### ⚪ Created by D3ext
 
