@@ -1,5 +1,3 @@
-<img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/banner.png" align="center"></img>
-
 -------------------------------------------------
 
 # 📡 WiFi Exploitation Framework 📡
@@ -18,6 +16,24 @@ A fully offensive framework to the 802.11 networks and protocol with different t
 - Michael Exploitation Attack
 - Caffe-Latte Attack
 - Passive/Stealthy Attack
+
+## ⭕ IMPLEMENTED FUNCTIONS:
+
+:ballot_box_with_check: Log generator
+
+:ballot_box_with_check: Handshake Cracking
+
+:ballot_box_with_check: Check monitor mode
+
+:black_square_button: 5G Attacks
+
+:ballot_box_with_check: Custom wordlist selector
+
+:ballot_box_with_check: Rainbow Tables creator
+
+:black_square_button: Router Flood Attack
+
+:black_square_button: Bluetooth Attacks
 
 ## ⭕ REQUIREMENTS:
 You need a few tools, but they are installed automatically if you don't have them installed, however these are:
