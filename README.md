@@ -33,7 +33,7 @@ Tested and supported in Kali Linux, Parrot OS, Arch Linux and Ubuntu
 
 :ballot_box_with_check: Rainbow Tables creator
 
-:black_square_button: Router Flood Attack
+:black_square_button: Router Slower Attack
 
 :black_square_button: Bluetooth Attacks
 
