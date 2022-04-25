@@ -2,7 +2,7 @@
 
 # 📡 WiFi Exploitation Framework 📡
 
-A fully offensive framework to the 802.11 networks and protocol with different types of attacks for WPA,WEP,WPS, automated hash cracking and much more. 
+A fully offensive framework to the 802.11 networks and protocol with different types of attacks for WPA,WEP,WPS, automated hash cracking and much more. Tested and supported in Kali Linux, Parrot OS, Arch Linux and Ubuntu
 
 ## ⭕ SUPPORTED ATTACKS:
 
@@ -62,6 +62,10 @@ But don't worry because the framework detect your OS and install the dependencie
 
 ### ⚪ Created by D3ext
 
+**If you are using bspwm, you can add this line to your bspwmrc for launching the *xterm* windows always beeing in floating mode**
+
+    bspc rule -a XTerm state=floating
+    
 **If you consider this project has been useful, I would really appreciate supporting me by giving this repo a star or buying me a coffee.**
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/d3ext)
