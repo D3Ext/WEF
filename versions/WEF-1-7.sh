@@ -405,6 +405,7 @@ function deauth_attack(){
 	banner1
 	sleep 1
 	xterm -hold -e "airodump-ng ${netCard}mon" &
+	# wash -2 -5 -a -i $netCard
 	air_PID=$!
 	ask_data1
 	ask_time
