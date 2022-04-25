@@ -2,7 +2,9 @@
 
 # 📡 WiFi Exploitation Framework 📡
 
-A fully offensive framework to the 802.11 networks and protocol with different types of attacks for WPA,WEP,WPS, automated hash cracking and much more. Tested and supported in Kali Linux, Parrot OS, Arch Linux and Ubuntu
+A fully offensive framework to the 802.11 networks and protocol with different types of attacks for WPA,WEP,WPS, automated hash cracking and much more.
+
+Tested and supported in Kali Linux, Parrot OS, Arch Linux and Ubuntu
 
 ## ⭕ SUPPORTED ATTACKS:
 
