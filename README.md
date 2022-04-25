@@ -60,7 +60,7 @@ But don't worry because the framework detect your OS and install the dependencie
 
 ## ⭕ DEMO:
 
-<img src="">
+<img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo.png">
 
 ### ⚪ Created by D3ext
 
