@@ -31,6 +31,8 @@ Tested and supported in Kali Linux, Parrot OS, Arch Linux and Ubuntu
 
 :ballot_box_with_check: Custom wordlist selector
 
+:ballot_box_with_check: Auto detect requirements
+
 :ballot_box_with_check: Rainbow Tables creator
 
 :black_square_button: Router Slower Attack
@@ -48,6 +50,7 @@ But don't worry because the framework detect your OS and install the dependencie
     bettercap
     macchanger
     hashcat
+    hping3
     xterm
     hcxdumptool
 
