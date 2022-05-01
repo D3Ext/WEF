@@ -25,7 +25,7 @@ Tested and supported in Kali Linux, Parrot OS, Arch Linux and Ubuntu
 
 :ballot_box_with_check: Log generator
 
-:ballot_box_with_check: Usefull attacks
+:ballot_box_with_check: Useful attacks
 
 :ballot_box_with_check: Handshake Cracking
 
