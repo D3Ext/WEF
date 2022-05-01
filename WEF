@@ -379,7 +379,7 @@ function rainbow-gen(){
 
 # Report Generate Function
 function report-gen(){
-	touch /opt/WEF/main/captures/$name/log.txt
+	touch /opt/WEF/main/logs/$name.log
 
 	if [ ! "$name" ]; then
 		name="Not especified"
@@ -393,14 +393,14 @@ function report-gen(){
 		attack_time="Not especified"
 	fi
 
-	echo -e "[WEF] WiFi Exploitation Framework" > /opt/WEF/main/captures/$name/log.txt 2>/dev/null
-	echo -e "---------------------------------" >> /opt/WEF/main/captures/$name/log.txt 2>/dev/null
-	echo -e "Date of the attack: $actual_date" >> /opt/WEF/main/captures/$name/log.txt 2>/dev/null
-	echo -e "Type of attack selected: $type_of_attack" >> /opt/WEF/main/captures/$name/log.txt 2>/dev/null
-	echo -e "Attack completed against: $name" >> /opt/WEF/main/captures/$name/log.txt 2>/dev/null
-	echo -e "Duration of the attack: $attack_time" >> /opt/WEF/main/captures/$name/log.txt 2>/dev/null
-	echo -e "Channel of the AP: $channel" >> /opt/WEF/main/captures/$name/log.txt 2>/dev/null
-	echo -e "---------------------------------" >> /opt/WEF/main/captures/$name/log.txt 2>/dev/null
+	echo -e "[WEF] WiFi Exploitation Framework" >> /opt/WEF/main/logs/$name.log 2>/dev/null
+	echo -e "---------------------------------" >> /opt/WEF/main/logs/$name.log 2>/dev/null
+	echo -e "Date of the attack: $actual_date" >> /opt/WEF/main/logs/$name.log 2>/dev/null
+	echo -e "Type of attack selected: $type_of_attack" >> /opt/WEF/main/logs/$name.log 2>/dev/null
+	echo -e "Attack completed against: $name" >> /opt/WEF/main/logs/$name.log 2>/dev/null
+	echo -e "Duration of the attack: $attack_time" >> /opt/WEF/main/logs/$name.log 2>/dev/null
+	echo -e "Channel of the AP: $channel" >> /opt/WEF/main/logs/$name.log 2>/dev/null
+	echo -e "---------------------------------" >> /opt/WEF/main/logs/$name.log 2>/dev/null
 }
 
 # Deauth all clients
@@ -427,7 +427,7 @@ function deauth_all_clients(){
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack completed${endColour}"
 	sleep 0.1
 	report-gen
-	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/captures/$name/${endColour}"
+	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/logs/$name.log ${endColour}"
 	sleep 0.3
 	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Do you want to crack the handshakes? [${endColour}${yellowColour}y${endColour}${blueColour}/${endColour}${yellowColour}n${endColour}${blueColour}]: ${endColour}" && read crack_option
 	sleep 0.2
@@ -463,7 +463,7 @@ function deauth_one_client(){
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack completed${endColour}"
 	sleep 0.1
 	report-gen
-	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/captures/$name/${endColour}"
+	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/logs/$name.log ${endColour}"
 	sleep 0.3
 	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Do you want to crack the handshakes? [${endColour}${yellowColour}y${endColour}${blueColour}/${endColour}${yellowColour}n${endColour}${blueColour}]: ${endColour}" && read crack_option
 	sleep 0.2
@@ -558,7 +558,7 @@ function auth_attack(){
 	sleep 0.1
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack completed${endColour}"
 
-	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/captures/$name/${endColour}"
+	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/logs/$name.log${endColour}"
 	cp Capture-* /opt/WEF/main/captures/$name/ 2>/dev/null
 	report-gen
 	sleep 1.5
@@ -592,7 +592,7 @@ function beacon_flood(){
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Beacon Flood attack completed${endColour}"
 	sleep 0.1
 	report-gen
-	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/captures/$name/${endColour}"
+	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/logs/$name.log${endColour}"
 	sleep 1.5
 	keep_exit
 }
@@ -619,7 +619,7 @@ function pkmid_attack(){
 
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] PKMID Attack completed${endColour}"
 	report-gen
-	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/captures/$name/${endColour}"
+	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/logs/$name.log ${endColour}"
 	sleep 0.1
 	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Do you want to crack the handshakes? [${endColour}${yellowColour}y${endColour}${blueColour}/${endColour}${yellowColour}n${endColour}${blueColour}]: ${endColour}" && read crack_option
 	if [ "${crack_option}" == "y" ]; then
@@ -661,8 +661,8 @@ function passive_attack(){
 	mkdir /opt/WEF/main/captures/$name 2>/dev/null
 	cp Capture-* /opt/WEF/main/captures/$name/ 2>/dev/null
 	report-gen
-	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/captures/$name/${endColour}"
-	sleep 1.5
+	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/logs/$name.log ${endColour}"
+	sleep 1
 	keep_exit
 }
 
@@ -678,9 +678,9 @@ function slow_router(){
 	fi
 
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Floading the router connection...${endColour}"
-	hping3 --rand-source -V -d 500 $router_ip -p 80 --flood &>/dev/null
+	hping3 --rand-source -V -d 500 $router_ip -p 80 --flood 2>/dev/null
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Router Floaing completed${endColour}"
-	sleep 1.5
+	sleep 1
 	keep_exit
 }
 
@@ -703,7 +703,7 @@ function michael(){
 	actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
 	timeout "${attack_time}" bash -c "mdk4 m -t ${ap_mac}"
 	report-gen
-	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/captures/$name/${endColour}"
+	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/logs/$name.log ${endColour}"
 	sleep 0.1
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attacked completed${endColour}"
 	sleep 1.5
@@ -732,7 +732,7 @@ function pixie_dust(){
 
 	mkdir /opt/WEF/main/captures/$name
 	report-gen
-	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/captures/$name/${endColour}"
+	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/logs/$name.log ${endColour}"
 	sleep 0.1
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attacked completed${endColour}"
 	sleep 1.5
@@ -795,7 +795,7 @@ function replay(){
 	kill -9 $air2_PID; wait $air2_PID 2>/dev/null
 
 	sleep 0.3
-	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/captures/$name/${endColour}"
+	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/logs/$name.log ${endColour}"
 	sleep 0.1
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attacked completed${endColour}"
 	sleep 1.5
