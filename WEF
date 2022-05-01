@@ -1129,6 +1129,7 @@ if [ "$(id -u)" == "0" ]; then
 			if [ "$option" == "14" ] || [ "$option" == "replay" ]; then
 				sleep 0.15
 				mon_check=$(ifconfig | grep "$netCard" | awk '{print $1}' | tr -d ':')
+				type_of_attack="Replay Attack"
 				if [ "$mon_check" == "${netCard}mon" ]; then
 					sleep 0.15
 					replay
@@ -1140,15 +1141,16 @@ if [ "$(id -u)" == "0" ]; then
 				fi
 			fi
 
-			if [ "$option" == "15" ]; then
+			if [ "$option" == "15" ] || [ "$option" == "image" ]; then
 				sleep 0.15
 				mon_check=$(ifconfig | grep "$netCard" | awk '{print $1}' | tr -d ':')
 				if [ "$mon_check" == "${netCard}mon" ]; then
 					sleep 0.15
 					image_changer
 				else
-					echo
-					echo
+					echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Your card is not in monitor mode.${endColour}"
+					echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Please before doing any attack press the ${endColour}${yellowColour}Start network card${endColour}${blueColour} option${endColour}"
+					sleep 1.5
 					keep_exit
 				fi
 			fi
@@ -1158,20 +1160,29 @@ if [ "$(id -u)" == "0" ]; then
 				blue-deauth
 			fi
 
-			if [ "$option" == "exec" ]; then
+			if [ "$option" == "start blue" ]; then
+				sleep 0.15
+				blue-start
+			fi
+			
+			if [ "$option" == "exec" ] || [ "$option" == "command" ] || [ "$option" == "execute" ]; then
 				sleep 0.15
 				exec_commands
 			fi
 
-			if [ "$option" == "exit" ]; then
+			if [ "$option" == "exit" ] || [ "$option" == "exi" ]; then
 				ctrl_c
 			fi
 
-			if [ "$option" == "quit" ]; then
+			if [ "$option" == "quit" ] || [ "$option" == "qui" ]; then
 				ctrl_c
 			fi
 
 			if [ "$option" == "salir" ]; then
+				ctrl_c
+			fi
+
+			if [ "$option" == "sortir" ]; then
 				ctrl_c
 			fi
 
