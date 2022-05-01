@@ -6,6 +6,8 @@ A fully offensive framework to the 802.11 networks and protocol with different t
 
 Tested and supported in Kali Linux, Parrot OS, Arch Linux and Ubuntu
 
+*However it's not finished and may have issues, try it at your own risk.*
+
 ## ⭕ SUPPORTED ATTACKS:
 
 - Deauthentication Attack
@@ -22,6 +24,8 @@ Tested and supported in Kali Linux, Parrot OS, Arch Linux and Ubuntu
 ## ⭕ IMPLEMENTED FUNCTIONS:
 
 :ballot_box_with_check: Log generator
+
+:ballot_box_with_check: Usefull attacks
 
 :ballot_box_with_check: Handshake Cracking
 
