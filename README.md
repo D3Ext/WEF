@@ -2,11 +2,11 @@
 
 # 📡 WiFi Exploitation Framework 📡
 
-A fully offensive framework to the 802.11 networks and protocol with different types of attacks for WPA,WEP,WPS, automated hash cracking and much more.
+A fully offensive framework to the 802.11 networks and protocol with different types of attacks for WPA,WEP,WPS, automated hash cracking and much more. I recommend you my alfa adapter: **Alfa AWUS036ACM**, which works really great with both, 2.4 and 5 Ghz
 
-Tested and supported in Kali Linux, Parrot OS, Arch Linux and Ubuntu
+Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubuntu**
 
-*However it's not finished and may have issues, try it at your own risk.*
+*\*However it's not finished and may have issues, try it at your own risk.\**
 
 ## ⭕ SUPPORTED ATTACKS:
 
