@@ -18,6 +18,7 @@ if [ "$(id -u)" == "0" ]; then
   # wget "kaonashi" -o /opt/WEF/main/wordlists/
   wget "https://raw.githubusercontent.com/LionSec/xerosploit/master/tools/bettercap/modules/replace_images.rb" -o /opt/WEF/main/modules/replace_images.rb &>/dev/null
   wget "https://raw.githubusercontent.com/D3Ext/WEF/main/WEF.sh" -o /opt/WEF/WEF &>/dev/null
+  wget "https://raw.githubusercontent.com/D3Ext/WEF/main/clear.sh" -o /opt/WEF/clear-logs.sh &>/dev/null
   chmod +x /opt/WEF/WEF 2>/dev/null
   cp /opt/WEF/WEF /usr/bin/WEF 2>/dev/null
   chmod +x /usr/bin/WEF 2>/dev/null
