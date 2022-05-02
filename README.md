@@ -1,4 +1,3 @@
-<img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/test.png">
 
 -------------------------------------------------
 
