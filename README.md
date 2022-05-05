@@ -47,9 +47,7 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 :black_square_button: Bluetooth Attacks
 
 ## ⭕ REQUIREMENTS:
-You need a few tools, but they are installed automatically if you don't have them installed, however these are:
-
-But don't worry because the framework detect your OS and install the dependencies if you don't have them with your package manager.
+You need a few tools, but don't worry because the framework detect your OS and install the dependencies if you don't have them:
 
     aircrack-ng
     reaver 
