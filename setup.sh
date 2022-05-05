@@ -20,14 +20,15 @@ sleep 0.1
 	mv darkweb2017-top10000.txt /opt/WEF/main/wordlists/ 2>/dev/null
 	wget "https://raw.githubusercontent.com/LionSec/xerosploit/master/tools/bettercap/modules/replace_images.rb" &>/dev/null
 	mv replace_images.rb /opt/WEF/main/modules/ 2>/dev/null
-	cp ${adir}/WEF /usr/bin/WEF 2>/dev/null
+	cp ${adir}/WEF /usr/bin/wef 2>/dev/null
 	cp ${adir}/WEF /opt/WEF/WEF 2>/dev/null
 	cp ${adir}/clear.sh /opt/WEF/clear-logs.sh 2>/dev/null
 	chmod +x WEF 2>/dev/null
 	chmod +x /opt/WEF/WEF 2>/dev/null
-	chmod +x /usr/bin/WEF 2>/dev/null
+	chmod +x /usr/bin/wef 2>/dev/null
 	chmod +x /opt/WEF/clear-logs.sh 2>/dev/null
-	# rm ${dir}/setup.sh 2>/dev/null
+	rm ${adir}/setup.sh 2>/dev/null
+	echo -e "[+] Installation completed"
 else
 	echo -e "\n[X] Please, execute the script as root.\n"
 	exit 1
