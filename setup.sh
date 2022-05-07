@@ -24,8 +24,8 @@ sleep 0.1
 	cp ${adir}/wef /usr/bin/wef 2>/dev/null
 	cp ${adir}/wef /opt/wef/wef 2>/dev/null
 	cp ${adir}/clear.sh /opt/wef/clear-logs.sh 2>/dev/null
-	chmod +x wef 2>/dev/null
-	chmod +x /opt/wef/wef 2>/dev/null
+	chmod +x WEF 2>/dev/null
+	chmod +x /opt/wef/WEF 2>/dev/null
 	chmod +x /usr/bin/wef 2>/dev/null
 	chmod +x /opt/wef/clear-logs.sh 2>/dev/null
 	rm ${adir}/setup.sh 2>/dev/null
