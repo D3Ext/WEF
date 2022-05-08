@@ -25,7 +25,7 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 - Caffe-Latte Attack
 - Passive/Stealthy Attack
 
-## ⭕ IMPLEMENTED FUNCTIONS:
+## ⭕ FEATURES:
 
 :ballot_box_with_check: Log generator
 
