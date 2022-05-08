@@ -3,7 +3,7 @@
 
 # 📡 WiFi Exploitation Framework 📡
 
-A fully offensive framework to the 802.11 networks and protocol with different types of attacks for WPA,WEP,WPS, automated hash cracking and much more.
+A fully offensive framework to the 802.11 networks and protocol with different types of attacks for WPA and WEP, automated hash cracking and much more.
 
 - I recommend you my alfa adapter: **Alfa AWUS036ACM**, which works really great with both, 2.4 and 5 Ghz
 
@@ -17,6 +17,7 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 - Authentication Attack
 - Beacon Flood Attack
 - PKMID Attack
+- EvilTwin Attack
 - Pixie Dust Attack
 - Chopchop Attack
 - Replay Attack
@@ -32,6 +33,8 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 
 :ballot_box_with_check: Handshake Cracking
 
+:ballot_box_with_check: Multiple Templates for EvilTwin Attack
+
 :ballot_box_with_check: Check monitor mode
 
 :black_square_button: 5G Attacks
@@ -43,6 +46,8 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 :ballot_box_with_check: Rainbow Tables creator
 
 :black_square_button: Router Slower Attack
+
+:ballot_box_with_check: WPA and WEP Attacks
 
 :black_square_button: Bluetooth Attacks
 
@@ -58,13 +63,15 @@ You need a few tools, but don't worry because the framework detect your OS and i
     hping3
     xterm
     hcxdumptool
+    php
+    hostadp
+    dnsmasq
 
 ## ⭕ INSTALLATION:
 
     git clone https://github.com/D3Ext/WEF
     cd WEF
-    chmod +x setup.sh
-    ./setup.sh
+    bash setup.sh
 
 ## ⭕ DEMO:
 
