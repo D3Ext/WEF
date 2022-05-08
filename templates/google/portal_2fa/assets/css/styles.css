@@ -1,0 +1,131 @@
+@font-face {
+	font-family: 'Roboto';
+	src: 
+		local('Roboto Regular'),
+		local('Roboto-Regular'),
+		url('Roboto-Regular.ttf'),
+		format('truetype');
+}
+
+* {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	background: #fff;
+	color: #000;
+	font-family: "Arial", sans-serif;
+	font-size: 14px;
+	font-weight: 300;
+	text-align: center;
+	padding: 60px 40px;
+	height: 100%;
+}
+
+form {
+	display: block;
+	min-height: 380px;
+	width: 100%;
+	margin: 0 auto 25px auto;
+	text-align: left;
+}
+
+img { zoom: 50% }
+
+h1 {
+	font-family: "Roboto", "Arial", sans-serif;
+	font-size: 25px;
+	font-weight: 400;
+	margin-top: 15px;
+	margin-bottom: 5px;
+}
+
+h2 {
+	font-family: "Roboto", "Arial", sans-serif;
+	font-size: 14px;
+	font-weight: 400;
+	margin-bottom: 70px;
+}
+
+p {
+	font-family: "Roboto", "Arial", sans-serif;
+	font-size: 13px;
+	font-weight: 300;
+	margin-top: 70px;
+}
+
+input {
+	display: block;
+	width: 100%;
+	font-size: 14px;
+	font-weight: 300;
+	padding: 3px 0;
+	margin-top: 30px;
+	background: #fff;
+	border: none;
+	border-bottom: 1px solid #d9d9d9;
+	color: #000;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+	outline: none;
+}
+
+.warning {
+	color: #e50000;
+	font-size: 12px;
+	text-align: left;
+	margin-top: 10px;
+}
+
+a, a:hover {
+	color: #4d90fe;
+	text-decoration: none;
+}
+
+button {
+	font-size: 13px;
+	font-weight: 400;
+	border: none;
+	border-radius: 3px;
+	color: #fff;
+	background-color: #4d90fe;
+	box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 3px 0px;
+	padding: 10px 23px;
+	margin-top: -14px;
+	cursor: pointer;
+}
+
+footer {
+	width: 100%;
+	margin: 60px auto;
+	text-align: left;
+	font-size: 12px;
+	font-weight: 300;
+}
+
+footer span { color: #7e7e7e }
+.text-right { float: right }
+
+@media (min-width: 550px) {
+	body {
+		background: url("../img/rgjhg6922p.jpg") top left;
+	}
+	
+	form {
+		width: 370px;
+		background: #fff;
+		padding: 60px 40px;
+		border-radius: 2px;
+		box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 3px 0px;
+	}
+	
+	footer {
+		width: 450px;
+		margin-top: 25px;
+	}
+}

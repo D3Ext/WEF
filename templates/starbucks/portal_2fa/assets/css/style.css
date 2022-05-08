@@ -1,0 +1,216 @@
+.form-signin
+{
+    max-width: 330px;
+    padding: 15px;
+    margin: 0 auto;
+}
+.form-signin .form-signin-heading, .form-signin .checkbox
+{
+    margin-bottom: 10px;
+}
+.form-signin .checkbox
+{
+    font-weight: normal;
+}
+.form-signin .form-control
+{
+    position: relative;
+    font-size: 16px;
+    height: auto;
+    padding: 10px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+.form-signin .form-control:focus
+{
+    z-index: 2;
+}
+.form-signin input[type="text"]
+{
+    margin-bottom: -1px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+.form-signin input[type="password"]
+{
+    margin-bottom: 10px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+.account-wall
+{
+    margin-top: 20px;
+    padding: 40px 0px 20px 0px;
+    background-color: #ffffff;
+}
+.login-title
+{
+    color: #007140;
+    font-size: 55px;
+    font-weight: 400;
+    display: block;
+}
+.profile-img
+{
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 10px;
+    display: block;
+    -moz-border-radius: 50%;
+    -webkit-border-radius: 50%;
+    border-radius: 50%;
+}
+
+.friends-text
+{
+    font-size: 18px;
+    font-weight: 400;
+    display: block;
+    color: #757575;
+    padding-bottom: 15px;
+}
+
+.need-help
+{
+    margin-top: 10px;
+}
+.new-account
+{
+    display: block;
+    margin-top: 10px;
+}
+
+/*.btn-primary {
+    background: #5da522;
+    border-color: #5da522;
+    color: #ffffff;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open > .dropdown-toggle.btn-primary {
+    background: #5da522;
+    border-color: #5da522;
+    color: #ffffff;
+}
+
+.btn-primary:active {
+    background: #5da522;
+    border-color: #5da522;
+    color: #ffffff;
+}*/
+
+.container {
+    margin: 0 auto;
+    width: 400px;
+}
+
+.terms-text1 {
+    color: #999999;
+    font-size: 15px;
+    display: block;
+    padding-top: 20px;
+}
+
+.terms-text2 {
+    color: #999999;
+    font-size: 15px;
+    display: block;
+    padding-top: 5px;
+}
+
+.terms-text3 {
+    color: #999999;
+    font-size: 15px;
+    display: block;
+    padding-top: 20px;
+}
+
+.url-color {
+    color: #6fb62f;
+    font-size: 15px;
+}
+
+.url-color:link {
+    color: #6fb62f;
+    text-decoration: none;
+}
+
+.url-color:visited {
+    color: #6fb62f;
+    text-decoration: none;
+}
+
+.url-color:hover {
+    color: #6fb62f;
+    text-decoration: none;
+}
+
+.url-color:active {
+    color: #6fb62f;
+    text-decoration: none;
+}
+
+.url-color1 {
+    color: #007140;
+}
+
+.url-color1:link {
+    color: #007140;
+    text-decoration: none;
+}
+
+.url-color1:visited {
+    color: #007140;
+    text-decoration: none;
+}
+
+.url-color1:hover {
+    color: #007140;
+    text-decoration: none;
+}
+
+.url-color1:active {
+    color: #007140;
+    text-decoration: none;
+}
+
+.btn-primary {
+    color: #FFFFFF;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    background-color: #318a00;
+    *background-color: #318a00;
+    background-image: -moz-linear-gradient(top, #65AB28, #318a00);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#65AB28), to(#318a00));
+    background-image: -webkit-linear-gradient(top, #65AB28, #318a00);
+    background-image: -o-linear-gradient(top, #65AB28, #318a00);
+    background-image: linear-gradient(to bottom, #65AB28, #318a00);
+    background-repeat: repeat-x;
+    border: none;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#65AB28', endColorstr='#318a00', GradientType=0);
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+}
+
+.btn-primary:hover, 
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active,
+.btn-primary.disabled,
+.btn-primary[disabled] {
+    color: #FFFFFF;
+    background-color: #318a00;
+    *background-color: #318a00;
+}
+
+.btn-xlarge {
+    padding: 18px 28px;
+    font-size: 22px; //change this to your desired size
+    line-height: normal;
+    -webkit-border-radius: 8px;
+       -moz-border-radius: 8px;
+            border-radius: 8px;
+}
+
+.btn-sharp {
+    border-radius: 5px;
+}
+
