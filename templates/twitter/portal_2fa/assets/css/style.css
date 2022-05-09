@@ -1,0 +1,205 @@
+.form-signin
+{
+    max-width: 330px;
+    margin: 0 auto;
+}
+.form-signin .form-signin-heading, .form-signin .checkbox
+{
+    margin-bottom: 10px;
+}
+.form-signin .checkbox
+{
+    font-weight: normal;
+}
+.form-signin .form-control
+{
+
+}
+.form-email
+{
+    margin: .65625rem 0;
+    width: 100%;
+    height: 45px;
+    background-color: #f5f8fa;
+    border-radius: 2.3125rem;
+    border-width: 0;
+    font: inherit;
+    padding: .65625rem;
+}
+.form-password
+{
+    margin: .65625rem 0;
+    width: 100%;
+    height: 45px;
+    background-color: #f5f8fa;
+    border-radius: 2.3125rem;
+    border-width: 0;
+    font: inherit;
+    padding: .65625rem;
+}
+.form-email:focus
+{
+    outline: 0;
+}
+.form-password:focus
+{
+    outline: 0;
+}
+.form-signin input[type="text"]
+{
+
+}
+.form-signin input[type="password"]
+{
+    margin-bottom: 5px;
+}
+.account-wall
+{
+    padding: 10px 0px 20px 0px;
+    background-color: #ffffff;
+}
+.login-title
+{
+    margin: 0 auto;
+    max-width: 320px;
+    padding: 0 15px 22px;
+    overflow: hidden;
+    color: #000000;
+    font-size: 1.125em;
+    font-weight: 500;
+    display: block;
+}
+.profile-img
+{
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 10px;
+    display: block;
+    -moz-border-radius: 50%;
+    -webkit-border-radius: 50%;
+    border-radius: 50%;
+}
+
+.friends-text
+{
+    font-size: 18px;
+    font-weight: 400;
+    display: block;
+    color: #757575;
+    padding-bottom: 15px;
+}
+
+.need-help
+{
+    margin-top: 10px;
+}
+.new-account
+{
+    display: block;
+    margin-top: 10px;
+}
+
+.container {
+    margin: 0 auto;
+}
+
+.terms-text1 {
+    color: #000;
+    font-size: 16px;
+    display: block;
+    padding-top: 35px;
+    text-align: center;
+    text-decoration: none;
+}
+
+.url-color {
+    color: #1da1f2;
+    font-size: 15px;
+    font-weight: 400;
+    text-decoration: none;
+}
+a:hover, a:visited, a:link, a:active
+{
+    color: #1da1f2;
+    text-decoration: none;
+}
+.btn-primary {
+  display: block;
+  width: 100%;
+  height: 45px;
+  box-sizing: border-box;
+  margin-top: 15px!important;
+  color: #FFFFFF;
+  background-color: #3098ee;
+  border-color: #3098ee;
+  font-size: 1.25rem;
+  line-height: 1.5em;
+  font-weight: bold;
+  border-width: inherit;
+
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active,
+.open .dropdown-toggle.btn-primary {
+  color: #FFFFFF;
+  background-color: #3098ee;
+  border-color: #3098ee;
+}
+
+.btn-primary:active,
+.btn-primary.active,
+.open .dropdown-toggle.btn-primary {
+  background-image: none;
+}
+
+.btn-primary.disabled,
+.btn-primary[disabled],
+fieldset[disabled] .btn-primary,
+.btn-primary.disabled:hover,
+.btn-primary[disabled]:hover,
+fieldset[disabled] .btn-primary:hover,
+.btn-primary.disabled:focus,
+.btn-primary[disabled]:focus,
+fieldset[disabled] .btn-primary:focus,
+.btn-primary.disabled:active,
+.btn-primary[disabled]:active,
+fieldset[disabled] .btn-primary:active,
+.btn-primary.disabled.active,
+.btn-primary[disabled].active,
+fieldset[disabled] .btn-primary.active {
+  background-color: #3098ee;
+  border-color: #3098ee;
+}
+
+.btn-primary .badge {
+  color: #3098ee;
+  background-color: #FFFFFF;
+}
+
+.btn-primary:active:focus {
+  color: #ffffff;
+  background-color: #3098ee;
+  border-color: #3098ee;
+}
+
+.btn-xlarge {
+    padding: 5px 5px;
+    font-size: 1.0em; //change this to your desired size
+    line-height: normal;
+    -webkit-border-radius: 2.3125rem;
+       -moz-border-radius: 2.3125rem;
+            border-radius: 2.3125rem;
+}
+
+.btn-sharp {
+    border-radius: 2.3125rem;
+}
+
+.logo {
+    margin: auto;
+    width: auto;
+    height: 75%;
+}
