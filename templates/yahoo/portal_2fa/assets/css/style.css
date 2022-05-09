@@ -1,0 +1,230 @@
+.form-signin
+{
+    max-width: 330px;
+    padding: 15px;
+    margin: 0 auto;
+}
+.form-signin .form-signin-heading, .form-signin .checkbox
+{
+    margin-bottom: 10px;
+}
+.form-signin .checkbox
+{
+    font-weight: normal;
+}
+.form-signin .form-control
+{
+
+}
+.form-email
+{
+    display: block;
+    outline: 0;
+    border-width: 0 0 1px 0;
+    border-color: #cfd2d5;
+    width: 100%;
+    height: 44px;
+}
+.form-password
+{
+    outline: 0;
+    border-width: 0 0 1px 0;
+    border-color: #cfd2d5;
+    width: 100%;
+    height: 44px;
+}
+.form-email:focus
+{
+    outline: 0;
+    border-width: 0 0 2px 0;
+    border-color: #188fff;
+}
+.form-password:focus
+{
+    outline: 0;
+    border-width: 0 0 2px 0;
+    border-color: #188fff;
+}
+.form-signin input[type="text"]
+{
+
+}
+.form-signin input[type="password"]
+{
+    margin-bottom: 5px;
+}
+.account-wall
+{
+    margin-top: 20px;
+    padding: 40px 0px 20px 0px;
+    background-color: #ffffff;
+}
+.login-title
+{
+    margin: 0 auto;
+    max-width: 320px;
+    padding: 0 15px 22px;
+    overflow: hidden;
+    color: #000000;
+    font-size: 1.125em;
+    font-weight: 500;
+    display: block;
+}
+.profile-img
+{
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 10px;
+    display: block;
+    -moz-border-radius: 50%;
+    -webkit-border-radius: 50%;
+    border-radius: 50%;
+}
+
+.friends-text
+{
+    font-size: 18px;
+    font-weight: 400;
+    display: block;
+    color: #757575;
+    padding-bottom: 15px;
+}
+
+.need-help
+{
+    margin-top: 10px;
+}
+.new-account
+{
+    display: block;
+    margin-top: 10px;
+}
+
+/*.btn-primary {
+    background: #5da522;
+    border-color: #5da522;
+    color: #ffffff;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open > .dropdown-toggle.btn-primary {
+    background: #5da522;
+    border-color: #5da522;
+    color: #ffffff;
+}
+
+.btn-primary:active {
+    background: #5da522;
+    border-color: #5da522;
+    color: #ffffff;
+}*/
+
+.container {
+    margin: 0 auto;
+    width: 400px;
+}
+
+.terms-text1 {
+    color: #000;
+    font-size: 16px;
+    display: block;
+    padding-top: 35px;
+    text-align: center;
+    text-decoration: none;
+}
+
+.terms-text2 {
+    color: #000;
+    font-size: 15px;
+    display: block;
+    padding-top: 5px;
+    text-align: center;
+    text-decoration: none;
+}
+
+.terms-text3 {
+    color: #000;
+    font-size: 16px;
+    display: block;
+    padding-top: 20px;
+    text-align: center;
+}
+
+.url-color {
+    color: #198fff;
+    font-size: 15px;
+    font-weight: 400;
+    text-decoration: none;
+}
+a:hover, a:visited, a:link, a:active
+{
+    text-decoration: none;
+}
+.btn-primary {
+  display: block;
+  width: 100%;
+  height: 44px;
+  box-sizing: border-box;
+  margin-top: 22px!important;
+  color: #FFFFFF;
+  background-color: #188fff;
+  border-color: #188fff;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active,
+.open .dropdown-toggle.btn-primary {
+  color: #FFFFFF;
+  background-color: #4ca9ff;
+  border-color: #4ca9ff;
+}
+
+.btn-primary:active,
+.btn-primary.active,
+.open .dropdown-toggle.btn-primary {
+  background-image: none;
+}
+
+.btn-primary.disabled,
+.btn-primary[disabled],
+fieldset[disabled] .btn-primary,
+.btn-primary.disabled:hover,
+.btn-primary[disabled]:hover,
+fieldset[disabled] .btn-primary:hover,
+.btn-primary.disabled:focus,
+.btn-primary[disabled]:focus,
+fieldset[disabled] .btn-primary:focus,
+.btn-primary.disabled:active,
+.btn-primary[disabled]:active,
+fieldset[disabled] .btn-primary:active,
+.btn-primary.disabled.active,
+.btn-primary[disabled].active,
+fieldset[disabled] .btn-primary.active {
+  background-color: #4ca9ff;
+  border-color: #4ca9ff;
+}
+
+.btn-primary .badge {
+  color: #4ca9ff;
+  background-color: #FFFFFF;
+}
+
+.btn-primary:active:focus {
+  color: #ffffff;
+  background-color: #4ca9ff;
+  border-color: #4ca9ff;
+}
+
+.btn-xlarge {
+    padding: 5px 5px;
+    font-size: 1.0em; //change this to your desired size
+    line-height: normal;
+    -webkit-border-radius: 2px;
+       -moz-border-radius: 2px;
+            border-radius: 2px;
+}
+
+.btn-sharp {
+    border-radius: 2px;
+}
