@@ -20,12 +20,12 @@ sleep 0.1
 	wget "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/darkweb2017-top10000.txt" &>/dev/null
 	mv darkweb2017-top10000.txt /opt/wef/main/wordlists/ 2>/dev/null
 	wget "https://raw.githubusercontent.com/LionSec/xerosploit/master/tools/bettercap/modules/replace_images.rb" &>/dev/null
-	mv replace_images.rb /opt/wef/main/modules/ 2>/dev/null
-	cp ${adir}/wef /usr/bin/wef 2>/dev/null
-	cp ${adir}/wef /opt/wef/wef 2>/dev/null
+	cp replace_images.rb /opt/wef/main/modules/ 2>/dev/null
+	cp ${adir}/WEF /usr/bin/wef 2>/dev/null
+	cp ${adir}/WEF /opt/wef/wef 2>/dev/null
 	cp ${adir}/clear.sh /opt/wef/clear-logs.sh 2>/dev/null
 	chmod +x WEF 2>/dev/null
-	chmod +x /opt/wef/WEF 2>/dev/null
+	chmod +x /opt/wef/wef 2>/dev/null
 	chmod +x /usr/bin/wef 2>/dev/null
 	chmod +x /opt/wef/clear-logs.sh 2>/dev/null
 	rm ${adir}/setup.sh 2>/dev/null
