@@ -18,18 +18,19 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 - Beacon Flood Attack
 - PKMID Attack
 - EvilTwin Attack
+- Passive/Stealthy Attack
 - Pixie Dust Attack
+- Null Pin Attack
 - Chopchop Attack
 - Replay Attack
 - Michael Exploitation Attack
 - Caffe-Latte Attack
-- Passive/Stealthy Attack
 
 ## ⭕ FEATURES:
 
 :ballot_box_with_check: Log generator
 
-:ballot_box_with_check: Useful attacks
+:ballot_box_with_check: WPA/WPA2, WPS and WEP Attacks
 
 :ballot_box_with_check: Handshake Cracking
 
@@ -37,7 +38,7 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 
 :ballot_box_with_check: Check monitor mode
 
-:black_square_button: 5G Attacks
+:ballot_box_with_check: 2Ghz and 5Ghz Attacks
 
 :ballot_box_with_check: Custom wordlist selector
 
@@ -47,15 +48,14 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 
 :black_square_button: Router Slower Attack
 
-:ballot_box_with_check: WPA and WEP Attacks
-
 :black_square_button: Bluetooth Support (Jamming, Writing, Reading)
 
 ## ⭕ REQUIREMENTS:
 You need a few tools, but don't worry because the framework detect your OS and install the dependencies if you don't have them:
 
     aircrack-ng
-    reaver 
+    reaver
+    bully
     mdk4
     bettercap
     macchanger
@@ -63,6 +63,9 @@ You need a few tools, but don't worry because the framework detect your OS and i
     hping3
     xterm
     hcxdumptool
+    python3
+    btlejack
+    crackle
     php
     hostadp
     dnsmasq
@@ -71,6 +74,7 @@ You need a few tools, but don't worry because the framework detect your OS and i
 
     git clone https://github.com/D3Ext/WEF
     cd WEF
+    pip3 install -r requirements.txt
     bash setup.sh
 
 ## ⭕ DEMO:
@@ -79,7 +83,7 @@ You need a few tools, but don't worry because the framework detect your OS and i
 
 ### ⚪ Created by D3ext
 
-**If you are using bspwm, you can add this line to your bspwmrc for launching the *xterm* windows always beeing in floating mode**
+**If you are using bspwm, you can add this line to your bspwmrc for launching the *xterm* windows always beeing in floating mode** (for looking prettier)
 
     bspc rule -a XTerm state=floating
     
@@ -87,4 +91,4 @@ You need a few tools, but don't worry because the framework detect your OS and i
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/d3ext)
 
-Copyright © 2022, D3Ext
+Copyright © 2022, *D3Ext*
