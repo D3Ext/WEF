@@ -12,10 +12,11 @@ grayColour="\e[0;37m\033[1m"
 if [ "$(id -u)" == "0" ]; then
   for name in $(ls /opt/wef/main/captures); do
     rm -rf /opt/wef/main/captures/$name 2>/dev/null
+    em /opt/wef/main/logs/* 2>/dev/null
   done
 
-  sleep 0.5
-  echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Useless information cleared\n${endColour}"
+  sleep 0.4
+  echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Information and logs cleared\n${endColour}"
 else
   echo -e "${blueColour}[${endColour}${redColour}X${endColour}${blueColour}] Please, execute the script as root${endColour}"
 fi
