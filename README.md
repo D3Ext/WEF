@@ -49,7 +49,7 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 
 :ballot_box_with_check: WPA and WEP Attacks
 
-:black_square_button: Bluetooth Attacks
+:black_square_button: Bluetooth Support (Jamming, Writing, Reading)
 
 ## ⭕ REQUIREMENTS:
 You need a few tools, but don't worry because the framework detect your OS and install the dependencies if you don't have them:
