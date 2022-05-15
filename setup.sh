@@ -3,7 +3,9 @@
 if [ "$(id -u)" == "0" ]; then
 sleep 0.1
 	adir=$(pwd)
-	echo -e "\n[WEF] Creating the setup for working properly."
+	echo -e "\n[WEF] Preparing the setup for working properly."
+	sleep 0.2
+	echo -ne "\n[+] Creating directories."; sleep 0.2; echo -ne "."; sleep 0.2; echo -ne "."; sleep 0.2; echo -ne "."; sleep 0.2
 	mkdir /opt/wef 2>/dev/null
 	mkdir /opt/wef/main 2>/dev/null
 	mkdir /opt/wef/main/img 2>/dev/null
@@ -11,7 +13,8 @@ sleep 0.1
 	mkdir /opt/wef/main/wordlists 2>/dev/null
 	mkdir /opt/wef/main/captures 2>/dev/null
 	mkdir /opt/wef/main/logs 2>/dev/null
-	mv templates /opt/wef/main/ 2>/dev/null 
+	mv templates /opt/wef/main/ 2>/dev/null
+	echo -ne "\n[+] Downloading files."; sleep 0.2; echo -ne "."; sleep 0.2; echo -ne "."; sleep 0.2; echo -ne "."; sleep 0.2
 	wget "https://github.com/praetorian-inc/Hob0Rules/raw/master/wordlists/rockyou.txt.gz" &>/dev/null
 	mv rockyou.txt.gz /opt/wef/main/wordlists/rockyou.txt.gz 2>/dev/null
 	gunzip /opt/wef/main/wordlists/rockyou.txt.gz 2>/dev/null
@@ -20,6 +23,8 @@ sleep 0.1
 	wget "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/darkweb2017-top10000.txt" &>/dev/null
 	mv darkweb2017-top10000.txt /opt/wef/main/wordlists/ 2>/dev/null
 	wget "https://raw.githubusercontent.com/LionSec/xerosploit/master/tools/bettercap/modules/replace_images.rb" &>/dev/null
+	echo -ne "\n[+] Giving permissions to necessary files."; sleep 0.2; echo -ne "."; sleep 0.2; echo -ne "."; sleep 0.2; echo -ne "."; sleep 0.2
+	sleep 0.2
 	cp replace_images.rb /opt/wef/main/modules/ 2>/dev/null
 	cp ${adir}/WEF /usr/bin/wef 2>/dev/null
 	cp ${adir}/WEF /opt/wef/wef 2>/dev/null
@@ -29,6 +34,7 @@ sleep 0.1
 	chmod +x /usr/bin/wef 2>/dev/null
 	chmod +x /opt/wef/clear-logs.sh 2>/dev/null
 	rm ${adir}/setup.sh 2>/dev/null
+	sleep 0.1
 	echo -e "\n[+] Installation completed"
 else
 	echo -e "\n[X] Please, execute the script as root.\n"
