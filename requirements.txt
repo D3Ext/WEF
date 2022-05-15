@@ -1,0 +1,7 @@
+btlejack
+pwntools
+requests
+pybluez
+nrfutil
+pyserial
+pycryptodome
