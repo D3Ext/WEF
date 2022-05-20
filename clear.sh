@@ -17,6 +17,12 @@ if [ "$(id -u)" == "0" ]; then
 
   sleep 0.4
   echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Information and logs cleared\n${endColour}"
+  sleep 0.3
+  echo -ne "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Do you want to clear credentials from the EvilTwin attack? [y/n]: ${endColour}" && read option
+  if [ "$option" == "y" ] || [ "$option" == "yes" ]; then
+    rm /opt/wef/main/templates/*/datos-privados.txt 2>/dev/null
+  fi
+  
 else
   echo -e "${blueColour}[${endColour}${redColour}X${endColour}${blueColour}] Please, execute the script as root${endColour}"
 fi
