@@ -12,7 +12,7 @@ grayColour="\e[0;37m\033[1m"
 if [ "$(id -u)" == "0" ]; then
   for name in $(ls /opt/wef/main/captures); do
     rm -rf /opt/wef/main/captures/$name 2>/dev/null
-    em /opt/wef/main/logs/* 2>/dev/null
+    rm /opt/wef/main/logs/* 2>/dev/null
   done
 
   sleep 0.4
