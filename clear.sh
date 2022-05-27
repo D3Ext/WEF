@@ -21,6 +21,7 @@ if [ "$(id -u)" == "0" ]; then
   echo -ne "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Do you want to clear credentials from the EvilTwin attack? [y/n]: ${endColour}" && read option
   if [ "$option" == "y" ] || [ "$option" == "yes" ]; then
     rm /opt/wef/main/templates/*/datos-privados.txt 2>/dev/null
+    rm /opt/wef/main/templates/*/usernames.txt 2>/dev/null
   fi
   
 else
