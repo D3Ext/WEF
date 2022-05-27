@@ -35,7 +35,8 @@ sleep 0.1
 	chmod +x /opt/wef/clear-logs.sh 2>/dev/null
 	rm ${adir}/setup.sh 2>/dev/null
 	sleep 0.1
-	echo -e "\n[+] Installation completed"
+	echo -e "\n[+] Installation completed\n"
+	sleep 1
 else
 	echo -e "\n[X] Please, execute the script as root.\n"
 	exit 1
