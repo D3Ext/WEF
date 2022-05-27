@@ -46,8 +46,6 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 
 :ballot_box_with_check: Rainbow Tables creator
 
-:black_square_button: Router Slower Attack
-
 :black_square_button: Bluetooth Support (Jamming, Writing, Reading)
 
 ## ⭕ REQUIREMENTS:
@@ -80,6 +78,11 @@ You need a few tools, but don't worry because the framework detect your OS and i
 ## ⭕ DEMO:
 
 <img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo.png">
+
+## ⭕ OBJECTIVES:
+
+- Improve speed and accesibility
+- Add bluetooth attacks
 
 ### ⚪ Created by D3ext
 
