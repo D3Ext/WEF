@@ -17,7 +17,7 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 - Authentication Attack
 - Beacon Flood Attack
 - PKMID Attack
-- EvilTwin Attack
+- EvilTwin Attack 
 - Passive/Stealthy Attack
 - Pixie Dust Attack
 - Null Pin Attack
@@ -44,12 +44,11 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 
 :ballot_box_with_check: Auto detect requirements
 
-:ballot_box_with_check: Rainbow Tables creator
-
 :black_square_button: Bluetooth Support (Jamming, Writing, Reading)
 
 ## ⭕ REQUIREMENTS:
 You need a few tools, but don't worry because the framework detect your OS and install the dependencies if you don't have them:
+> Don't install them manually, WEF take care of that
 
     aircrack-ng
     reaver
@@ -60,7 +59,7 @@ You need a few tools, but don't worry because the framework detect your OS and i
     hashcat
     hping3
     xterm
-    hcxdumptool
+    hcxtools
     python3
     btlejack
     crackle
@@ -69,14 +68,15 @@ You need a few tools, but don't worry because the framework detect your OS and i
     dnsmasq
 
 ## ⭕ INSTALLATION:
-
+> Run as root
+ 
     git clone https://github.com/D3Ext/WEF
     cd WEF
-    pip3 install -r requirements.txt
     bash setup.sh
 
 ## ⭕ DEMO:
 
+> Demo on a Parrot OS with Kitty terminal
 <img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo.png">
 
 ## ⭕ OBJECTIVES:
@@ -85,6 +85,8 @@ You need a few tools, but don't worry because the framework detect your OS and i
 - Add bluetooth attacks
 
 ### ⚪ Created by D3ext
+
+> Extra
 
 **If you are using bspwm, you can add this line to your bspwmrc for launching the *xterm* windows always beeing in floating mode** (for looking prettier)
 
