@@ -14,6 +14,7 @@ sleep 0.1
 	mkdir /opt/wef/main/captures 2>/dev/null
 	mkdir /opt/wef/main/logs 2>/dev/null
 	mv templates /opt/wef/main/ 2>/dev/null
+	sleep 0.4
 	echo -ne "\n[+] Downloading files."; sleep 0.2; echo -ne "."; sleep 0.2; echo -ne "."; sleep 0.2; echo -ne "."; sleep 0.2
 	wget "https://github.com/praetorian-inc/Hob0Rules/raw/master/wordlists/rockyou.txt.gz" &>/dev/null
 	mv rockyou.txt.gz /opt/wef/main/wordlists/rockyou.txt.gz 2>/dev/null
@@ -34,7 +35,9 @@ sleep 0.1
 	chmod +x /usr/bin/wef 2>/dev/null
 	chmod +x /opt/wef/clear-logs.sh 2>/dev/null
 	rm ${adir}/setup.sh 2>/dev/null
-	sleep 0.1
+	echo -ne "\n[+] Installing requirements."; sleep 0.2; echo -ne "."; sleep 0.2; echo -ne "."; sleep 0.2; echo -ne "."; sleep 0.2
+	pip3 install -r requirements.txt
+	sleep 0.2
 	echo -e "\n[+] Installation completed\n"
 	sleep 1
 else
