@@ -36,7 +36,7 @@ sleep 0.1
 	chmod +x /opt/wef/clear-logs.sh 2>/dev/null
 	rm ${adir}/setup.sh 2>/dev/null
 	echo -ne "\n[+] Installing requirements."; sleep 0.2; echo -ne "."; sleep 0.2; echo -ne "."; sleep 0.2; echo -ne "."; sleep 0.2
-	pip3 install -r requirements.txt
+	pip3 install -r requirements.txt &>/dev/null
 	sleep 0.2
 	echo -e "\n[+] Installation completed\n"
 	sleep 1
