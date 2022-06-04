@@ -52,12 +52,9 @@ You need a few tools, but don't worry because the framework detect your OS and i
 
     aircrack-ng
     reaver
-    bully
     mdk4
-    bettercap
     macchanger
     hashcat
-    hping3
     xterm
     hcxtools
     python3
@@ -68,6 +65,7 @@ You need a few tools, but don't worry because the framework detect your OS and i
     dnsmasq
 
 ## ⭕ INSTALLATION:
+
 > Run as root
  
     git clone https://github.com/D3Ext/WEF
