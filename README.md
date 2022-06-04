@@ -86,7 +86,7 @@ You need a few tools, but don't worry because the framework detect your OS and i
 
 > Extra
 
-**If you are using bspwm, you can add this line to your bspwmrc for launching the *xterm* windows always beeing in floating mode** (for looking prettier)
+**If you are using bspwm, you can add this line to your bspwmrc for launching the *xterm* windows always beeing in floating mode** (for a prettier design)
 
     bspc rule -a XTerm state=floating
     
