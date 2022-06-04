@@ -9,7 +9,7 @@ sleep 0.1
 	mkdir /opt/wef 2>/dev/null
 	mkdir /opt/wef/main 2>/dev/null
 	mkdir /opt/wef/main/img 2>/dev/null
-	mkdir /opt/wef/main/modules 2>/dev/null
+	mkdir /opt/wef/main/bluetooth 2>/dev/null
 	mkdir /opt/wef/main/wordlists 2>/dev/null
 	mkdir /opt/wef/main/captures 2>/dev/null
 	mkdir /opt/wef/main/logs 2>/dev/null
