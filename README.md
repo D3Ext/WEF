@@ -77,11 +77,6 @@ You need a few tools, but don't worry because the framework detect your OS and i
 > Demo on a Parrot OS with Kitty terminal
 <img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo.png">
 
-## ⭕ OBJECTIVES:
-
-- Improve speed and accesibility
-- Add bluetooth attacks
-
 ### ⚪ Created by D3ext
 
 > Extra
