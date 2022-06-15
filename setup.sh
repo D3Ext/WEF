@@ -40,6 +40,7 @@ sleep 0.1
 	rm ${adir}/setup.sh 2>/dev/null
 	echo -ne "\n[+] Installing requirements"; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne "."; sleep 0.3
 	pip3 install -r requirements.txt &>/dev/null
+	apt install moreutils -y &>/dev/null
 	sleep 0.2
 	echo -e "\n[+] Installation completed, I hope you enjoy WEF\n"
 	sleep 0.5
