@@ -45,20 +45,24 @@ if [ "$(id -u)" == "0" ]; then
 	cp ${adir}/WEF /usr/bin/wef 2>/dev/null
 	cp ${adir}/WEF /opt/wef/wef 2>/dev/null
 	cp ${adir}/clear.sh /opt/wef/clear-logs.sh 2>/dev/null
+	cp ${adir}/uninstaller.sh /opt/wef/uninstaller.sh 2>/dev/null
 	chmod +x WEF 2>/dev/null
 	chmod +x /opt/wef/wef 2>/dev/null
 	chmod +x /usr/bin/wef 2>/dev/null
 	chmod +x /opt/wef/clear-logs.sh 2>/dev/null
+	chmod +x uninstaller.sh 2>/dev/null
+	chmod +x /opt/wef/uninstaller.sh 2>/dev/null
+	chmod +x ${adir}/clear.sh 2>/dev/null
 	rm ${adir}/setup.sh 2>/dev/null
 	echo -ne "\n${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] Installing requirements"; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne ".${endColour}"; sleep 0.3
 	pip3 install -r requirements.txt &>/devnull
 	apt install moreutils -y &>/dev/null
 	sleep 0.2
-	echo -e "\n${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] Installation completed, I hope you enjoy WEF.${endColour}"
-	echo -e "${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] You can execute it just by typing 'wef' in the terminal.\n${endColour}"
+	echo -e "\n\n${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] Installation completed, I hope you enjoy WEF${endColour}"
+	echo -e "${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] You can execute it just by typing 'wef' in the terminal\n${endColour}"
 	sleep 0.2
 	exit 0
 else
-	echo -e "\n${blueColour}[${endColour}${yellowColour}X${endColour}${blueColour}] Please, execute the script as root.\n${endColour}"
+	echo -e "\n${blueColour}[${endColour}${yellowColour}X${endColour}${blueColour}] Please, execute the script as root\n${endColour}"
 	exit 1
 fi
