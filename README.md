@@ -3,7 +3,7 @@
 
 # 📡 WiFi Exploitation Framework 📡
 
-A fully offensive framework to the 802.11 networks and protocol with different types of attacks for WPA and WEP, automated hash cracking and much more.
+A fully offensive framework to the 802.11 networks and protocols with different types of attacks for WPA and WEP, automated hash cracking, bluetooth hacking and much more.
 
 - I recommend you my alfa adapter: **Alfa AWUS036ACM**, which works really great with both, 2.4 and 5 Ghz
 
@@ -26,15 +26,19 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 - Michael Exploitation Attack
 - Caffe-Latte Attack
 
+- Jamming bluetooth connections
+- Reading bluetooth connections
+- Writing bluetooth connections
+
 ## ⭕ FEATURES:
 
 :ballot_box_with_check: Log generator
 
 :ballot_box_with_check: WPA/WPA2, WPS and WEP Attacks
 
-:ballot_box_with_check: Handshake Cracking
+:ballot_box_with_check: Auto handshake cracking
 
-:ballot_box_with_check: Multiple Templates for EvilTwin Attack
+:ballot_box_with_check: Multiple templates for EvilTwin attack
 
 :ballot_box_with_check: Check monitor mode
 
@@ -44,7 +48,7 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 
 :ballot_box_with_check: Auto detect requirements
 
-:black_square_button: Bluetooth Support (Jamming, Writing, Reading)
+:ballot_box_with_check: Bluetooth support (Jamming, Reading, Writing)
 
 ## ⭕ REQUIREMENTS:
 You need a few tools, but don't worry because the framework detect your OS and install the dependencies if you don't have them:
