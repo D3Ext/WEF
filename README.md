@@ -76,6 +76,8 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 ## ⭕ DEMO:
 
 > Demo on a Parrot OS with Kitty terminal
+
+> Type 'help' to view a list of different commands and utilities
 <img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo.png">
 
 ### ⚪ Created by D3ext
