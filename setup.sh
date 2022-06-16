@@ -54,7 +54,8 @@ if [ "$(id -u)" == "0" ]; then
 	pip3 install -r requirements.txt &>/devnull
 	apt install moreutils -y &>/dev/null
 	sleep 0.2
-	echo -e "\n${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] Installation completed, I hope you enjoy WEF\n${endColour}"
+	echo -e "\n${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] Installation completed, I hope you enjoy WEF.${endColour}"
+	echo -e "${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] You can execute it just by typing 'wef' in the terminal.\n${endColour}"
 	sleep 0.2
 	exit 0
 else
