@@ -19,7 +19,11 @@ sleep 0.1
 	echo 'echo "" > /opt/wef/main/templates/*/datos-privados.txt' >> /opt/wef/extra/delete-creds.sh
 	echo 'echo "" > /opt/wef/main/templates/*/usernames.txt' >> /opt/wef/extra/delete-creds.sh
 	mv templates /opt/wef/main/ 2>/dev/null
-	sleep 0.7
+	git clone https://github.com/osqzss/gps-sdr-sim &>/dev/null
+	mv gps-sdr-sim /opt/wef/extra/ 2>/dev/null
+	pushd /opt/wef/extra/gps-sdr-sim/ &>/dev/null
+	gcc gpssim.c -lm -O3 -o gps-sdr-sim 2>/dev/null
+	popd &>/dev/null
 	echo -ne "\n[+] Downloading necesary files"; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne "."; sleep 0.3
 	wget "https://github.com/praetorian-inc/Hob0Rules/raw/master/wordlists/rockyou.txt.gz" &>/dev/null
 	mv rockyou.txt.gz /opt/wef/main/wordlists/rockyou.txt.gz 2>/dev/null
