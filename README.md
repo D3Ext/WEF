@@ -25,10 +25,8 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 - Replay Attack
 - Michael Exploitation Attack
 - Caffe-Latte Attack
-
-- Jamming bluetooth connections
-- Reading bluetooth connections
-- Writing bluetooth connections
+- Jamming, Reading and Writing bluetooth connections
+- GPS Spoofing with HackRF 
 
 ## ⭕ FEATURES:
 
@@ -40,9 +38,9 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 
 :ballot_box_with_check: Multiple templates for EvilTwin attack
 
-:ballot_box_with_check: Check monitor mode
+:ballot_box_with_check: Check monitor mode and it status
 
-:ballot_box_with_check: 2Ghz and 5Ghz Attacks
+:ballot_box_with_check: 2Ghz and 5Ghz attacks
 
 :ballot_box_with_check: Custom wordlist selector
 
