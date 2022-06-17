@@ -11,9 +11,7 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 
 *\*However it's not finished and may have issues, try it at your own risk.\**
 
-Only works if your interface name change after: airmon-ng start 
-
-Actually fixing it and will be fixed soon
+If you have any issue please, contact me or create a issue
 
 ## ⭕ SUPPORTED ATTACKS:
 
