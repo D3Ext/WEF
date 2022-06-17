@@ -13,6 +13,7 @@ if [ "$(id -u)" == "0" ]; then
 	adir=$(pwd)
 	echo -e "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Preparing the setup for working properly.${endColour}"
 	sleep 0.5
+	apt install moreutils -y &>/dev/null
 	echo -ne "\n${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] Creating directories"; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne ".${endColour}"; sleep 0.3
 	mkdir /opt/wef 2>/dev/null
 	mkdir /opt/wef/main 2>/dev/null
@@ -56,7 +57,6 @@ if [ "$(id -u)" == "0" ]; then
 	rm ${adir}/setup.sh 2>/dev/null
 	echo -ne "\n${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] Installing requirements"; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne ".${endColour}"; sleep 0.3
 	pip3 install -r requirements.txt &>/devnull
-	apt install moreutils -y &>/dev/null
 	sleep 0.2
 	echo -e "\n\n${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] Installation completed, I hope you enjoy WEF${endColour}"
 	echo -e "${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] You can execute it just by typing 'wef' in the terminal\n${endColour}"
