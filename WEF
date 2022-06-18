@@ -28,7 +28,7 @@ export DEBIAN_FRONTEND=noninteractive
 # Ctrl + C
 function ctrl_c(){
 	echo -e "\n\n${blueColour}[${endColour}${yellowColour}!${endColour}${blueColour}] Exiting...\n${endColour}"
-	if [ "$(iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')" == "Monitor" ]; then
+	if [ "$(check_interface_mode)" == "monitor" ]; then
 		killall aireplay-ng 2>/dev/null ; killall airodump-ng 2>/dev/null
 		card_stop
 	fi
@@ -367,10 +367,15 @@ function chipsets_panel(){
 	echo -e "${blueColour} \tRTL8188EUS${endColour}"
 }
 
+# Check the interface mode
+function check_interface_mode(){
+	echo $(iw dev ${netCard} info | grep 'type' | awk '{print $2}')
+}
+
 # Active Card
 function active_card(){
-	status_card=$(iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')
-	if [ "$status_card" == "Monitor" ]; then
+	status_card=$(check_interface_mode)
+	if [ "$status_card" == "monitor" ]; then
 		echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] The network card mode: ${endColour}${greenColour}\t\tMonitor${endColour}"
 	else
 		echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] The network card mode: ${endColour}${grayColour}\t\tManaged${endColour}"
@@ -390,7 +395,7 @@ function mac_status(){
 	else
 		if [ "$start_counter" == "1" ]; then
 
-			if [ "$(iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')" == "Monitor" ]; then
+			if [ "$(check_interface_mode)" == "monitor" ]; then
 				actual_mac=$(macchanger -s ${netCard} | grep "Curr" | awk '{print $3}')
 				echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Your actual MAC address: ${endColour}${greenColour}\t\t$actual_mac${endColour}"
 			else
@@ -458,12 +463,12 @@ function card_setup(){
 			echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Network card configured successfully${endColour}"
 			airmon-ng start ${netCard} &>/dev/null
 			correct_counter="2"
-			if [ "$(iwconfig ${netCard}mon | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')" == "Monitor" ]; then
+			if [ "$(iwconfig ${netCard}mon | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')" == "monitor" ]; then
 				card_type="1"
 				evilCard="${netCard}"
 				netCard="${netCard}mon"
 				start_counter="1"
-			elif [ "$(iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')" == "Monitor" ]; then
+			elif [ "$(check_interface_mode)" == "monitor" ]; then
 				card_type="2"
 				evilCard="${netCard}"
 				start_counter="1"
@@ -1961,9 +1966,9 @@ if [ "$(id -u)" == "0" ]; then
 
 			if [ "$option" == "1" ] || [ "$option" == "beacon" ] || [ "$option" == "beacon flood" ] || [ "$option" == "beacon-flood" ] || [ "$option" == "beaconflood" ] || [ "$option" == "Beacon" ] || [ "$option" == "Beacon Flood" ] || [ "$option" == "b" ]; then
 				sleep 0.15
-				mon_check=$(iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')
+				mon_check=$(check_interface_mode)
 				type_of_attack="Beacon Flood Attack"
-				if [ "$mon_check" == "Monitor" ]; then
+				if [ "$mon_check" == "monitor" ]; then
 					sleep 0.15
 					beacon_flood
 				else
@@ -1975,9 +1980,9 @@ if [ "$(id -u)" == "0" ]; then
 
 			if [ "$option" == "2" ] || [ "$option" == "deauth" ] || [ "$option" == "deauthentication" ] || [ "$option" == "deauth attack" ] || [ "$option" == "deauth-attack" ] || [ "$option" == "deauthentication-attack" ] || [ "$option" == "Deauthentication" ] || [ "$option" == "d" ]; then
 				sleep 0.15
-				mon_check=$(iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')
+				mon_check=$(check_interface_mode)
 				type_of_attack="Deauthentication Attack"
-				if [ "$mon_check" == "Monitor" ]; then
+				if [ "$mon_check" == "monitor" ]; then
 					sleep 0.15
 					deauth_attack
 				else
@@ -1989,9 +1994,9 @@ if [ "$(id -u)" == "0" ]; then
 
 			if [ "$option" == "3" ] || [ "$option" == "auth" ] || [ "$option" == "authentication" ] || [ "$option" == "auth attack" ] || [ "$option" == "auth-attack" ] || [ "$option" == "authentication-attack" ] || [ "$option" == "Authentication" ] || [ "" == "a" ]; then
 				sleep 0.15
-				mon_check=$(iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')
+				mon_check=$(check_interface_mode)
                                 type_of_attack="Authentication Attack"
-				if [ "$mon_check" == "Monitor" ]; then
+				if [ "$mon_check" == "monitor" ]; then
 					sleep 0.15
 					auth_attack
 				else
@@ -2003,9 +2008,9 @@ if [ "$(id -u)" == "0" ]; then
 
 			if [ "$option" == "4" ] || [ "$option" == "pmkid" ] || [ "$option" == "pmkid attack" ] || [ "$option" == "pmkid-attack" ] || [ "$option" == "PMKID" ]; then
 				sleep 0.15
-				mon_check=$(iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')
+				mon_check=$(check_interface_mode)
 				type_of_attack="PMKID Attack"
-				if [ "$mon_check" == "Monitor" ]; then
+				if [ "$mon_check" == "monitor" ]; then
 					sleep 0.15
 					pmkid_attack
 				else
@@ -2017,9 +2022,9 @@ if [ "$(id -u)" == "0" ]; then
 
 			if [ "$option" == "5" ] || [ "$option" == "passive" ] || [ "$option" == "passive attack" ] || [ "$option" == "stealthy" ] || [ "$option" == "stealthy attack" ] || [ "$option" == "passive-attack" ] || [ "$option" == "Passive" ] || [ "$option" == "Stealthy" ]; then
 				sleep 0.15
-				mon_check=$(iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')
+				mon_check=$(check_interface_mode)
 				type_of_attack="Passive/Stealthy Attack"
-				if [ "$mon_check" == "Monitor" ]; then
+				if [ "$mon_check" == "monitor" ]; then
 					sleep 0.15
 					passive_attack
 				else
@@ -2048,8 +2053,8 @@ if [ "$(id -u)" == "0" ]; then
 
 			if [ "$option" == "8" ] || [ "$option" == "evil twin" ] || [ "$option" == "evil-twin" ] || [ "$option" == "eviltwin" ] || [ "$option" == "evil" ] || [ "$option" == "evil twin attack" ] || [ "$option" == "evil-twin-attack" ] || [ "$option" == "Evil" ] || [ "$option" == "EvilTwin" ] || [ "$option" == "Evil Twin" ] || [ "$option" == "Evil-Twin" ] || [ "$option" == "e" ]; then
 				sleep 0.15
-				mon_check=$(iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')
-				if [ "$mon_check" == "Monitor" ]; then
+				mon_check=$(check_interface_mode)
+				if [ "$mon_check" == "monitor" ]; then
 					sleep 0.15
 					evilTwin
 				else
@@ -2071,9 +2076,9 @@ if [ "$(id -u)" == "0" ]; then
 
 			if [ "$option" == "10" ] || [ "$option" == "pixie" ] || [ "$option" == "pixie dust" ] || [ "$option" == "pixie-dust" ] || [ "$option" == "Pixie" ] || [ "$option" == "Pixie Dust" ]; then
 				sleep 0.15
-				mon_check=$(iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')
+				mon_check=$(check_interface_mode)
 				type_of_attack="Pixie Dust Attack"
-				if [ "$mon_check" == "Monitor" ]; then
+				if [ "$mon_check" == "monitor" ]; then
 					sleep 0.15
 					pixie_dust
 				else
@@ -2085,9 +2090,9 @@ if [ "$(id -u)" == "0" ]; then
 
 			if [ "$option" == "11" ] || [ "$option" == "caffe" ] || [ "$option" == "caffe latte" ] || [ "$option" == "caffe-latte" ] || [ "$option" == "Caffe-Latte" ] || [ "$option" == "Caffe Latte" ] || [ "$option" == "CaffeLatte" ]; then
 				sleep 0.15
-				mon_check=$(iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')
+				mon_check=$(check_interface_mode)
 				type_of_attack="Caffe Latte Attack"
-				if [ "$mon_check" == "Monitor" ]; then
+				if [ "$mon_check" == "monitor" ]; then
 					sleep 0.15
 					caffe-latte
 			else
@@ -2099,9 +2104,9 @@ if [ "$(id -u)" == "0" ]; then
 
 			if [ "$option" == "12" ] || [ "$option" == "chopchop" ] || [ "$option" == "chopchop-atack" ] || [ "$option" == "ChopChop" ]; then
 				sleep 0.15
-				mon_check=$(iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')
+				mon_check=$(check_interface_mode)
 				type_of_attack="ChopChop Attack"
-				if [ "$mon_check" == "Monitor" ]; then
+				if [ "$mon_check" == "monitor" ]; then
 					sleep 0.15
 					chopchop
 				else
@@ -2113,9 +2118,9 @@ if [ "$(id -u)" == "0" ]; then
 
 			if [ "$option" == "13" ] || [ "$option" == "michael" ] || [ "$option" == "michael-attack" ] || [ "$option" == "Michael" ] || [ "$option" == "Michael Exploitation" ] || [ "$option" == "m" ]; then
 				sleep 0.15
-				mon_check=$(iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')
+				mon_check=$(check_interface_mode)
 				type_of_attack="Michael Shutdown Exploitation Attack"
-				if [ "$mon_check" == "Monitor" ]; then
+				if [ "$mon_check" == "monitor" ]; then
 					sleep 0.15
 					michael
 				else
@@ -2127,9 +2132,9 @@ if [ "$(id -u)" == "0" ]; then
 
 			if [ "$option" == "14" ] || [ "$option" == "replay" ] || [ "$option" == "replay-attack" ] || [ "$option" == "replay attack" ] || [ "$option" == "Replay" ] || [ "$option" == "Replay Attack" ] || [ "$option" == "r" ]; then
 				sleep 0.15
-				mon_check=$(iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')
+				mon_check=$(check_interface_mode)
 				type_of_attack="Replay Attack"
-				if [ "$mon_check" == "Monitor" ]; then
+				if [ "$mon_check" == "monitor" ]; then
 					sleep 0.15
 					replay
 				else
@@ -2142,9 +2147,9 @@ if [ "$(id -u)" == "0" ]; then
 
 			if [ "$option" == "15" ] || [ "$option" == "null" ] || [ "$option" == "nullpin" ] || [ "$option" == "null pin" ] || [ "$option" == "null-pin" ] || [ "$option" == "Null" ] || [ "$option" == "Null Pin" ] || [ "$option" == "n" ]; then
 				sleep 0.15
-				mon_check=$(iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')
+				mon_check=$(check_interface_mode)
 				type_of_attack="Null Pin Attack"
-				if [ "$mon_check" == "Monitor" ]; then
+				if [ "$mon_check" == "monitor" ]; then
 					sleep 0.15
 					null-pin
 				else
