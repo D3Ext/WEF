@@ -463,7 +463,7 @@ function card_setup(){
 			echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Network card configured successfully${endColour}"
 			airmon-ng start ${netCard} &>/dev/null
 			correct_counter="2"
-			if [ "$(iwconfig ${netCard}mon | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')" == "monitor" ]; then
+			if [ "$(iwconfig ${netCard}mon | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')" == "Monitor" ]; then
 				card_type="1"
 				evilCard="${netCard}"
 				netCard="${netCard}mon"
