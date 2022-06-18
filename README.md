@@ -50,6 +50,27 @@ If you have any issue please, contact me or create a issue
 
 :ballot_box_with_check: Bluetooth support (Jamming, Reading, Writing)
 
+## ⭕ USAGE:
+> Common usage of the framework
+
+```sh
+wef -i wlan0 # Your interface name might be different
+```
+or
+```sh
+wef --interface wlan0
+```
+
+Once the application is working, type 'help' to view more functions and useful info.
+
+If you don't want to scan APs with every attack you can do something like this:
+
+```bash
+set name my-wifi # To especify the name to attack
+set time 60 # To define the total duration of the attacks that ask for the time
+set packets 15 # To define the amount of packets that some attacks will send
+```
+
 ## ⭕ REQUIREMENTS:
 > Don't install them manually, WEF takes care of that if you don't already have them 
 
