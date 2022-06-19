@@ -98,7 +98,7 @@ set packets 15 # To define the amount of packets that some attacks will send
 
 If you are using Arch Linux you also have to install some packages:
 
-    pacman -S net-tools iw xterm
+    pacman -S base-devel libnl openssl ethtool util-linux zlib libpcap sqlite pcre hwloc cmocka net-tools wpa_supplicant tcpdump screen iw usbutils pciutils 
 
 ## ⭕ DEMO:
 
