@@ -23,8 +23,8 @@ if [ "$(id -u)" == "0" ]; then
 
 	log_progress "Executing  git clean -f & git pull" &
 	l=$!
-	git clean -f 2>/dev/null
-	git pull 2>/dev/null
+	git clean -f >>/dev/null
+	git pull >>/dev/null
 	kill $l 2>/dev/null
 	
 	# Directories structure
@@ -88,7 +88,7 @@ if [ "$(id -u)" == "0" ]; then
 
 	log_progress "Installing dependencies" &
 	l=$!
-	pip3 install -r requirements.txt  &>/devnull
+	pip3 install -r requirements.txt  &>/dev/null
 	kill $l 2>/dev/null
 	sleep 0.2
 	echo -e "\n\n${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] Installation completed, I hope you enjoy WEF${endColour}"
