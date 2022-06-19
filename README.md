@@ -96,6 +96,10 @@ set packets 15 # To define the amount of packets that some attacks will send
     cd WEF
     bash setup.sh
 
+If you are using Arch Linux you also have to install some packages:
+
+    pacman -S net-tools iw xterm
+
 ## ⭕ DEMO:
 
 > Demo on a Parrot OS with Kitty terminal
@@ -103,7 +107,7 @@ set packets 15 # To define the amount of packets that some attacks will send
 > Type 'help' to view a list of different commands and utilities
 <img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo.png">
 
-### ⚪ Created by D3ext
+### ⚪ Created by D3Ext
 
 > Extra
 
