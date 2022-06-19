@@ -21,14 +21,14 @@ if [ "$(id -u)" == "0" ]; then
 	# libbluetooth: Workaround for pybluez dependency https://github.com/themagpimag/magpi-issue61/issues/1
 	apt install libbluetooth-dev moreutils -y &>/dev/null  
 
-	log_progress "Executing  git clean -f & git pull" &
+	log_progress "Executing git clean -f & git pull" &
 	l=$!
 	git clean -f >>/dev/null
 	git pull >>/dev/null
 	kill $l 2>/dev/null
 	
 	# Directories structure
-	mkdir 	/opt/wef \
+	mkdir /opt/wef \
 			/opt/wef/main \
 			/opt/wef/main/bluetooth \
 			/opt/wef/main/wordlists \
@@ -40,26 +40,21 @@ if [ "$(id -u)" == "0" ]; then
 	if [ ! -f "/opt/wef/extra/delete-creds.sh" ]; then
 		touch /opt/wef/extra/delete-creds.sh
 		chmod +x /opt/wef/extra/delete-creds.sh
-		echo """
-		#!/bin/bash
-		echo "" > /opt/wef/main/templates/*/datos-privados.txt
-		echo 'echo "" > /opt/wef/main/templates/*/usernames.txt""" >> /opt/wef/extra/delete-creds.sh
+		echo "#!/bin/bash" >> /opt/wef/extra/delete-creds.sh
+		echo 'echo "" > /opt/wef/main/templates/*/datos-privados.txt' >> /opt/wef/extra/delete-creds.sh
+		echo 'echo "" > /opt/wef/main/templates/*/usernames.txt' >> /opt/wef/extra/delete-creds.sh
 	fi
 	cp templates/* /opt/wef/main/templates -r 2>/dev/null
 
 	if [ ! -d "/opt/wef/extra/gps-sdr-sim" ]; then
-		log_progress "Installing gps module" &
-		l=$!
 		git clone https://github.com/osqzss/gps-sdr-sim &>/dev/null
 		mv gps-sdr-sim /opt/wef/extra/ 2>/dev/null
 		pushd /opt/wef/extra/gps-sdr-sim/ &>/dev/null
 		gcc gpssim.c -lm -O3 -o gps-sdr-sim 2>/dev/null
-		kill $l 2>/dev/null
 	fi
 	
 	popd &>/dev/null
 
-	
 	if [ ! -f "/opt/wef/main/wordlists/rockyou.txt" ]; then
 		log_progress "Downloading necesary files, this will take some time" &
 		l=$!
@@ -91,8 +86,8 @@ if [ "$(id -u)" == "0" ]; then
 	pip3 install -r requirements.txt  &>/dev/null
 	kill $l 2>/dev/null
 	sleep 0.2
-	echo -e "\n\n${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] Installation completed, I hope you enjoy WEF${endColour}"
-	echo -e "${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] You can execute it just by typing 'wef' in the terminal\n${endColour}"
+	echo -e "\n\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Installation completed, I hope you enjoy WEF${endColour}"
+	echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] You can execute it just by typing 'wef' in the terminal\n${endColour}"
 	sleep 0.2
 	exit 0
 else
