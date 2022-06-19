@@ -218,7 +218,7 @@ function rand_tips(){
 
 # Dependencies Function
 function dependencies(){
-	programs=(macchanger aircrack-ng reaver mdk4 hashcat hcxdumptool xterm bettercap dnsmasq hostapd php crackle)
+	programs=(macchanger aircrack-ng reaver mdk4 hashcat hcxdumptool xterm dnsmasq hostapd php crackle pixiewps)
 	system=$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')
 	if [ "$system"  == "Parrot" ]; then
 		for program in "${programs[@]}"; do
