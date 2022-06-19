@@ -8,41 +8,72 @@ blueColour="\e[0;34m\033[1m"
 yellowColour="\e[0;33m\033[1m"
 grayColour="\e[0;37m\033[1m"
 
+function log_progress(  ) {
+	echo -ne "\n${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] $1"; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne ".${endColour}"; sleep 0.3
+}
+
+# Install/update if necessary
 if [ "$(id -u)" == "0" ]; then
 	sleep 0.1
 	adir=$(pwd)
 	echo -e "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Preparing the setup for working properly.${endColour}"
 	sleep 0.5
-	apt install moreutils -y &>/dev/null
-	echo -ne "\n${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] Creating directories"; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne ".${endColour}"; sleep 0.3
-	mkdir /opt/wef 2>/dev/null
-	mkdir /opt/wef/main 2>/dev/null
-	mkdir /opt/wef/main/bluetooth 2>/dev/null
-	mkdir /opt/wef/main/wordlists 2>/dev/null
-	mkdir /opt/wef/main/captures 2>/dev/null
-	mkdir /opt/wef/main/logs 2>/dev/null
-	mkdir /opt/wef/extra 2>/dev/null
-	touch /opt/wef/extra/delete-creds.sh
-	chmod +x /opt/wef/extra/delete-creds.sh
-	echo '#!/bin/bash' > /opt/wef/extra/delete-creds.sh
-	echo 'echo "" > /opt/wef/main/templates/*/datos-privados.txt' >> /opt/wef/extra/delete-creds.sh
-	echo 'echo "" > /opt/wef/main/templates/*/usernames.txt' >> /opt/wef/extra/delete-creds.sh
-	mv templates /opt/wef/main/ 2>/dev/null
-	git clone https://github.com/osqzss/gps-sdr-sim &>/dev/null
-	mv gps-sdr-sim /opt/wef/extra/ 2>/dev/null
-	pushd /opt/wef/extra/gps-sdr-sim/ &>/dev/null
-	gcc gpssim.c -lm -O3 -o gps-sdr-sim 2>/dev/null
+	# libbluetooth: Workaround for pybluez dependency https://github.com/themagpimag/magpi-issue61/issues/1
+	apt install libbluetooth-dev moreutils -y &>/dev/null  
+
+	log_progress "Executing  git clean -f & git pull" &
+	l=$!
+	git clean -f 2>/dev/null
+	git pull 2>/dev/null
+	kill $l 2>/dev/null
+	
+	# Directories structure
+	mkdir 	/opt/wef \
+			/opt/wef/main \
+			/opt/wef/main/bluetooth \
+			/opt/wef/main/wordlists \
+			/opt/wef/main/captures \
+			/opt/wef/main/templates \
+			/opt/wef/main/logs \
+			/opt/wef/extra 2>/dev/null
+
+	if [ ! -f "/opt/wef/extra/delete-creds.sh" ]; then
+		touch /opt/wef/extra/delete-creds.sh
+		chmod +x /opt/wef/extra/delete-creds.sh
+		echo """
+		#!/bin/bash
+		echo "" > /opt/wef/main/templates/*/datos-privados.txt
+		echo 'echo "" > /opt/wef/main/templates/*/usernames.txt""" >> /opt/wef/extra/delete-creds.sh
+	fi
+	cp templates/* /opt/wef/main/templates -r 2>/dev/null
+
+	if [ ! -d "/opt/wef/extra/gps-sdr-sim" ]; then
+		log_progress "Installing gps module" &
+		l=$!
+		git clone https://github.com/osqzss/gps-sdr-sim &>/dev/null
+		mv gps-sdr-sim /opt/wef/extra/ 2>/dev/null
+		pushd /opt/wef/extra/gps-sdr-sim/ &>/dev/null
+		gcc gpssim.c -lm -O3 -o gps-sdr-sim 2>/dev/null
+		kill $l 2>/dev/null
+	fi
+	
 	popd &>/dev/null
-	echo -ne "\n${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] Downloading necesary files"; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne ".${endColour}"; sleep 0.3
-	wget "https://github.com/praetorian-inc/Hob0Rules/raw/master/wordlists/rockyou.txt.gz" &>/dev/null
-	mv rockyou.txt.gz /opt/wef/main/wordlists/rockyou.txt.gz 2>/dev/null
-	gunzip /opt/wef/main/wordlists/rockyou.txt.gz 2>/dev/null
-	wget "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/WiFi-WPA/probable-v2-wpa-top4800.txt" &>/dev/null
-	mv probable-v2-wpa-top4800.txt /opt/wef/main/wordlists/ 2>/dev/null
-	wget "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/darkweb2017-top10000.txt" &>/dev/null
-	mv darkweb2017-top10000.txt /opt/wef/main/wordlists/ 2>/dev/null
-	echo -ne "\n${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] Giving permissions to different files"; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne ".${endColour}"; sleep 0.3
-	sleep 0.4
+
+	
+	if [ ! -f "/opt/wef/main/wordlists/rockyou.txt" ]; then
+		log_progress "Downloading necesary files, this will take some time" &
+		l=$!
+		wget "https://github.com/praetorian-inc/Hob0Rules/raw/master/wordlists/rockyou.txt.gz" &>/dev/null
+		mv rockyou.txt.gz /opt/wef/main/wordlists/rockyou.txt.gz 2>/dev/null
+		gunzip /opt/wef/main/wordlists/rockyou.txt.gz 2>/dev/null
+		wget "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/WiFi-WPA/probable-v2-wpa-top4800.txt" &>/dev/null
+		mv probable-v2-wpa-top4800.txt /opt/wef/main/wordlists/ 2>/dev/null
+		wget "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/darkweb2017-top10000.txt" &>/dev/null
+		mv darkweb2017-top10000.txt /opt/wef/main/wordlists/ 2>/dev/null
+		kill $l 2>/dev/null
+	fi
+
+	# Giving permissions to files
 	cp ${adir}/WEF /usr/bin/wef 2>/dev/null
 	cp ${adir}/WEF /opt/wef/wef 2>/dev/null
 	cp ${adir}/clear.sh /opt/wef/clear-logs.sh 2>/dev/null
@@ -54,9 +85,11 @@ if [ "$(id -u)" == "0" ]; then
 	chmod +x uninstaller.sh 2>/dev/null
 	chmod +x /opt/wef/uninstaller.sh 2>/dev/null
 	chmod +x ${adir}/clear.sh 2>/dev/null
-	rm ${adir}/setup.sh 2>/dev/null
-	echo -ne "\n${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] Installing requirements"; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne ".${endColour}"; sleep 0.3
-	pip3 install -r requirements.txt &>/devnull
+
+	log_progress "Installing dependencies" &
+	l=$!
+	pip3 install -r requirements.txt  &>/devnull
+	kill $l 2>/dev/null
 	sleep 0.2
 	echo -e "\n\n${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] Installation completed, I hope you enjoy WEF${endColour}"
 	echo -e "${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] You can execute it just by typing 'wef' in the terminal\n${endColour}"
