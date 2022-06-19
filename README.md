@@ -81,6 +81,7 @@ set packets 15 # To define the amount of packets that some attacks will send
     hashcat
     xterm
     hcxtools
+    pixiewps
     python3
     btlejack
     crackle
@@ -90,21 +91,12 @@ set packets 15 # To define the amount of packets that some attacks will send
 
 ## ⭕ INSTALLATION:
 
-> Run as root
- 
-    git clone https://github.com/D3Ext/WEF
-    cd WEF
-    bash setup.sh
-
-If you are using Arch Linux you also have to install some packages:
-
-    pacman -S base-devel libnl openssl ethtool util-linux zlib libpcap sqlite pcre hwloc cmocka net-tools wpa_supplicant tcpdump screen iw usbutils pciutils 
+Checkout the [Wiki](https://github.com/D3Ext/WEF/wiki/Installation)
 
 ## ⭕ DEMO:
 
 > Demo on a Parrot OS with Kitty terminal
 
-> Type 'help' to view a list of different commands and utilities
 <img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo.png">
 
 ### ⚪ Created by D3Ext
