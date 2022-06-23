@@ -21,11 +21,8 @@ if [ "$(id -u)" == "0" ]; then
 	# libbluetooth: Workaround for pybluez dependency https://github.com/themagpimag/magpi-issue61/issues/1
 	apt install libbluetooth-dev moreutils -y &>/dev/null  
 
-	log_progress "Executing git clean -f & git pull" &
-	l=$!
 	git clean -f >>/dev/null
 	git pull >>/dev/null
-	kill $l 2>/dev/null
 	
 	# Directories structure
 	mkdir /opt/wef \
@@ -44,17 +41,19 @@ if [ "$(id -u)" == "0" ]; then
 		echo 'echo "" > /opt/wef/main/templates/*/datos-privados.txt' >> /opt/wef/extra/delete-creds.sh
 		echo 'echo "" > /opt/wef/main/templates/*/usernames.txt' >> /opt/wef/extra/delete-creds.sh
 	fi
-	cp templates/* /opt/wef/main/templates -r 2>/dev/null
-
+	
+	if [ ! -d "/opt/wef/main/templates" ]; then
+		cp templates/* /opt/wef/main/templates -r 2>/dev/null
+	fi
+	
 	if [ ! -d "/opt/wef/extra/gps-sdr-sim" ]; then
 		git clone https://github.com/osqzss/gps-sdr-sim &>/dev/null
 		mv gps-sdr-sim /opt/wef/extra/ 2>/dev/null
 		pushd /opt/wef/extra/gps-sdr-sim/ &>/dev/null
 		gcc gpssim.c -lm -O3 -o gps-sdr-sim 2>/dev/null
+		popd &>/dev/null
 	fi
 	
-	popd &>/dev/null
-
 	if [ ! -f "/opt/wef/main/wordlists/rockyou.txt" ]; then
 		log_progress "Downloading necesary files, this will take some time" &
 		l=$!
