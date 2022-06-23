@@ -16,14 +16,16 @@ function log_progress(  ) {
 if [ "$(id -u)" == "0" ]; then
 	sleep 0.1
 	adir=$(pwd)
+	cd /
 	echo -e "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Preparing the setup for working properly.${endColour}"
-	sleep 0.5
+	git_dir=$(timeout 5 bash -c "dirname $(find \-name .wef.config -type f 2>/dev/null | head -n 1)")
 	# libbluetooth: Workaround for pybluez dependency https://github.com/themagpimag/magpi-issue61/issues/1
-	apt install libbluetooth-dev moreutils -y &>/dev/null  
+	apt install libbluetooth-dev moreutils -y &>/dev/null
 
+	cd ${git_dir}
 	git clean -f >>/dev/null
 	git pull >>/dev/null
-	
+
 	# Directories structure
 	mkdir /opt/wef \
 			/opt/wef/main \
@@ -68,23 +70,27 @@ if [ "$(id -u)" == "0" ]; then
 	fi
 
 	# Giving permissions to files
-	cp ${adir}/WEF /usr/bin/wef 2>/dev/null
-	cp ${adir}/WEF /opt/wef/wef 2>/dev/null
-	cp ${adir}/clear.sh /opt/wef/clear-logs.sh 2>/dev/null
-	cp ${adir}/uninstaller.sh /opt/wef/uninstaller.sh 2>/dev/null
+	cp WEF /usr/bin/wef 2>/dev/null
+	cp WEF /opt/wef/wef 2>/dev/null
+	cp clear.sh /opt/wef/clear-logs.sh 2>/dev/null
+	cp uninstaller.sh /opt/wef/uninstaller.sh 2>/dev/null
+	cp setup.sh /opt/wef/update.sh 2>/dev/null
 	chmod +x WEF 2>/dev/null
 	chmod +x /opt/wef/wef 2>/dev/null
 	chmod +x /usr/bin/wef 2>/dev/null
 	chmod +x /opt/wef/clear-logs.sh 2>/dev/null
 	chmod +x uninstaller.sh 2>/dev/null
+	chmod +x /opt/wef/update.sh 2>/dev/null
 	chmod +x /opt/wef/uninstaller.sh 2>/dev/null
-	chmod +x ${adir}/clear.sh 2>/dev/null
+	chmod +x clear.sh 2>/dev/null
+	chmod +x setup.sh 2>/dev/null
 
 	log_progress "Installing dependencies" &
 	l=$!
 	pip3 install -r requirements.txt  &>/dev/null
 	kill $l 2>/dev/null
 	sleep 0.2
+	cd ${adir}
 	echo -e "\n\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Installation completed, I hope you enjoy WEF${endColour}"
 	echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] You can execute it just by typing 'wef' in the terminal\n${endColour}"
 	sleep 0.2
