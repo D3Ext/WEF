@@ -28,7 +28,7 @@ if [ "$(id -u)" == "0" ]; then
 
 	# Directories structure
 	log_progress "Creating directories structure" &
-	1=!$
+	1=$!
 	mkdir /opt/wef \
 			/opt/wef/main \
 			/opt/wef/main/bluetooth \
@@ -41,7 +41,7 @@ if [ "$(id -u)" == "0" ]; then
 	sleep 0.3
 
 	log_progress "Installing modules and other things" &
-	1=!$
+	1=$!
 	if [ ! -f "/opt/wef/extra/delete-creds.sh" ]; then
 		touch /opt/wef/extra/delete-creds.sh
 		chmod +x /opt/wef/extra/delete-creds.sh
