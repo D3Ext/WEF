@@ -370,9 +370,9 @@ function chipsets_panel(){
 # Check the interface mode
 function check_interface_mode(){
 	if [ "$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')" == "Arch" ]; then
-		iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=":" | sed -e 's/\(.*\)/\L\1/'
+		iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=":" | sed -e 's/\(.*\)/\L\1/' 2>/dev/null
 	else
-		iw dev ${netCard} info | grep 'type' | awk '{print $2}'
+		iw dev ${netCard} info 2>/dev/null | grep 'type' | awk '{print $2}'
 	fi
 }
 
