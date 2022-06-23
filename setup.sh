@@ -27,6 +27,8 @@ if [ "$(id -u)" == "0" ]; then
 	git pull >>/dev/null
 
 	# Directories structure
+	log_progress "Creating directories structure" &
+	1=!$
 	mkdir /opt/wef \
 			/opt/wef/main \
 			/opt/wef/main/bluetooth \
@@ -35,7 +37,11 @@ if [ "$(id -u)" == "0" ]; then
 			/opt/wef/main/templates \
 			/opt/wef/main/logs \
 			/opt/wef/extra 2>/dev/null
+	kill $l 2>/dev/null
+	sleep 0.3
 
+	log_progress "Installing modules and other things" &
+	1=!$
 	if [ ! -f "/opt/wef/extra/delete-creds.sh" ]; then
 		touch /opt/wef/extra/delete-creds.sh
 		chmod +x /opt/wef/extra/delete-creds.sh
@@ -55,6 +61,7 @@ if [ "$(id -u)" == "0" ]; then
 		gcc gpssim.c -lm -O3 -o gps-sdr-sim 2>/dev/null
 		popd &>/dev/null
 	fi
+	kill $1 2>/dev/null
 	
 	if [ ! -f "/opt/wef/main/wordlists/rockyou.txt" ]; then
 		log_progress "Downloading necesary files, this will take some time" &
