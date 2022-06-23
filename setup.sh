@@ -37,7 +37,7 @@ if [ "$(id -u)" == "0" ]; then
 			/opt/wef/main/templates \
 			/opt/wef/main/logs \
 			/opt/wef/extra 2>/dev/null
-	kill $l 2>/dev/null
+	kill $1 2>/dev/null
 	sleep 0.3
 
 	log_progress "Installing modules and other things" &
