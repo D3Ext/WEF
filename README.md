@@ -61,7 +61,7 @@ or
 wef --interface wlan0
 ```
 
-Once the application is working, type 'help' to view more functions and useful info.
+Once the application is running, type `help` to view more functions and useful info.
 
 If you don't want to scan APs with every attack you can do something like this:
 
