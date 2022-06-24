@@ -82,6 +82,7 @@ if [ "$(id -u)" == "0" ]; then
 	cp clear.sh /opt/wef/clear-logs.sh 2>/dev/null
 	cp uninstaller.sh /opt/wef/uninstaller.sh 2>/dev/null
 	cp setup.sh /opt/wef/update.sh 2>/dev/null
+	cp -r templates /opt/wef/main 2>/dev/null
 	chmod +x WEF 2>/dev/null
 	chmod +x /opt/wef/wef 2>/dev/null
 	chmod +x /usr/bin/wef 2>/dev/null
