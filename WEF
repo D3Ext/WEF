@@ -759,18 +759,18 @@ function deauth_attack(){
 	if [ "$(echo $?)" == "0" ]; then
 		if [ "$name_counter" != "1" ]; then
 			echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-			timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+			timeout 26 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
 		else
 			echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Target AP:${endColour}${yellowColour} ${name}${endColour}"
 		fi
 
 	elif [ "${name}" ]; then
 		echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-		timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+		timeout 26 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
 		echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Target AP:${endColour}${yellowColour} ${name}${endColour}"
 	else
 		echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-		timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+		timeout 26 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
 		echo
 		ask_data2
 	fi
@@ -830,7 +830,7 @@ function inhibitor(){
 		channel_to_inhibite=$(cat scan_output | grep -i "${ap_to_inhibite}$" | head -n 1 | awk '{print $2}')
 		sleep 0.2
 	else
-		channel_to_inhibite=$(timeout 14 bash -c "wash -2 -5 -a -i ${netCard}" | grep -i "${ap_to_inhibite}$" | head -n 1 | awk '{print $2}')
+		channel_to_inhibite=$(timeout 14 bash -c "wash -2 -5 -s -a -i ${netCard}" | grep -i "${ap_to_inhibite}$" | head -n 1 | awk '{print $2}')
 	fi
 
 	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Starting inhibition${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"
@@ -857,18 +857,18 @@ function auth_attack(){
 	if [ "$(echo $?)" == "0" ]; then
 		if [ "$name_counter" != "1" ]; then
 			echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-			timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+			timeout 26 bash -c "wash -2 -5 -s -a -i ${netCard}" | tee scan_output
 		else
 			echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Target AP:${endColour}${yellowColour} ${name}${endColour}"
 		fi
 
 	elif [ "${name}" ]; then
 		echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-		timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+		timeout 26 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
 		echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Target AP:${endColour}${yellowColour} ${name}${endColour}"
 	else
 		echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-		timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+		timeout 26 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
 		echo
 		ask_data2
 	fi
@@ -924,19 +924,19 @@ function beacon_flood(){
 	if [ "$(echo $?)" == "0" ]; then
 		if [ "$name_counter" != "1" ]; then
 		echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-		timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+		timeout 26 bash -c "wash -2 -5 -s -a -i ${netCard}" | tee scan_output
 		else
 			echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Target AP: ${endColour}${yellowColour}${name}${endColour}"
 		fi
 
 	elif [ "${name}" ]; then
 		echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-		timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+		timeout 26 bash -c "wash -2 -5 -s -a -i ${netCard}" | tee scan_output
 		echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Target AP:${endColour}${yellowColour} ${name}${endColour}"
 
 	else
 		echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-		timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+		timeout 26 bash -c "wash -2 -5 -s -a -i ${netCard}" | tee scan_output
 		echo
 		ask_data2
 	fi
@@ -1007,18 +1007,18 @@ function pmkid_attack(){
 	if [ "$(echo $?)" == "0" ]; then
 		if [ "$name_counter" != "1" ]; then
 			echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-			timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+			timeout 26 bash -c "wash -2 -5 -s -a -i ${netCard}" | tee scan_output
 		else
 			echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Target AP:${endColour}${yellowColour} ${name}${endColour}"
 		fi
 
 	elif [ "${name}" ]; then
 		echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-		timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+		timeout 26 bash -c "wash -2 -5 -s -a -i ${netCard}" | tee scan_output
 		echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Target AP:${endColour}${yellowColour} ${name}${endColour}"
 	else
 		echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-		timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+		timeout 26 bash -c "wash -2 -5 -s -a -i ${netCard}" | tee scan_output
 		echo
 		ask_data2
 	fi
@@ -1035,7 +1035,7 @@ function pmkid_attack(){
 
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Starting PMKID attack...${endColour}"
 
-	mkdir "/opt/wef/main/captures/${name}"
+	mkdir "/opt/wef/main/captures/${name}" 2>/dev/null
 	actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
 
 	echo
@@ -1076,18 +1076,18 @@ function passive_attack(){
 	if [ "$(echo $?)" == "0" ]; then
 		if [ "$name_counter" != "1" ]; then
 			echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-			timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+			timeout 27 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
 		else
 			echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Target AP:${endColour}${yellowColour} ${name}${endColour}"
 		fi
 
 	elif [ "${name}" ]; then
 		echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-		timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+		timeout 26 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
 		echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Target AP:${endColour}${yellowColour} ${name}${endColour}"
 	else
 		echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-		timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+		timeout 26 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
 		echo
 		ask_data2
 	fi
@@ -1159,7 +1159,7 @@ function michael(){
 	sleep 0.3
 
 	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-	timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+	timeout 26 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
 
 	echo
 	ask_data2
@@ -1193,7 +1193,7 @@ function pixie_dust(){
 	sleep 0.3
 
 	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-	timeout 26 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+	timeout 28 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
 
 	echo
 	ask_data2
@@ -1227,7 +1227,7 @@ function null-pin(){
 	sleep 0.3
 
 	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-	timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+	timeout 26 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
 
 	echo
 	ask_data2
@@ -1255,7 +1255,7 @@ function caffe-latte(){
 	sleep 0.3
 
 	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-	timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+	timeout 26 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
 	sleep 0.1
 
 	echo
@@ -1293,7 +1293,7 @@ function chopchop(){
 	sleep 0.3
 
 	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-	timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+	timeout 26 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
 	sleep 0.1
 
 	echo
@@ -1326,7 +1326,7 @@ function replay(){
 	sleep 0.3
 
 	echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-	timeout 22 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+	timeout 26 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
 	sleep 0.1
 
 	echo
@@ -1638,7 +1638,7 @@ function listHelp(){
 # AP Scan
 function ap_scan(){
 	echo -e ""
-	timeout 20 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+	timeout 25 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
 	sleep 0.2
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Scan completed${endColour}"
 }
