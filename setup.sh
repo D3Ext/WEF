@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# ---------------
+#
+# WEF setup/update file
+#
+# ---------------
+
 # Colors
 greenColour="\e[0;32m\033[1m"
 endColour="\033[0m\e[0m"
@@ -28,20 +34,22 @@ if [ "$(id -u)" == "0" ]; then
 	sleep 0.2
 
 	# Directories structure
-	log_progress "Creating directories structure" &
-	l=$!
-	mkdir /opt/wef \
-			/opt/wef/main \
-			/opt/wef/main/bluetooth \
-			/opt/wef/main/wordlists \
-			/opt/wef/main/captures \
-			/opt/wef/main/templates \
-			/opt/wef/main/logs \
-			/opt/wef/extra 2>/dev/null
-	kill $l 2>/dev/null
-	sleep 0.4
+	if [ ! -d "/opt/wef/main" ]; then
+		log_progress "Creating directories structure" &
+		l=$!
+		mkdir /opt/wef \
+				/opt/wef/main \
+				/opt/wef/main/bluetooth \
+				/opt/wef/main/wordlists \
+				/opt/wef/main/captures \
+				/opt/wef/main/templates \
+				/opt/wef/main/logs \
+				/opt/wef/extra 2>/dev/null
+		kill $l 2>/dev/null
+		sleep 0.4
+	fi
 
-	log_progress "Installing modules and other things" &
+	log_progress "Installing/updating modules and other things" &
 	l=$!
 	if [ ! -f "/opt/wef/extra/delete-creds.sh" ]; then
 		touch /opt/wef/extra/delete-creds.sh
@@ -94,13 +102,17 @@ if [ "$(id -u)" == "0" ]; then
 	chmod +x clear.sh 2>/dev/null
 	chmod +x setup.sh 2>/dev/null
 
-	log_progress "Installing dependencies" &
-	l=$!
-	pip3 install -r requirements.txt  &>/dev/null
-	kill $l 2>/dev/null
+	which btlejack &>/dev/null
+	if [ "$(echo $?)" != "0" ]; then
+		log_progress "Installing some dependencies" &
+		l=$!
+		pip3 install -r requirements.txt  &>/dev/null
+		kill $l 2>/dev/null
+	fi
+
 	sleep 0.2
 	cd ${adir}
-	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Installation completed, I hope you enjoy WEF${endColour}"
+	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Installation/update completed, I hope you enjoy WEF${endColour}"
 	echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] You can execute it just by typing 'wef' in the terminal\n${endColour}"
 	sleep 0.2
 	exit 0
