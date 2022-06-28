@@ -18,13 +18,14 @@ if [ "$(id -u)" == "0" ]; then
 	adir=$(pwd)
 	cd /
 	echo -e "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Preparing the setup for working properly.${endColour}"
-	git_dir=$(timeout 5 bash -c "dirname $(find \-name .wef.config -type f 2>/dev/null | head -n 1)")
+	git_dir=$(timeout 10 bash -c "dirname $(find \-name .wef.config -type f 2>/dev/null | head -n 1)")
 	# libbluetooth: Workaround for pybluez dependency https://github.com/themagpimag/magpi-issue61/issues/1
 	apt install libbluetooth-dev moreutils -y &>/dev/null
 
 	cd ${git_dir}
-	git clean -f >>/dev/null
-	git pull >>/dev/null
+	git clean -f 2>/dev/null
+	git pull 2>/dev/null
+	sleep 0.2
 
 	# Directories structure
 	log_progress "Creating directories structure" &
@@ -38,7 +39,7 @@ if [ "$(id -u)" == "0" ]; then
 			/opt/wef/main/logs \
 			/opt/wef/extra 2>/dev/null
 	kill $l 2>/dev/null
-	sleep 0.3
+	sleep 0.4
 
 	log_progress "Installing modules and other things" &
 	l=$!
@@ -49,11 +50,11 @@ if [ "$(id -u)" == "0" ]; then
 		echo 'echo "" > /opt/wef/main/templates/*/datos-privados.txt' >> /opt/wef/extra/delete-creds.sh
 		echo 'echo "" > /opt/wef/main/templates/*/usernames.txt' >> /opt/wef/extra/delete-creds.sh
 	fi
-	
+
 	if [ ! -d "/opt/wef/main/templates" ]; then
 		cp templates/* /opt/wef/main/templates -r 2>/dev/null
 	fi
-	
+
 	if [ ! -d "/opt/wef/extra/gps-sdr-sim" ]; then
 		git clone https://github.com/osqzss/gps-sdr-sim &>/dev/null
 		mv gps-sdr-sim /opt/wef/extra/ 2>/dev/null
@@ -62,7 +63,7 @@ if [ "$(id -u)" == "0" ]; then
 		popd &>/dev/null
 	fi
 	kill $l 2>/dev/null
-	
+
 	if [ ! -f "/opt/wef/main/wordlists/rockyou.txt" ]; then
 		log_progress "Downloading necesary files, this will take some time" &
 		l=$!
@@ -99,7 +100,7 @@ if [ "$(id -u)" == "0" ]; then
 	kill $l 2>/dev/null
 	sleep 0.2
 	cd ${adir}
-	echo -e "\n\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Installation completed, I hope you enjoy WEF${endColour}"
+	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Installation completed, I hope you enjoy WEF${endColour}"
 	echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] You can execute it just by typing 'wef' in the terminal\n${endColour}"
 	sleep 0.2
 	exit 0
