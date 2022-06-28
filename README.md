@@ -18,7 +18,7 @@ If you have any issue please, contact me or create a issue
 - Deauthentication Attack
 - Authentication Attack
 - Beacon Flood Attack
-- PKMID Attack
+- PMKID Attack
 - EvilTwin Attack 
 - Passive/Stealthy Attack
 - Pixie Dust Attack
