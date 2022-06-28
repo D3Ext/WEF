@@ -1035,7 +1035,7 @@ function pmkid_attack(){
 
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Starting PMKID attack...${endColour}"
 
-	mkdir "/opt/wef/main/captures/$name"
+	mkdir "/opt/wef/main/captures/${name}"
 	actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
 
 	echo
@@ -1047,8 +1047,8 @@ function pmkid_attack(){
 	rm "/opt/wef/main/captures/${name}/pmkid_capture" 2>/dev/null
 	cp "${dir}/pmkid_capture" "/opt/wef/main/captures/${name}/" 2>/dev/null
 	hcxpcaptool -z pmkid_hashes ${dir}/pmkid_capture &>/dev/null
-	rm "${dir}/pmkid_capture" #2>/dev/null
-	cp "${dir}/pmkid_hashes" "/opt/wef/main/captures/${name}/" #2>/dev/null
+	rm "${dir}/pmkid_capture" 2>/dev/null
+	cp "${dir}/pmkid_hashes" "/opt/wef/main/captures/${name}/" 2>/dev/null
 
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] PMKID Attack completed${endColour}"
 	sleep 0.3
@@ -1061,6 +1061,7 @@ function pmkid_attack(){
 	if [ "$crack_option" == "y" ] || [ "$crack_option" == "yes" ]; then
 		pmkid_crack
 	else
+		name=""
 		keep_exit
 	fi
 }
