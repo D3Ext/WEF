@@ -11,7 +11,7 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 
 *\*However it's not finished and may have issues, try it at your own risk.\**
 
-If you have any issue please, contact me or create a issue
+* If you have any doubt, please contact me or create a issue *
 
 ## ⭕ SUPPORTED ATTACKS:
 
@@ -65,7 +65,7 @@ Once the application is running, type `help` to view more functions and useful i
 
 If you don't want to scan APs with every attack you can do something like this:
 
-```bash
+```sh
 set name my-wifi # To especify the name to attack
 set time 60 # To define the total duration of the attacks that ask for the time
 set packets 15 # To define the amount of packets that some attacks will send
