@@ -3,7 +3,7 @@
 
 # 📡 WiFi Exploitation Framework 📡
 
-A fully offensive framework to the 802.11 networks and protocols with different types of attacks for WPA and WEP, automated hash cracking, bluetooth hacking and much more.
+A fully offensive framework to the 802.11 networks and protocols with different types of attacks for WPA/WPA2 and WEP, automated hash cracking, bluetooth hacking and much more.
 
 - I recommend you my alfa adapter: **Alfa AWUS036ACM**, which works really great with both, 2.4 and 5 Ghz
 
