@@ -15,20 +15,33 @@ Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubun
 
 ## ⭕ SUPPORTED ATTACKS:
 
-- Deauthentication Attack
-- Authentication Attack
-- Beacon Flood Attack
-- PMKID Attack
-- EvilTwin Attack 
-- Passive/Stealthy Attack
-- Pixie Dust Attack
-- Null Pin Attack
-- Chopchop Attack
-- Replay Attack
-- Michael Exploitation Attack
-- Caffe-Latte Attack
-- Jamming, Reading and Writing bluetooth connections
-- GPS Spoofing with HackRF 
+:ballot_box_with_check: Deauthentication Attack
+
+:ballot_box_with_check: Authentication Attack
+
+:ballot_box_with_check: Beacon Flood Attack
+
+:ballot_box_with_check: PMKID Attack
+
+:ballot_box_with_check: EvilTwin Attack 
+
+:ballot_box_with_check: Passive/Stealthy Attack
+
+:ballot_box_with_check: Pixie Dust Attack
+
+:ballot_box_with_check: Null Pin Attack
+
+:ballot_box_with_check: Chopchop Attack
+
+:ballot_box_with_check: Replay Attack
+
+:ballot_box_with_check: Michael Exploitation Attack
+
+:ballot_box_with_check: Caffe-Latte Attack
+
+:ballot_box_with_check: Jamming, Reading and Writing bluetooth connections
+
+:ballot_box_with_check: GPS Spoofing with HackRF 
 
 ## ⭕ FEATURES:
 
