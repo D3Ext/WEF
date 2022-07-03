@@ -486,11 +486,11 @@ function card_stop(){
 	if [ "$card_type" == "1" ]; then
 		airmon-ng stop ${netCard} &>/dev/null
 		ifconfig ${netCard} up &>/dev/null
-		echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Monitor mode stoped${endColour}\n"
+		echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Monitor mode stopped${endColour}\n"
 	elif [ "$card_type" == "2" ]; then
 		airmon-ng stop ${netCard} &>/dev/null
 		ifconfig ${netCard} up &>/dev/null
-		echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Monitor mode stoped${endColour}\n"
+		echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Monitor mode stopped${endColour}\n"
 	fi
 }
 
