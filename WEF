@@ -2036,6 +2036,7 @@ parameters=("$1" "$2" "$3" "$4")
 # Main Wifi Function
 if [ "$(id -u)" == "0" ]; then
 
+	program_version="1.0"
 	while getopts ":i:" arg; do
 		case $arg in
 			i) netCard=$OPTARG;
@@ -2043,10 +2044,16 @@ if [ "$(id -u)" == "0" ]; then
 	done
 
 	for parameter in ${parameters[@]}; do
-		if [ "$parameter" == "-v" ] || [ "$parameter" == "--version" ]; then
-			echo -e "\nwef v1.0 for linux (https://github.com/D3Ext/WEF)"
+		if [ "$parameter" == "--version" ]; then
+			echo -e "\nwef v${program_version} for linux (https://github.com/D3Ext/WEF)"
 			echo -e "Created by D3Ext <d3ext@protonmail.com>\n"
 			exit 0
+		fi
+		
+		if [ "$parameter" == "-v" ] || [ "$parameter" == "--verbose" ]; then
+			verbose="1"
+		else
+			verbose="0"
 		fi
 	done
 
@@ -2090,9 +2097,7 @@ if [ "$(id -u)" == "0" ]; then
 
 		ifconfig ${netCard} up &>/dev/null
 
-		program_version="1.0.0"
 		time_counter="0"
-		verbose="0"
 		while true; do
 			trap ctrl_c INT
 			module="wifi"
@@ -2570,7 +2575,7 @@ if [ "$(id -u)" == "0" ]; then
 
 			if [ "$option" == "version" ]; then
 				correct_counter="3"
-				echo -e "\nwef v1.0 for linux (https://github.com/D3Ext/WEF)"
+				echo -e "\nwef v${program_version} for linux (https://github.com/D3Ext/WEF)"
 				echo -e "Created by D3Ext <d3ext@protonmail.com>\n"
 			fi
 
