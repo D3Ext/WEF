@@ -25,8 +25,16 @@ if [ "$(id -u)" == "0" ]; then
 	cd /
 	echo -e "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Preparing the setup for working properly.${endColour}"
 	git_dir=$(timeout 10 bash -c "dirname $(find \-name .wef.config -type f 2>/dev/null | head -n 1)")
+	system=$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')
+	
 	# libbluetooth: Workaround for pybluez dependency https://github.com/themagpimag/magpi-issue61/issues/1
 	apt install libbluetooth-dev moreutils -y &>/dev/null
+	
+	if [ "${system}" == "Kali" ] || [ "${system}" == "Parrot" ] || [ "${system}" == "Ubuntu"  ]; then
+		apt install hcxtools -y &>/dev/null
+	elif [ "${system}" == "Arch" ]; then
+		pacman -S hcxtools --no-confirm &>/dev/null
+	fi
 
 	cd ${git_dir}
 	git clean -f 2>/dev/null
@@ -102,13 +110,10 @@ if [ "$(id -u)" == "0" ]; then
 	chmod +x clear.sh 2>/dev/null
 	chmod +x setup.sh 2>/dev/null
 
-	which btlejack &>/dev/null
-	if [ "$(echo $?)" != "0" ]; then
-		log_progress "Installing some dependencies" &
-		l=$!
-		pip3 install -r requirements.txt  &>/dev/null
-		kill $l 2>/dev/null
-	fi
+	log_progress "Installing some dependencies" &
+	l=$!
+	pip3 install -r requirements.txt  &>/dev/null
+	kill $l 2>/dev/null
 
 	sleep 0.2
 	cd ${adir}
