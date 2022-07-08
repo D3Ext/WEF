@@ -2062,16 +2062,20 @@ if [ "$(id -u)" == "0" ]; then
 
 		if [ "$parameter" == "--headless" ]; then
 			headless="1"
-		else
-			headless="0"
 		fi
 
 		if [ "$parameter" == "-v" ] || [ "$parameter" == "--verbose" ]; then
 			verbose="1"
-		else
-			verbose="0"
 		fi
 	done
+
+	if [ ! "$headless" ]; then
+		headless="0"
+	fi
+
+	if [ ! "$verbose" ]; then
+		verbose="0"
+	fi
 
 	test -d /opt/wef/main/
 	if [ "$(echo $?)" != "0" ]; then
