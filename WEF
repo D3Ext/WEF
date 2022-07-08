@@ -87,9 +87,14 @@ function helpPanel(){
 	echo -e " \ \    / / __| __|"
 	echo -e "  \ \/\/ /| _|| _| "
 	echo -e "   \_/\_/ |___|_|  ${endColour}"
-	echo -e "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Wi-Fi Exploitation Framework${endColour} ${yellowColour}1.0.0${endColour}"
-	echo -e "\n\t${yellowColour}-i, --interface)${endColour}${blueColour} \tThe name of your interface (without \"mon\")${endColour}"
-	echo -e "\t${yellowColour}-h, --help)${endColour}${blueColour} \t\tShows this help panel${endColour}\n"
+	echo -e "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Wi-Fi Exploitation Framework${endColour} ${yellowColour}${program_version}${endColour}"
+	echo -e "\n${blueColour}Required parameters:${endColour}"
+	echo -e "\t${yellowColour}-i, --interface)${endColour}${blueColour} \tThe name of your interface in managed mode${endColour}"
+	echo -e "\n${blueColour}Optional parameters:${endColour}"
+	echo -e "\t${yellowColour}-v, --verbose)${endColour}${blueColour} \t\tShow more info during the attacks${endColour}"
+	echo -e "\t${yellowColour}-h, --help)${endColour}${blueColour} \t\tShows this help panel${endColour}"
+	echo -e "\t${yellowColour}--headless)${endColour}${blueColour} \t\tUse it if you are using a headless system (Example: Raspberry Pi)${endColour}"
+	echo -e "\t${yellowColour}--version)${endColour}${blueColour} \t\tPrint the version and exit${endColour}\n"
 	exit 0
 }
 
@@ -97,7 +102,7 @@ function helpPanel(){
 function banner1(){
 echo -e "${yellowColour} █     █░▓█████   █████▒"
 echo -e "▓█░ █ ░█░▓█   ▀ ▓██   ▒ "
-echo -e "▒█░ █ ░█ ▒███   ▒████ ░ ${endColour}    ${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] WiFi Exploitation Framework${endColour} ${yellowColour}1.0.0${endColour}"
+echo -e "▒█░ █ ░█ ▒███   ▒████ ░ ${endColour}    ${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] WiFi Exploitation Framework${endColour} ${yellowColour}${program_version}${endColour}"
 echo -e "${yellowColour}░█░ █ ░█ ▒▓█  ▄ ░▓█▒  ░ "
 echo -e "░░██▒██▓ ░▒████▒░▒█░    "
 echo -e "░ ▓░▒ ▒  ░░ ▒░ ░ ▒ ░    "
@@ -112,7 +117,7 @@ function banner2(){
 echo -e "${yellowColour} █████   ███   █████ ██████████ ███████████"
 echo -e "░░███   ░███  ░░███ ░░███░░░░░█░░███░░░░░░█"
 echo -e " ░███   ░███   ░███  ░███  █ ░  ░███   █ ░ "
-echo -e " ░███   ░███   ░███  ░██████    ░███████   ${endColour}      ${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] WiFi Exploitation Framework${endColour} ${yellowColour}1.0.0${endColour}"
+echo -e " ░███   ░███   ░███  ░██████    ░███████   ${endColour}      ${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] WiFi Exploitation Framework${endColour} ${yellowColour}${program_version}${endColour}"
 echo -e "${yellowColour} ░░███  █████  ███   ░███░░█    ░███░░░█   "
 echo -e "  ░░░█████░█████░    ░███ ░   █ ░███  ░    "
 echo -e "    ░░███ ░░███      ██████████ █████      "
@@ -125,7 +130,7 @@ function banner3(){
 echo -e "${yellowColour}██╗    ██╗███████╗███████╗"
 echo -e "██║    ██║██╔════╝██╔════╝               "
 echo -e "██║ █╗ ██║█████╗  █████╗                 "
-echo -e "██║███╗██║██╔══╝  ██╔══╝ ${endColour}      ${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] WiFi Exploitation Framework ${endColour}${yellowColour}1.0.0${endColour}"
+echo -e "██║███╗██║██╔══╝  ██╔══╝ ${endColour}      ${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] WiFi Exploitation Framework ${endColour}${yellowColour}${program_version}${endColour}"
 echo -e "${yellowColour}╚███╔███╔╝███████╗██║                    "
 echo -e " ╚══╝╚══╝ ╚══════╝╚═╝     "
 echo -e "${endColour}   "
@@ -2031,7 +2036,7 @@ echo -e "               (_(___/                         \_____)_)		${endColour}"
 
 words=("help" "randomize mac" "attacks" "deauth" "beacon" "deauthentication" "caffe-latte" "authentication" "auth" "pmkid" "pmkid attack" "start card" "pmkid-attack" "beacon-flood" "beaconflood" "michael" "start" "up" "exit" "quit" "salir" "sortir" "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16" "evil" "evil-twin" "eviltwin" "chopchop" "replay" "replay attack" "beacon flood" "deauth attack" "deauth-attack" "deauthentication-attack" "evil-twin-attack" "authentication attack" "deauthentication attack" "randomize" "mac" "passive" "passive attack" "stealthy" "stealthy attack" "stealthy-attack" "passive-attack" "randomize-mac" "info" "pixie dust" "pixie" "pixie-dust" "replay-attack" "exec" "command" "execute" "exi" "qui" "chopchop attack" "chopchop-attack" "michael attack" "michael-attack" "wef" "WEF" "secret" "99" "modules" "load bluetooth" "load wifi" "clear" "panel" "scan" "chipsets" "adapters" "info" "evil twin" "tip" "tips" "?" "inhibite" "inhibitor" "cls" "verbose" "noverbose" "Deauthentication" "Authentication" "PMKID" "Beacon" "Beacon Flood" "Michael" "Michael Exploitation" "Passive" "Stealthy" "Start" "Pixie" "Pixie Dust" "PixieDust" "Caffe-Latte" "Caffe Latte" "CaffeLatte" "ChopChop" "Evil" "Evil Twin" "EvilTwin" "Evil-Twin" "Null" "Null Pin" "Replay" "Replay Attack" "Randomize" "version" "null" "enable auto" "enable" "disable auto" "disable" "extra" "update" "gps" "b" "d" "a" "e" "r" "n" "m" "set")
 
-parameters=("$1" "$2" "$3" "$4")
+parameters=("$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9")
 
 # Main Wifi Function
 if [ "$(id -u)" == "0" ]; then
@@ -2049,7 +2054,18 @@ if [ "$(id -u)" == "0" ]; then
 			echo -e "Created by D3Ext <d3ext@protonmail.com>\n"
 			exit 0
 		fi
-		
+
+		if [ "$parameter" == "-h" ] || [ "$parameter" == "--help" ]; then
+			helpPanel
+			exit 0
+		fi
+
+		if [ "$parameter" == "--headless" ]; then
+			headless="1"
+		else
+			headless="0"
+		fi
+
 		if [ "$parameter" == "-v" ] || [ "$parameter" == "--verbose" ]; then
 			verbose="1"
 		else
@@ -2069,6 +2085,8 @@ if [ "$(id -u)" == "0" ]; then
 
 	if [ "$1" == "--interface" ]; then
 		netCard="$2"
+	elif [ "$2" == "--interface" ]; then
+		netCard="$3"
 	fi
 
 	if [ "$netCard" ]; then
@@ -2093,7 +2111,7 @@ if [ "$(id -u)" == "0" ]; then
 			exit 0
 		fi
 
-		echo -ne "${yellowColour}\nStarting framework"; sleep 0.5; echo -ne "."; sleep 0.6; echo -ne "."; sleep 0.6; echo -ne "."; sleep 0.6; echo -ne ".${endColour}"; sleep 0.7
+		echo -ne "${yellowColour}\nStarting framework"; sleep 0.5; echo -ne "."; sleep 0.6; echo -ne "."; sleep 0.6; echo -ne "."; sleep 0.6; echo -ne ".${endColour}"; sleep 0.6
 
 		ifconfig ${netCard} up &>/dev/null
 

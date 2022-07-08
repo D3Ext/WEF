@@ -21,15 +21,22 @@ function log_progress(  ) {
 # Install/update if necessary
 if [ "$(id -u)" == "0" ]; then
 	sleep 0.1
+
+	if [ -f "/opt/wef/.wef.config" ]; then
+		git_dir=$(cat /opt/wef/.wef.config | grep "repo dir" | awk '{print $3}' | tr -d '"')
+	fi
+
 	adir=$(pwd)
 	cd /
 	echo -e "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Preparing the setup for working properly.${endColour}"
-	git_dir=$(timeout 10 bash -c "dirname $(find \-name .wef.config -type f 2>/dev/null | head -n 1)")
+	if [ ! "${git_dir}" ]; then
+		git_dir=$(timeout 10 bash -c "dirname $(find \-name .wef.config -type f 2>/dev/null | head -n 1)")
+	fi
 	system=$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')
-	
+
 	# libbluetooth: Workaround for pybluez dependency https://github.com/themagpimag/magpi-issue61/issues/1
 	apt install libbluetooth-dev moreutils -y &>/dev/null
-	
+
 	if [ "${system}" == "Kali" ] || [ "${system}" == "Parrot" ] || [ "${system}" == "Ubuntu"  ]; then
 		apt install hcxtools -y &>/dev/null
 	elif [ "${system}" == "Arch" ]; then
@@ -97,6 +104,7 @@ if [ "$(id -u)" == "0" ]; then
 	cp WEF /usr/bin/wef 2>/dev/null
 	cp WEF /opt/wef/wef 2>/dev/null
 	cp clear.sh /opt/wef/clear-logs.sh 2>/dev/null
+	cp .wef.config /opt/wef 2>/dev/null
 	cp uninstaller.sh /opt/wef/uninstaller.sh 2>/dev/null
 	cp setup.sh /opt/wef/update.sh 2>/dev/null
 	cp -r templates /opt/wef/main 2>/dev/null
@@ -110,14 +118,18 @@ if [ "$(id -u)" == "0" ]; then
 	chmod +x clear.sh 2>/dev/null
 	chmod +x setup.sh 2>/dev/null
 
+	sed -i 's/"wef dir": "null"/"wef dir": "\/opt\/wef\"/g' /opt/wef/.wef.config 2>/dev/null
+	sed -i "s#\"repo dir\": \"null\"#\"repo dir\": \"${adir/\\#}\"#g" /opt/wef/.wef.config
+	sed -i "s#\"os\": \"null\"#\"os\": \"${system/\\#}\"#g" /opt/wef/.wef.config
+
 	log_progress "Installing some dependencies" &
 	l=$!
-	pip3 install -r requirements.txt  &>/dev/null
+	pip3 install -r requirements.txt &>/dev/null
 	kill $l 2>/dev/null
 
 	sleep 0.2
 	cd ${adir}
-	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Installation/update completed, I hope you enjoy WEF${endColour}"
+	echo -e "\n\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Installation/update completed, I hope you enjoy WEF${endColour}"
 	echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] You can execute it just by typing 'wef' in the terminal\n${endColour}"
 	sleep 0.2
 	exit 0
