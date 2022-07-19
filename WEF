@@ -530,7 +530,7 @@ function ask_mac2(){
 
 # Time Function
 function ask_time(){
-	echo -ne "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Duration of the attack (default=${default}): ${endColour}" && read attack_time
+	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Duration of the attack (default=${default}): ${endColour}" && read attack_time
 	if [ "$attack_time" == "exit" ] || [ "$attack_time" == "quit" ]; then
 		ctrl_c
 	fi
@@ -769,6 +769,8 @@ function deauth_attack(){
 		if [ "$name_counter" != "1" ]; then
 			echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
 			timeout 26 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
+			echo
+			ask_data2
 		else
 			echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Target AP:${endColour}${yellowColour} ${name}${endColour}"
 		fi
@@ -925,8 +927,10 @@ function beacon_flood(){
 	test -f scan_output
 	if [ "$(echo $?)" == "0" ]; then
 		if [ "$name_counter" != "1" ]; then
-		echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
-		timeout 26 bash -c "wash -2 -5 -s -a -i ${netCard}" | tee scan_output
+			echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Scanning networks...${endColour}\n"
+			timeout 26 bash -c "wash -2 -5 -s -a -i ${netCard}" | tee scan_output
+			echo
+			ask_data2
 		else
 			echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Target AP: ${endColour}${yellowColour}${name}${endColour}"
 		fi
@@ -946,7 +950,7 @@ function beacon_flood(){
 	channel=$(cat scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
 
 	if [ ! "${attack_time}" ]; then
-		default="300"
+		default="300s"
 		ask_time
 
 		if [ ! "${attack_time}" ]; then
@@ -2034,7 +2038,7 @@ echo -e "        (_(__/  ./     /                    \_\      \.		"
 echo -e "               (_(___/                         \_____)_)		${endColour}"
 }
 
-words=("help" "randomize mac" "attacks" "deauth" "beacon" "deauthentication" "caffe-latte" "authentication" "auth" "pmkid" "pmkid attack" "start card" "pmkid-attack" "beacon-flood" "beaconflood" "michael" "start" "up" "exit" "quit" "salir" "sortir" "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16" "evil" "evil-twin" "eviltwin" "chopchop" "replay" "replay attack" "beacon flood" "deauth attack" "deauth-attack" "deauthentication-attack" "evil-twin-attack" "authentication attack" "deauthentication attack" "randomize" "mac" "passive" "passive attack" "stealthy" "stealthy attack" "stealthy-attack" "passive-attack" "randomize-mac" "info" "pixie dust" "pixie" "pixie-dust" "replay-attack" "exec" "command" "execute" "exi" "qui" "chopchop attack" "chopchop-attack" "michael attack" "michael-attack" "wef" "WEF" "secret" "99" "modules" "load bluetooth" "load wifi" "clear" "panel" "scan" "chipsets" "adapters" "info" "evil twin" "tip" "tips" "?" "inhibite" "inhibitor" "cls" "verbose" "noverbose" "Deauthentication" "Authentication" "PMKID" "Beacon" "Beacon Flood" "Michael" "Michael Exploitation" "Passive" "Stealthy" "Start" "Pixie" "Pixie Dust" "PixieDust" "Caffe-Latte" "Caffe Latte" "CaffeLatte" "ChopChop" "Evil" "Evil Twin" "EvilTwin" "Evil-Twin" "Null" "Null Pin" "Replay" "Replay Attack" "Randomize" "version" "null" "enable auto" "enable" "disable auto" "disable" "extra" "update" "gps" "b" "d" "a" "e" "r" "n" "m" "set")
+words=("help" "randomize mac" "attacks" "deauth" "beacon" "deauthentication" "caffe-latte" "authentication" "auth" "pmkid" "pmkid attack" "start card" "pmkid-attack" "beacon-flood" "beaconflood" "michael" "start" "up" "exit" "quit" "salir" "sortir" "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16" "evil" "evil-twin" "eviltwin" "chopchop" "replay" "replay attack" "beacon flood" "deauth attack" "deauth-attack" "deauthentication-attack" "evil-twin-attack" "authentication attack" "deauthentication attack" "randomize" "mac" "passive" "passive attack" "stealthy" "stealthy attack" "stealthy-attack" "passive-attack" "randomize-mac" "info" "pixie dust" "pixie" "pixie-dust" "replay-attack" "exec" "command" "execute" "exi" "qui" "chopchop attack" "chopchop-attack" "michael attack" "michael-attack" "wef" "WEF" "secret" "99" "modules" "load bluetooth" "load wifi" "clear" "panel" "scan" "chipsets" "adapters" "info" "evil twin" "tip" "tips" "?" "inhibite" "inhibitor" "cls" "verbose" "noverbose" "Deauthentication" "Authentication" "PMKID" "Beacon" "Beacon Flood" "Michael" "Michael Exploitation" "Passive" "Stealthy" "Start" "Pixie" "Pixie Dust" "PixieDust" "Caffe-Latte" "Caffe Latte" "CaffeLatte" "ChopChop" "Evil" "Evil Twin" "EvilTwin" "Evil-Twin" "Null" "Null Pin" "Replay" "Replay Attack" "Randomize" "version" "null" "enable auto" "enable" "disable auto" "disable" "extra" "update" "gps" "b" "d" "a" "e" "r" "n" "m" "set" "banner")
 
 parameters=("$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9")
 
@@ -2091,6 +2095,8 @@ if [ "$(id -u)" == "0" ]; then
 		netCard="$2"
 	elif [ "$2" == "--interface" ]; then
 		netCard="$3"
+	elif [ "$3" == "--interface" ]; then
+		netCard="$4"
 	fi
 
 	if [ "$netCard" ]; then
@@ -2538,9 +2544,14 @@ if [ "$(id -u)" == "0" ]; then
 
 			if [ "$(echo $option | awk '{print $1}')" == "inhibite" ] && [ "$(echo $option | awk '{print $2}')" ]; then
 				correct_counter="3"
-				ap_to_inhibite=$(echo "${option}" | awk '{print $2}')
-				sleep 0.15
-				inhibitor
+				mon_check=$(check_interface_mode)
+				if [ "$mon_check" == "monitor" ]; then
+					ap_to_inhibite=$(echo "${option}" | awk '{print $2}')
+					inhibitor
+				else
+					echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Your card is not in monitor mode.${endColour}"
+					echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Please before doing any attack press the ${endColour}${yellowColour}Start network card${endColour}${blueColour} option${endColour}"
+				fi
 			fi
 
 			if [ "$option" == "tip" ] || [ "$option" == "tips" ]; then
