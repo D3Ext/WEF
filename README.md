@@ -112,9 +112,9 @@ Checkout the [Wiki](https://github.com/D3Ext/WEF/wiki/Installation)
 
 <img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo.png">
 
-### ⚪ Created by D3Ext
 
-> Extra
+### ⚪ Specials thanks to [ultrazar](https://github.com/ultrazar) who helped me a lot
+
 
 **If you are using bspwm, you can add this line to your bspwmrc for launching the *xterm* windows always beeing in floating mode** (for a prettier design)
 
