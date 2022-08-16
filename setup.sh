@@ -43,7 +43,7 @@ if [ "$(id -u)" == "0" ]; then
 		pacman -S hcxtools --no-confirm &>/dev/null
 	fi
 
-	cd ${git_dir}
+	cd "${git_dir}"
 	git clean -f 2>/dev/null
 	git pull 2>/dev/null
 	sleep 0.2
@@ -128,7 +128,7 @@ if [ "$(id -u)" == "0" ]; then
 	kill $l 2>/dev/null
 
 	sleep 0.2
-	cd ${adir}
+	cd "${adir}"
 	echo -e "\n\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Installation/update completed, I hope you enjoy WEF${endColour}"
 	echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] You can execute it just by typing 'wef' in the terminal\n${endColour}"
 	sleep 0.2
