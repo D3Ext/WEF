@@ -30,7 +30,7 @@ if [ "$(id -u)" == "0" ]; then
 	cd /
 	echo -e "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Preparing the setup for working properly.${endColour}"
 	if [ ! "${git_dir}" ]; then
-		git_dir=$(timeout 10 bash -c "dirname $(find \-name .wef.config -type f 2>/dev/null | head -n 1)")
+		git_dir=$(timeout 15 bash -c "dirname $(find \-name .wef.config -type f 2>/dev/null | head -n 1)")
 	fi
 	system=$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')
 
