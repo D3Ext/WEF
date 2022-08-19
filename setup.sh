@@ -15,22 +15,58 @@ yellowColour="\e[0;33m\033[1m"
 grayColour="\e[0;37m\033[1m"
 
 function log_progress(  ) {
-	echo -ne "\n${blueColour}[${endColour}${yellowColour}+${endColour}${blueColour}] $1"; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne ".${endColour}"; sleep 0.3
+	# The main logging loop
+	echo -ne "\n--- ${blueColour} $1 ";
+	spin='-\|/'
+	i=0
+	while :
+	do
+		i=$(( (i+1) %4 ))
+		printf "\r${blueColour}[${yellowColour}${spin:$i:1}"
+		printf "${blueColour}]"
+		sleep .1
+	done
+}
+
+function log_p() {
+	# This function creates a loading spinner + message until another log_p is called
+	if [ "$last_p" != "" ]; then
+		stop_p
+	fi
+	log_progress "${1}" & 2>/dev/null
+	last_p=$!
+}
+function stop_p() {
+	#This function stops any existing progress message
+	kill "${last_p}" 2>/dev/null
+	printf "\r${blueColour}[${yellowColour}+${blueColour}]"
 }
 
 # Install/update if necessary
 if [ "$(id -u)" == "0" ]; then
 	sleep 0.1
 
-	if [ -f "/opt/wef/.wef.config" ]; then
-		git_dir=$(cat /opt/wef/.wef.config | grep "repo dir" | awk '{print $3}' | tr -d '"')
+	if [ -f "/opt/wef/wef.cnf" ]; then 
+		# find the git repository directory from the well-known wef.cnf file location (in INI file format)
+		git_dir=$(awk -F "=" '/repo_dir/ {print $2}' /opt/wef/wef.cnf)
 	fi
 
 	adir=$(pwd)
-	cd /
 	echo -e "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Preparing the setup for working properly.${endColour}"
 	if [ ! "${git_dir}" ]; then
-		git_dir=$(timeout 15 bash -c "dirname $(find \-name .wef.config -type f 2>/dev/null | head -n 1)")
+		# In the case this is the first setup or wef.cnf was deleted
+
+		if [ -d ".git" ]; then
+			# If there are git files in this dir
+			echo -ne "\n${blueColour}[${redColour}+${blueColour}]${endColour} Using $(pwd)/ as the WEF repo \n"
+			git_dir=$(pwd)
+		else
+			printf "\n${blueColour}[${redColour}X${blueColour}]${endColour} ERROR: Cannot find WEF repository location, please execute this script inside where it was cloned"
+			printf "\n${blueColour}[${redColour}X${blueColour}]${endColour} ABORTING..."
+			exit 1
+		fi
+
+		#git_dir=$(timeout 15 bash -c "dirname $(find \-name wef.cnf -type f 2>/dev/null | head -n 1)")
 	fi
 	system=$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')
 
@@ -45,13 +81,11 @@ if [ "$(id -u)" == "0" ]; then
 
 	cd "${git_dir}"
 	git clean -f 2>/dev/null
-	git pull 2>/dev/null
-	sleep 0.2
+	git pull >/dev/null 2>&1
 
 	# Directories structure
 	if [ ! -d "/opt/wef/main" ]; then
-		log_progress "Creating directories structure" &
-		l=$!
+		log_p "Creating directories structure"
 		mkdir /opt/wef \
 				/opt/wef/main \
 				/opt/wef/main/bluetooth \
@@ -60,12 +94,10 @@ if [ "$(id -u)" == "0" ]; then
 				/opt/wef/main/templates \
 				/opt/wef/main/logs \
 				/opt/wef/extra 2>/dev/null
-		kill $l 2>/dev/null
 		sleep 0.4
 	fi
 
-	log_progress "Installing/updating modules and other things" &
-	l=$!
+	log_p "Installing/updating modules and other things"
 	if [ ! -f "/opt/wef/extra/delete-creds.sh" ]; then
 		touch /opt/wef/extra/delete-creds.sh
 		chmod +x /opt/wef/extra/delete-creds.sh
@@ -85,11 +117,9 @@ if [ "$(id -u)" == "0" ]; then
 		gcc gpssim.c -lm -O3 -o gps-sdr-sim 2>/dev/null
 		popd &>/dev/null
 	fi
-	kill $l 2>/dev/null
 
 	if [ ! -f "/opt/wef/main/wordlists/rockyou.txt" ]; then
-		log_progress "Downloading necesary files, this will take some time" &
-		l=$!
+		log_p "Downloading necesary files, this will take some time"
 		wget "https://github.com/praetorian-inc/Hob0Rules/raw/master/wordlists/rockyou.txt.gz" &>/dev/null
 		mv rockyou.txt.gz /opt/wef/main/wordlists/rockyou.txt.gz 2>/dev/null
 		gunzip /opt/wef/main/wordlists/rockyou.txt.gz 2>/dev/null
@@ -97,35 +127,36 @@ if [ "$(id -u)" == "0" ]; then
 		mv probable-v2-wpa-top4800.txt /opt/wef/main/wordlists/ 2>/dev/null
 		wget "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/darkweb2017-top10000.txt" &>/dev/null
 		mv darkweb2017-top10000.txt /opt/wef/main/wordlists/ 2>/dev/null
-		kill $l 2>/dev/null
+	fi
+
+	if [ ! -f "/opt/wef/wef.cnf" ]; then
+		touch /opt/wef/wef.cnf
+		echo "repo_dir=${adir}" >> /opt/wef/wef.cnf
+		echo "wef_dir=/opt/wef/" >> /opt/wef/wef.cnf
+		echo "os=${system}" >> /opt/wef/wef.cnf
+		echo "the_best_pentester=D3ext" >> /opt/wef/wef.cnf
 	fi
 
 	# Giving permissions to files
-	cp WEF /usr/bin/wef 2>/dev/null
-	cp WEF /opt/wef/wef 2>/dev/null
-	cp clear.sh /opt/wef/clear-logs.sh 2>/dev/null
-	cp .wef.config /opt/wef 2>/dev/null
-	cp uninstaller.sh /opt/wef/uninstaller.sh 2>/dev/null
+	ln -s src/WEF /usr/bin/wef 2>/dev/null 
+	cp src/WEF /opt/wef/wef 2>/dev/null
+	cp src/clear.sh /opt/wef/clear-logs.sh 2>/dev/null
+	cp src/uninstaller.sh /opt/wef/uninstaller.sh 2>/dev/null
 	cp setup.sh /opt/wef/update.sh 2>/dev/null
 	cp -r templates /opt/wef/main 2>/dev/null
-	chmod +x WEF 2>/dev/null
-	chmod +x /opt/wef/wef 2>/dev/null
-	chmod +x /usr/bin/wef 2>/dev/null
-	chmod +x /opt/wef/clear-logs.sh 2>/dev/null
-	chmod +x uninstaller.sh 2>/dev/null
-	chmod +x /opt/wef/update.sh 2>/dev/null
-	chmod +x /opt/wef/uninstaller.sh 2>/dev/null
-	chmod +x clear.sh 2>/dev/null
-	chmod +x setup.sh 2>/dev/null
+	chmod +x src/WEF \
+			/opt/wef/wef \
+			/opt/wef/clear-logs.sh \
+			src/uninstaller.sh \
+			/opt/wef/update.sh \
+			/opt/wef/uninstaller.sh \
+			src/clear.sh \
+			setup.sh 2>/dev/null
 
-	sed -i 's/"wef dir": "null"/"wef dir": "\/opt\/wef\"/g' /opt/wef/.wef.config 2>/dev/null
-	sed -i "s#\"repo dir\": \"null\"#\"repo dir\": \"${adir/\\#}\"#g" /opt/wef/.wef.config
-	sed -i "s#\"os\": \"null\"#\"os\": \"${system/\\#}\"#g" /opt/wef/.wef.config
 
-	log_progress "Installing some dependencies" &
-	l=$!
+	log_p "Installing some dependencies"
 	pip3 install -r requirements.txt &>/dev/null
-	kill $l 2>/dev/null
+	stop_p
 
 	sleep 0.2
 	cd "${adir}"
