@@ -51,7 +51,7 @@ if [ "$(id -u)" == "0" ]; then
 		git_dir=$(awk -F "=" '/repo_dir/ {print $2}' /opt/wef/wef.cnf)
 	fi
 
-	adir=$(pwd)
+	adir="$(pwd)/"
 	echo -e "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Preparing the setup for working properly.${endColour}"
 	if [ ! "${git_dir}" ]; then
 		# In the case this is the first setup or wef.cnf was deleted
@@ -138,7 +138,7 @@ if [ "$(id -u)" == "0" ]; then
 	fi
 
 	# Giving permissions to files
-	ln -s src/WEF /usr/bin/wef 2>/dev/null 
+	ln -s "${adir}src/WEF" /usr/bin/wef 2>/dev/null 
 	cp src/WEF /opt/wef/wef 2>/dev/null
 	cp src/clear.sh /opt/wef/clear-logs.sh 2>/dev/null
 	cp src/uninstaller.sh /opt/wef/uninstaller.sh 2>/dev/null
