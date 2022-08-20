@@ -58,7 +58,7 @@ if [ "$(id -u)" == "0" ]; then
 
 		if [ -d ".git" ]; then
 			# If there are git files in this dir
-			echo -ne "\n${blueColour}[${redColour}+${blueColour}]${endColour} Using $(pwd)/ as the WEF repo \n"
+			echo -ne "\n${blueColour}[${redColour}+${blueColour}] Using $(pwd)/ as the WEF repo \n${endColour}"
 			git_dir=$(pwd)
 		else
 			printf "\n${blueColour}[${redColour}X${blueColour}]${endColour} ERROR: Cannot find WEF repository location, please execute this script inside where it was cloned"
@@ -134,7 +134,8 @@ if [ "$(id -u)" == "0" ]; then
 		echo "repo_dir=${adir}" >> /opt/wef/wef.cnf
 		echo "wef_dir=/opt/wef/" >> /opt/wef/wef.cnf
 		echo "os=${system}" >> /opt/wef/wef.cnf
-		echo "the_best_pentester=D3ext" >> /opt/wef/wef.cnf
+		echo "the_best_pentester=D3Ext" >> /opt/wef/wef.cnf
+		echo "the_best_coder=ultrazar" >> /opt/wef/wef.cnf
 	fi
 
 	# Giving permissions to files
