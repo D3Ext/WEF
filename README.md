@@ -74,13 +74,7 @@ wef --interface wlan0
 
 Once the application is running, type `help` to view more functions and useful info.
 
-If you don't want to scan APs with every attack you can do something like this:
-
-```sh
-set name my-wifi # To especify the name to attack
-set time 60 # To define the total duration of the attacks that ask for the time
-set packets 15 # To define the amount of packets that some attacks will send
-```
+However I'll do a post on my blog about WEF and wifi hacking from **zero to hero**
 
 ## ⭕ REQUIREMENTS:
 > Don't install them manually, WEF takes care of that if you don't already have them 
@@ -111,7 +105,7 @@ Checkout the [Wiki](https://github.com/D3Ext/WEF/wiki/Installation)
 <img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo.png">
 
 
-### ⚪ Specials thanks to [ultrazar](https://github.com/ultrazar) who helped me a lot
+### ⚪ Specials thanks to [ultrazar](https://github.com/ultrazar) who helped me a lot <3
 
 
 **If you are using bspwm, you can add this line to your bspwmrc for launching the *xterm* windows always beeing in floating mode** (for a prettier design)
