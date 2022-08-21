@@ -260,6 +260,7 @@ function dependencies(){
 
 # Functions Info
 function functions_info(){
+	# Print info about the different attacks and functions
 	echo -e "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Tested with an ${endColour}${yellowColour}alfa AWUS036ACM${endColour}${blueColour} adapter${endColour}"
 	sleep 0.1
 	echo -e "\n${blueColour}[${endColour}${yellowColour}1${endColour}${blueColour}] Beacon Flood Attack:${endColour}"
@@ -350,8 +351,9 @@ function keep_exit(){
 	done
 }
 
-# Check Chipset for monitor mode
+# Chipsets for monitor mode
 function chipsets_panel(){
+	# Print some of the chipsets that support monitor mode
 	echo -e "\n\t${yellowColour}Chipsets${endColour}"
 	echo -e "\t${yellowColour}--------${endColour}"
 	echo -e "${blueColour} \tRTL8812AU${endColour}"
@@ -364,6 +366,8 @@ function chipsets_panel(){
 
 # Check the interface mode
 function check_interface_mode(){
+	# Function implemented by ultrazar
+	# Workaround for arch linux
 	if [ "$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')" == "Arch" ]; then
 		iwconfig ${netCard} 2>/dev/null | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=":" | sed -e 's/\(.*\)/\L\1/' 2>/dev/null
 	else
@@ -374,6 +378,7 @@ function check_interface_mode(){
 # Active Card
 function active_card(){
 	status_card=$(check_interface_mode)
+	# Check if the network adapter is in monitor mode or not
 	if [ "$status_card" == "monitor" ]; then
 		echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] The network card mode: ${endColour}${greenColour}\t\tMonitor${endColour}"
 	else
@@ -381,9 +386,11 @@ function active_card(){
 	fi
 }
 
-# MAC Address Status
+# MAC Address Status Function
 function mac_status(){
+	# Function enters here if it's called at the start of the program
 	if [ "$time_counter" == "0" ]; then
+		# Check if network interface is active and exists
 		if [ "$(ifconfig | grep "${netCard}" | awk '{print $1}' | tr -d ':')" == "${netCard}" ]; then
 			actual_mac=$(ifconfig | grep "$netCard" -A 3 | grep "ether" | awk '{print $2}')
 			echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Your actual MAC address: ${endColour}${grayColour}\t\t$actual_mac${endColour}"
@@ -391,7 +398,9 @@ function mac_status(){
 			echo -e "${blueColour}[${endColour}${redColour}X${endColour}${blueColour}] MAC address not found${endColour}\n"
 			ctrl_c
 		fi
+	# Function enters here if the function isn't called at the start of the program
 	else
+		# Function enters here if you've used the "Active Card" option
 		if [ "$start_counter" == "1" ]; then
 
 			if [ "$(check_interface_mode)" == "monitor" ]; then
@@ -402,10 +411,13 @@ function mac_status(){
 				echo -e "${blueColour}[${endColour}${redColour}X${endColour}${blueColour}] MAC address not found${endColour}\n"
 				ctrl_c
 			fi
+		# Function enters here if you haven't started the network adapter yet
 		else
+			# Check if network interface exists to avoid errors in the else
 			if [ "$(ifconfig | grep "${netCard}" | awk '{print $1}' | tr -d ':')" == "${netCard}" ]; then
 				actual_mac=$(macchanger -s ${netCard} | grep "Curr" | awk '{print $3}')
 				echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Your actual MAC address: ${endColour}${grayColour}\t\t$actual_mac${endColour}"
+			# Print an error if the network interface doesn't exists
 			else
 				echo -e "${blueColour}[${endColour}${redColour}X${endColour}${blueColour}] MAC address not found${endColour}\n"
 				ctrl_c
@@ -416,14 +428,18 @@ function mac_status(){
 
 # MAC Address Changer
 function mac_randomizer(){
+	# Turn off the interface
 	ifconfig ${netCard} down
+	# Randomize the mac address
 	macchanger -a ${netCard} &>/dev/null
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] MAC address randomized successfully${endColour}"
+	# Activate again the interface
 	ifconfig ${netCard} up
 }
 
 # Network Card Status
 function card_status(){
+	# Function enters here if it's called at the start of the program
 	if [ "$time_counter" == "0" ]; then
 		test -d "/sys/class/net/${netCard}"
 		if [ "$(echo $?)" == "0" ]; then
@@ -431,7 +447,9 @@ function card_status(){
 		else
 			echo -e "${blueColour}[${endColour}${redColour}X${endColour}${blueColour}] Network interface not found${endColour}"
 		fi
+	# Function enters here if the function isn't called at the start of the program
 	else
+		# Function enters here if you've used the "Active Card" option
 		if [ "$start_counter" == "1" ]; then
 			test -d "/sys/class/net/${netCard}"
 			if [ "$(echo $?)" == "0" ]; then
@@ -439,12 +457,15 @@ function card_status(){
 			else
 				echo -e "${blueColour}[${endColour}${redColour}X${endColour}${blueColour}] Network interface not found${endColour}"
 			fi
+		# Function enters here if you haven't started the network adapter yet
 		else
 			if [ "$time_counter" == "1" ]; then
-				test -d "/sys/class/net/${netCard}"
-				if [ "$(echo $?)" == "0" ]; then
+				# Check if the interface exists
+				if [ -d /sys/class/net/${netCard} ]; then
+					# If exists print the name
 					echo -e "${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Your network interface: ${endColour}${grayColour}\t\t${netCard}${endColour}"
 				else
+					# If doesn't exists print an error
 					echo -e "${blueColour}[${endColour}${redColour}X${endColour}${blueColour}] Network interface not found${endColour}"
 				fi
 			fi
@@ -454,19 +475,23 @@ function card_status(){
 
 # Network Card Start
 function card_setup(){
+	# Function enters here if you've used the "Active Card" option
 	if [ "$start_counter" != "1" ]; then
 		card_check=$(ifconfig | grep "$netCard" | awk '{print $1}' | tr -d ":")
+		# Check if the value is the same as the interface to avoid errors in the else
 		if [ "$card_check" == "${netCard}" ]; then
 			echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Configuring network card...${endColour}"
 			airmon-ng check kill &>/dev/null
 			echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Network card configured successfully${endColour}"
 			airmon-ng start ${netCard} &>/dev/null
 			correct_counter="2"
+			# Check if your interface name changes when starting in monitor mode adding "mon" to its name  
 			if [ "$(iwconfig ${netCard}mon | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')" == "Monitor" ]; then
 				card_type="1"
 				evilCard="${netCard}"
 				netCard="${netCard}mon"
 				start_counter="1"
+			# Enter here if the name doesn't change when starting in monitor mode
 			elif [ "$(check_interface_mode)" == "monitor" ]; then
 				card_type="2"
 				evilCard="${netCard}"
