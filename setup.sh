@@ -36,6 +36,7 @@ function log_p() {
 	log_progress "${1}" & 2>/dev/null
 	last_p=$!
 }
+
 function stop_p() {
 	#This function stops any existing progress message
 	kill "${last_p}" 2>/dev/null
@@ -73,6 +74,7 @@ if [ "$(id -u)" == "0" ]; then
 	# libbluetooth: Workaround for pybluez dependency https://github.com/themagpimag/magpi-issue61/issues/1
 	apt install libbluetooth-dev moreutils -y &>/dev/null
 
+	# Check the actual OS between the supported ones
 	if [ "${system}" == "Kali" ] || [ "${system}" == "Parrot" ] || [ "${system}" == "Ubuntu"  ]; then
 		apt install hcxtools -y &>/dev/null
 	elif [ "${system}" == "Arch" ]; then
@@ -84,6 +86,7 @@ if [ "$(id -u)" == "0" ]; then
 	git pull >/dev/null 2>&1
 
 	# Directories structure
+	# Check if /opt/wef/main/ exists and create neccessary structure
 	if [ ! -d "/opt/wef/main" ]; then
 		log_p "Creating directories structure"
 		mkdir /opt/wef \
@@ -98,6 +101,7 @@ if [ "$(id -u)" == "0" ]; then
 	fi
 
 	log_p "Installing/updating modules and other things"
+	# Check if the script to delete credentials from evil twin exists
 	if [ ! -f "/opt/wef/extra/delete-creds.sh" ]; then
 		touch /opt/wef/extra/delete-creds.sh
 		chmod +x /opt/wef/extra/delete-creds.sh
@@ -106,6 +110,7 @@ if [ "$(id -u)" == "0" ]; then
 		echo 'echo "" > /opt/wef/main/templates/*/usernames.txt' >> /opt/wef/extra/delete-creds.sh
 	fi
 
+	# Check if the templates folder exists
 	if [ ! -d "/opt/wef/main/templates" ]; then
 		cp templates/* /opt/wef/main/templates -r 2>/dev/null
 	fi
@@ -129,6 +134,7 @@ if [ "$(id -u)" == "0" ]; then
 		mv darkweb2017-top10000.txt /opt/wef/main/wordlists/ 2>/dev/null
 	fi
 
+	# Check if the wef config file exists in /opt/wef/
 	if [ ! -f "/opt/wef/wef.cnf" ]; then
 		touch /opt/wef/wef.cnf
 		echo "repo_dir=${adir}" >> /opt/wef/wef.cnf
