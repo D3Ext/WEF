@@ -42,6 +42,7 @@ function ctrl_c(){
 			systemctl restart NetworkManager 2>/dev/null
 		fi
 	fi
+	# Remove possible created during the attacks
 	rm ${dir}/*.tmp 2>/dev/null
 	rm ${dir}/rainbowtables 2>/dev/null
 	rm ${dir}/wef-wordlist.txt 2>/dev/null
@@ -55,12 +56,17 @@ function ctrl_c(){
 # Ctrl + C for the EvilTwin attack
 function evil_c(){
 	echo -e "\n\n${blueColour}[${endColour}${yellowColour}!${endColour}${blueColour}] Removing files...${endColour}"
+	# Kill created processes
 	killall hostapd &>/dev/null ; killall dnsmasq &>/dev/null
+	# Kill the http server
 	fuser -k 80/tcp &>/dev/null
+	# Reconfigure the network adapter
 	ifconfig $evilCard down 2>/dev/null
+	# Return to the directory
 	popd &>/dev/null
 	echo -e "\n${blueColour}[${endColour}${yellowColour}!${endColour}${blueColour}] Stoping hostapd and dnsmasq...${endColour}"
 	sleep 0.2
+	# Remove configurations files
 	rm hostapd.conf 2>/dev/null; rm dnsmasq.conf 2>/dev/null
 	iwconfig $evilCard mode managed 2>/dev/null
 	ifconfig $evilCard up 2>/dev/null
@@ -75,6 +81,7 @@ function inhibition_c(){
 	sleep 0.1
 }
 
+# Ctrl + C for Bluetooth function
 function blue_c(){
 	rm -rf ${pcap_name} 2>/dev/null
 	rm -rf ${file_to_crack} 2>/dev/null
@@ -181,6 +188,7 @@ echo -e "dMP dMP dMP  VMMMP\"   dMP   dMP dMP dMMMMMP dMMMMMP ${endColour}\n"
 
 # Banner Randomizer
 function all_banners(){
+	# Get random number between 1 and 3 to display a random banner
 	random_number=$(($RANDOM % 3 + 1))
 
 	if [ "$random_number" == "1" ]; then
@@ -223,20 +231,10 @@ function rand_tips(){
 
 # Dependencies Function
 function dependencies(){
+	# Programs array
 	programs=(macchanger aircrack-ng reaver mdk4 hashcat hcxdumptool xterm wget dnsmasq hostapd php crackle pixiewps)
 	system=$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')
-	if [ "$system"  == "Parrot" ]; then
-		for program in "${programs[@]}"; do
-			which $program &>/dev/null
-			if [ "$(echo $?)" == "1" ]; then
-				echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Requirements not installed${endColour}\n"
-				echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Installing $program... ${endColour}"
-				apt install "$program" -y &>/dev/null
-			fi
-		done
-	fi
-
-	if [ "$system"  == "Kali" ]; then
+	if [ "$system"  == "Parrot" ] || [ "$system"  == "Kali" ] || [ "$system"  == "Ubuntu" ]; then
 		for program in "${programs[@]}"; do
 			which $program &>/dev/null
 			if [ "$(echo $?)" == "1" ]; then
@@ -258,80 +256,70 @@ function dependencies(){
 		done
 	fi
 
-	if [ "$system"  == "Ubuntu" ]; then
-		for program in "${programs[@]}"; do
-			which $program  &>/dev/null
-			if [ "$(echo $?)" == "1" ]; then
-				echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Requirements not installed${endColour}\n"
-				echo -e "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Installing $program... ${endColour}"
-				apt install "$program" -y &>/dev/null
-			fi
-		done
-	fi
 }
 
 # Functions Info
 function functions_info(){
-echo -e "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Tested with an ${endColour}${yellowColour}alfa AWUS036ACM${endColour}${blueColour} adapter${endColour}"
-sleep 0.1
-echo -e "\n${blueColour}[${endColour}${yellowColour}1${endColour}${blueColour}] Beacon Flood Attack:${endColour}"
-sleep 0.1
-echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] It creates a lot of fake AP's to produce a DoS and kick the devices connected to the Access Points in the desired channel [${endColour}${yellowColour}WPA${endColour}${blueColour}/${endColour}${yellowColour}WEP${endColour}${blueColour}]${endColour}"
-sleep 0.1
-echo -e "\n${blueColour}[${endColour}${yellowColour}2${endColour}${blueColour}] Deauthentication Attack:${endColour}"
-sleep 0.1
-echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] In this attack you send specific deauthentication packets to an AP to tell the router that a device is not connected and kicking it [${endColour}${yellowColour}WPA${endColour}${blueColour}]${endColour}"
-sleep 0.1
-echo -e "\n${blueColour}[${endColour}${yellowColour}3${endColour}${blueColour}] Authentication Attack:${endColour}"
-sleep 0.1
-echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] It's an attack in which you inject a lot of fake users to an Access Point [${endColour}${yellowColour}WEP${endColour}${blueColour}]${endColour}"
-sleep 0.1
-echo -e "\n${blueColour}[${endColour}${yellowColour}4${endColour}${blueColour}] PMKID Attack:${endColour}"
-sleep 0.1
-echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] It's an special attack, because it doesn't require clients connected to an Access Point [${endColour}${yellowColour}WPA${endColour}${blueColour}]${endColour}"
-sleep 0.1
-echo -e "\n${blueColour}[${endColour}${yellowColour}5${endColour}${blueColour}] Passive/Stealthy Attack:${endColour}"
-sleep 0.1
-echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] This attack keep listening and looking for handshakes when a user connect to the AP [${endColour}${yellowColour}WPA${endColour}${blueColour}/${endColour}${yellowColour}WEP${endColour}${blueColour}]${endColour}"
-sleep 0.1
-echo -e "\n${blueColour}[${endColour}${yellowColour}6${endColour}${blueColour}] MAC Randomization:${endColour}"
-sleep 0.1
-echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] This function set a new random and fake mac address for your interface${endColour}"
-sleep 0.1
-echo -e "\n${blueColour}[${endColour}${yellowColour}7${endColour}${blueColour}] Start network card:${endColour}"
-sleep 0.1
-echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] This feature starts your network adapter in monitor mode for injecting packages${endColour}"
-sleep 0.1
-echo -e "\n${blueColour}[${endColour}${yellowColour}8${endColour}${blueColour}] Evil Twin Attack:${endColour}"
-sleep 0.1
-echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] It deploys a public and fake AP to steal credentials from clients with a lot of templates${endColour}"
-sleep 0.1
-echo -e "\n${blueColour}[${endColour}${yellowColour}9${endColour}${blueColour}] Attacks info:${endColour}"
-sleep 0.1
-echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] It displays this help panel about the availables functions${endColour}"
-sleep 0.1
-echo -e "\n${blueColour}[${endColour}${yellowColour}10${endColour}${blueColour}] Pixie Dust Attack:${endColour}"
-sleep 0.1
-echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] This attack try to exploit the WPS method [${endColour}${yellowColour}WPA${endColour}${blueColour}]${endColour}"
-sleep 0.1
-echo -e "\n${blueColour}[${endColour}${yellowColour}11${endColour}${blueColour}] Caffe Latte Attack:${endColour}"
-sleep 0.1
-echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] It fakes the target AP to obtain the password in clear text [${endColour}${yellowColour}WEP${endColour}${blueColour}]${endColour}"
-sleep 0.1
-echo -e "\n${blueColour}[${endColour}${yellowColour}12${endColour}${blueColour}] Chopchop Attack:${endColour}"
-sleep 0.1
-echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] This attack send a fake and specific packet to decrypt the password in plain text [${endColour}${yellowColour}WEP${endColour}${blueColour}]${endColour}"
-sleep 0.1
-echo -e "\n${blueColour}[${endColour}${yellowColour}13${endColour}${blueColour}] Michael Attack:${endColour}"
-sleep 0.1
-echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] It exploits the TKIP encryption and cancels the connection of an AP (in rare cases it shutdowns the router) [${endColour}${yellowColour}WPA${endColour}${blueColour}/${endColour}${yellowColour}WEP${endColour}${blueColour}]${endColour}"
-sleep 0.1
-echo -e "\n${blueColour}[${endColour}${yellowColour}14${endColour}${blueColour}] Replay Attack:${endColour}"
-sleep 0.1
-echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] This attack is performed installing an all-zero encryption key in the target to decrypt the data [${endColour}${yellowColour}WEP${endColour}${blueColour}]${endColour}"
-sleep 0.1
-echo -e ""
-sleep 0.1
+	echo -e "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Tested with an ${endColour}${yellowColour}alfa AWUS036ACM${endColour}${blueColour} adapter${endColour}"
+	sleep 0.1
+	echo -e "\n${blueColour}[${endColour}${yellowColour}1${endColour}${blueColour}] Beacon Flood Attack:${endColour}"
+	sleep 0.1
+	echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] It creates a lot of fake AP's to produce a DoS and kick the devices connected to the Access Points in the desired channel [${endColour}${yellowColour}WPA${endColour}${blueColour}/${endColour}${yellowColour}WEP${endColour}${blueColour}]${endColour}"
+	sleep 0.1
+	echo -e "\n${blueColour}[${endColour}${yellowColour}2${endColour}${blueColour}] Deauthentication Attack:${endColour}"
+	sleep 0.1
+	echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] In this attack you send specific deauthentication packets to an AP to tell the router that a device is not connected and kicking it [${endColour}${yellowColour}WPA${endColour}${blueColour}]${endColour}"
+	sleep 0.1
+	echo -e "\n${blueColour}[${endColour}${yellowColour}3${endColour}${blueColour}] Authentication Attack:${endColour}"
+	sleep 0.1
+	echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] It's an attack in which you inject a lot of fake users to an Access Point [${endColour}${yellowColour}WEP${endColour}${blueColour}]${endColour}"
+	sleep 0.1
+	echo -e "\n${blueColour}[${endColour}${yellowColour}4${endColour}${blueColour}] PMKID Attack:${endColour}"
+	sleep 0.1
+	echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] It's an special attack, because it doesn't require clients connected to an Access Point [${endColour}${yellowColour}WPA${endColour}${blueColour}]${endColour}"
+	sleep 0.1
+	echo -e "\n${blueColour}[${endColour}${yellowColour}5${endColour}${blueColour}] Passive/Stealthy Attack:${endColour}"
+	sleep 0.1
+	echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] This attack keep listening and looking for handshakes when a user connect to the AP [${endColour}${yellowColour}WPA${endColour}${blueColour}/${endColour}${yellowColour}WEP${endColour}${blueColour}]${endColour}"
+	sleep 0.1
+	echo -e "\n${blueColour}[${endColour}${yellowColour}6${endColour}${blueColour}] MAC Randomization:${endColour}"
+	sleep 0.1
+	echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] This function set a new random and fake mac address for your interface${endColour}"
+	sleep 0.1
+	echo -e "\n${blueColour}[${endColour}${yellowColour}7${endColour}${blueColour}] Start network card:${endColour}"
+	sleep 0.1
+	echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] This feature starts your network adapter in monitor mode for injecting packages${endColour}"
+	sleep 0.1
+	echo -e "\n${blueColour}[${endColour}${yellowColour}8${endColour}${blueColour}] Evil Twin Attack:${endColour}"
+	sleep 0.1
+	echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] It deploys a public and fake AP to steal credentials from clients with a lot of templates${endColour}"
+	sleep 0.1
+	echo -e "\n${blueColour}[${endColour}${yellowColour}9${endColour}${blueColour}] Attacks info:${endColour}"
+	sleep 0.1
+	echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] It displays this help panel about the availables functions${endColour}"
+	sleep 0.1
+	echo -e "\n${blueColour}[${endColour}${yellowColour}10${endColour}${blueColour}] Pixie Dust Attack:${endColour}"
+	sleep 0.1
+	echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] This attack try to exploit the WPS method [${endColour}${yellowColour}WPA${endColour}${blueColour}]${endColour}"
+	sleep 0.1
+	echo -e "\n${blueColour}[${endColour}${yellowColour}11${endColour}${blueColour}] Caffe Latte Attack:${endColour}"
+	sleep 0.1
+	echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] It fakes the target AP to obtain the password in clear text [${endColour}${yellowColour}WEP${endColour}${blueColour}]${endColour}"
+	sleep 0.1
+	echo -e "\n${blueColour}[${endColour}${yellowColour}12${endColour}${blueColour}] Chopchop Attack:${endColour}"
+	sleep 0.1
+	echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] This attack send a fake and specific packet to decrypt the password in plain text [${endColour}${yellowColour}WEP${endColour}${blueColour}]${endColour}"
+	sleep 0.1
+	echo -e "\n${blueColour}[${endColour}${yellowColour}13${endColour}${blueColour}] Michael Attack:${endColour}"
+	sleep 0.1
+	echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] It exploits the TKIP encryption and cancels the connection of an AP (in rare cases it shutdowns the router) [${endColour}${yellowColour}WPA${endColour}${blueColour}/${endColour}${yellowColour}WEP${endColour}${blueColour}]${endColour}"
+	sleep 0.1
+	echo -e "\n${blueColour}[${endColour}${yellowColour}14${endColour}${blueColour}] Replay Attack:${endColour}"
+	sleep 0.1
+	echo -e "\t${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] This attack is performed installing an all-zero encryption key in the target to decrypt the data [${endColour}${yellowColour}WEP${endColour}${blueColour}]${endColour}"
+	sleep 0.1
+	echo -e ""
+	sleep 0.1
 }
 
 # Exit Function
@@ -340,6 +328,7 @@ function keep_exit(){
 	while true; do
 		echo -ne "${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Do you want to exit? [${endColour}${yellowColour}y${endColour}${blueColour}/${endColour}${yellowColour}n${endColour}${blueColour}]: ${endColour}" && read exit_status
 
+		# If input is y or yes exit from the function
 		if [ "$exit_status" == "y" ] || [ "$exit_status" == "yes" ]; then
 			if [ "$module" == "wifi" ]; then
 				ctrl_c
@@ -350,10 +339,11 @@ function keep_exit(){
 			fi
 		fi
 
+		# If input is n or no break the loop and return to the main function
 		if [ "$exit_status" == "n" ] || [ "$exit_status" == "no" ]; then
 			break
 		fi
-
+		
 		if [ "$exit_status" != "y" ] && [ "$exit_status" != "n" ]; then
 			echo -e "\n${blueColour}[${endColour}${yellowColour}X${endColour}${blueColour}] Unknown option${endColour}\n"
 		fi
