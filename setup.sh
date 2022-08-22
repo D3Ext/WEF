@@ -86,19 +86,17 @@ if [ "$(id -u)" == "0" ]; then
 	git pull >/dev/null 2>&1
 
 	# Directories structure
-	# Check if /opt/wef/main/ exists and create neccessary structure
-	if [ ! -d "/opt/wef/main" ]; then
-		log_p "Creating directories structure"
-		mkdir /opt/wef \
-				/opt/wef/main \
-				/opt/wef/main/bluetooth \
-				/opt/wef/main/wordlists \
-				/opt/wef/main/captures \
-				/opt/wef/main/templates \
-				/opt/wef/main/logs \
-				/opt/wef/extra 2>/dev/null
-		sleep 0.4
-	fi
+	log_p "Creating directories structure"
+	mkdir /opt/wef \
+			/opt/wef/cache \
+			/opt/wef/main \
+			/opt/wef/main/bluetooth \
+			/opt/wef/main/wordlists \
+			/opt/wef/main/captures \
+			/opt/wef/main/templates \
+			/opt/wef/main/logs \
+			/opt/wef/extra 2>/dev/null
+	sleep 0.4
 
 	log_p "Installing/updating modules and other things"
 	# Check if the script to delete credentials from evil twin exists
