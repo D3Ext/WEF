@@ -481,7 +481,26 @@ function card_setup(){
 		# Check if the value is the same as the interface to avoid errors in the else
 		if [ "$card_check" == "${netCard}" ]; then
 			echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Configuring network card...${endColour}"
-			airmon-ng check kill &>/dev/null
+			
+			kill_network_services=$(awk -F '=' '/airmon_check_kill/ {print $2}' /opt/wef/wef.cnf)
+
+			if [ "${kill_network_services}" == "" ]; then
+				echo -ne "\n${blueColour}[${yellowColour}*${blueColour}] Are you sure to execute \"airmon-ng check kill\"? This will stop your active network connections! [${endColour}${yellowColour}y${blueColour}/${yellowColour}n${blueColour}] ${endColour}" && read kill_network_services
+				if [ "$kill_network_services" == "y" ]; then
+					echo "airmon_check_kill=true" >> /opt/wef/wef.cnf
+					kill_network_services="true"
+				else
+					echo "airmon_check_kill=false" >> /opt/wef/wef.cnf
+					kill_network_services="false"
+				fi
+				echo -ne "\n${blueColour}[${yellowColour}*${blueColour}] airmon_check_kill set to $kill_network_services. You can change this later in /opt/wef/wef.cnf"
+				sleep 1.5;
+			fi
+
+			if [ "${kill_network_services}" == "true" ]; then
+				airmon-ng check kill &>/dev/null
+			fi
+
 			echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Network card configured successfully${endColour}"
 			airmon-ng start ${netCard} &>/dev/null
 			correct_counter="2"
@@ -497,6 +516,7 @@ function card_setup(){
 				evilCard="${netCard}"
 				start_counter="1"
 			fi
+			sleep 1
 		fi
 	fi
 }
@@ -915,19 +935,19 @@ function beacon_flood(){
 
 	if [ "$beacon_option" == "2" ]; then
 		if [ "$verbose" == "0" ]; then
-			timeout ${attack_time} bash -c "mdk4 ${netCard} b -c ${channel} &>/dev/null"
+			timeout ${attack_time} bash -c "mdk4 ${netCard} b -c ${channel} -s 200 &>/dev/null"
 		elif [ "$verbose" == "1" ]; then
 			echo
-			timeout ${attack_time} bash -c "mdk4 ${netCard} b -c ${channel}"
+			timeout ${attack_time} bash -c "mdk4 ${netCard} b -c ${channel} -s 200"
 		fi
 	fi
 
 	if [ "$beacon_option" == "1" ]; then
 		echo -ne "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] File with the names:${endColour} " && read names_file
 		if [ "$verbose" == "0" ]; then
-			timeout ${attack_time} bash -c "mdk4 ${netCard} b -c ${channel} -f ${names_file} &>/dev/null"
+			timeout ${attack_time} bash -c "mdk4 ${netCard} b -c ${channel} -s 200 -f ${names_file} &>/dev/null"
 		elif [ "$verbose" == "1" ]; then
-			timeout ${attack_time} bash -c "mdk4 ${netCard} b -c ${channel} -f ${names_file}"
+			timeout ${attack_time} bash -c "mdk4 ${netCard} b -c ${channel} -s 200 -f ${names_file}"
 		fi
 	fi
 
