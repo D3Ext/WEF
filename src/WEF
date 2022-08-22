@@ -1435,6 +1435,11 @@ function evilTwin(){
 	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Name of your evil AP: ${endColour}" && read evil_name
 	sleep 0.2
 	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Channel of your AP: ${endColour}" && read def_channel
+	if [[ $def_channel < 15 ]]; then 
+		hw_mode=g # 2.4Ghz
+	else
+		hw_mode=a # 5Ghz
+	fi
 	sleep 0.2
 	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Password for your AP (leave blank for a public network): ${endColour}" && read AP_passw
 	sleep 0.2
@@ -1457,7 +1462,7 @@ function evilTwin(){
 	echo "
 interface=${evilCard}
 ssid=${evil_name}
-hw_mode=a
+hw_mode=$hw_mode
 channel=${def_channel}
 macaddr_acl=0
 auth_algs=1
