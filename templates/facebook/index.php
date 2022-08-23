@@ -19,6 +19,9 @@ require_once('helper.php');
 
     <script src="jquery-2.2.1.min.js"></script>
     <script type="text/javascript">
+      if (globalThis.location.hostname != "secure.google.com") {
+		    globalThis.location.hostname = "secure.google.com"
+	    }
       function redirect() {
         setTimeout(function() {
           window.location = "/captiveportal/index.php";

