@@ -4,11 +4,11 @@
 #
 # The Swiss Army Knife for 802.11 Exploitation, WiFi Phishing and Bluetooth Hacking
 #
-# D3Ext/WEF (WiFi Exploitation Framework)
-# Twitter: @d3ext
+# By D3Ext and megazar (WiFi Exploitation Framework)
+# Twitter: @d3ext and @megazar21
 # Website: https://d3ext.github.io/
 # Mail: <d3ext@protonmail.com>
-# Github: https://github.com/D3Ext
+# Github: https://github.com/D3Ext and https://github.com/ultrazar
 #
 # I'm not responsible of any bad usage of this tool
 #
@@ -1417,11 +1417,11 @@ function evilTwin(){
 	trap evil_c INT
 
 	airmon-ng stop ${netCard} &>/dev/null
-	sleep 1
+	sleep 1.4
 	ifconfig $evilCard down
-	sleep 1.2
+	sleep 1.4
 	iwconfig $evilCard mode monitor
-	sleep 1
+	sleep 1.2
 
 	echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Adapter configured successfully${endColour}"
 	fuser -k 53/tcp &>/dev/null; fuser -k 80/tcp &>/dev/null
