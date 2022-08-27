@@ -354,6 +354,7 @@ function chipsets_panel(){
 	# Print some of the chipsets that support monitor mode
 	echo -e "\n\t${yellowColour}Chipsets${endColour}"
 	echo -e "\t${yellowColour}--------${endColour}"
+	echo -e "${blueColour} \tTLWN722N${endColour}"
 	echo -e "${blueColour} \tRTL8812AU${endColour}"
 	echo -e "${blueColour} \tAR9271${endColour}"
 	echo -e "${blueColour} \tMT7610U${endColour}"
