@@ -4,12 +4,13 @@
 A fully offensive framework to the 802.11 networks and protocols with different types of attacks for WPA/WPA2 and WEP, automated hash cracking, bluetooth hacking and much more.
 
 Tested and supported in **Kali Linux**, **Parrot OS**, **Arch Linux** and **Ubuntu**
+If you have any error please open an issue (if you want to write it in spanish you can do it) :D
 
 *\*However it's not finished and may have issues, try it at your own risk.\**
 
 - I recommend you my alfa adapter: **Alfa AWUS036ACM**, which works really great with both, 2.4 and 5 Ghz
 
-- If you have any doubt, please contact me or create a issue
+- If you have any doubt, please contact me via Instagram (@D3Ext) or Twitter (@D3Ext)
 
 ## ⭕ SUPPORTED ATTACKS:
 
@@ -107,6 +108,7 @@ Checkout the [Wiki](https://github.com/D3Ext/WEF/wiki/Installation)
 
 ### ⚪ Specials thanks to [ultrazar](https://github.com/ultrazar) who helped me a lot <3
 
+### ⚪ Extra
 
 **If you are using bspwm, you can add this line to your bspwmrc for launching the *xterm* windows always beeing in floating mode** (for a prettier design)
 
