@@ -84,6 +84,10 @@ if [ "$(id -u)" == "0" ]; then
 	cd "${git_dir}"
 	git clean -f 2>/dev/null
 	git pull >/dev/null 2>&1
+	wget https://raw.githubusercontent.com/hashcat/hashcat-utils/master/src/cap2hccapx.c &>/dev/null
+	gcc cap2hccapx.c -o cap2hccapx &>/dev/null
+	rm cap2hccapx.c 2>/dev/null
+	mv cap2hccapx /usr/bin/ 2>/dev/null
 
 	# Directories structure
 	log_p "Creating directories structure"
