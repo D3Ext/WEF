@@ -52,9 +52,9 @@ If you have any error please open an issue (if you want to write it in spanish y
 
 :ballot_box_with_check: Multiple templates for EvilTwin attack
 
-:ballot_box_with_check: Check monitor mode and it status
+:ballot_box_with_check: Check monitor mode and its status
 
-:ballot_box_with_check: 2Ghz and 5Ghz attacks
+:ballot_box_with_check: 2.4Ghz and 5Ghz attacks
 
 :ballot_box_with_check: Custom wordlist selector
 
