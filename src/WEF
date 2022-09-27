@@ -75,6 +75,7 @@ function evil_c(){
 # Ctrl + C for inhibite AP's
 function inhibition_c(){
 	sleep 0.1
+	# Kill deauth process
 	killall aireplay-ng 2>/dev/null
 	sleep 0.1
 }
@@ -98,7 +99,6 @@ function helpPanel(){
 	echo -e "\n${blueColour}Optional parameters:${endColour}"
 	echo -e "\t${yellowColour}-v, --verbose)${endColour}${blueColour} \t\tShow more info during the attacks${endColour}"
 	echo -e "\t${yellowColour}-h, --help)${endColour}${blueColour} \t\tShows this help panel${endColour}"
-	#echo -e "\t${yellowColour}--headless)${endColour}${blueColour} \t\tUse it if you are using a headless system (Example: Raspberry Pi)${endColour}"
 	echo -e "\t${yellowColour}--version)${endColour}${blueColour} \t\tPrint the version and exit${endColour}\n"
 	exit 0
 }
@@ -500,6 +500,7 @@ function card_setup(){
 			fi
 
 			echo -e "\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Network card configured successfully${endColour}"
+			# Enable monitor mode
 			airmon-ng start ${netCard} &>/dev/null
 			correct_counter="2"
 			# Check if your interface name changes when starting in monitor mode adding "mon" to its name  
@@ -664,6 +665,7 @@ function deauth_all_clients(){
 	sleep 0.3
 	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Do you want to capture the handshakes? [${endColour}${yellowColour}y${endColour}${blueColour}/${endColour}${yellowColour}n${endColour}${blueColour}]: ${endColour}" && read catch_handshakes
 
+	# Check user input to start airodump or not
 	if [ "$catch_handshakes" == "y" ] || [ "$catch_handshakes" == "yes" ]; then
 		xterm -hold -e "airodump-ng -c $channel -w ${dir}/Capture --essid $name ${netCard}" &
 		air2_PID=$!
