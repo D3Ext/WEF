@@ -3,7 +3,7 @@
 
 A fully offensive framework to the 802.11 networks and protocols with different types of attacks for WPA/WPA2 and WEP, automated hash cracking, bluetooth hacking and much more.
 
-Tested and supported in **Kali Linux**, **Parrot OS** and **Arch Linux** . If you have any error please open an issue (if you want to write it in spanish you can do it). If you have any doubt, please contact me via Instagram (@D3Ext) or Twitter (@D3Ext)
+Tested and supported in **Kali Linux**, **Parrot OS** and **Arch Linux**. If you have any error please open an issue (if you want to write it in spanish you can do it). If you have any doubt, please contact me via Instagram (@D3Ext) or Twitter (@D3Ext)
 
 *\*However it's not finished and may have issues, but if you have one, feel free to contact me and I'll try to fix it.\**
 
