@@ -89,7 +89,11 @@ However I'll do a post on my blog about WEF and wifi hacking from **zero to hero
 
 ## ⭕ INSTALLATION:
 
-Checkout the [Wiki](https://github.com/D3Ext/WEF/wiki/Installation) where I have more info to install, uninstall and use the program
+Checkout the [Wiki](https://github.com/D3Ext/WEF/wiki/Installation) where I have more info about the program
+
+## ⭕ UNINSTALLATION:
+
+Checkout the [Wiki](https://github.com/D3Ext/WEF/wiki/Uninstallation)
 
 ## ⭕ DEMO:
 
