@@ -76,9 +76,9 @@ if [ "$(id -u)" == "0" ]; then
 
 	# Check the actual OS between the supported ones
 	if [ "${system}" == "Kali" ] || [ "${system}" == "Parrot" ] || [ "${system}" == "Ubuntu"  ]; then
-		apt install hcxtools -y &>/dev/null
+		apt install hcxtools xterm pixiewps bully mdk4 aircrack-ng hashcat hostapd -y &>/dev/null
 	elif [ "${system}" == "Arch" ]; then
-		pacman -S hcxtools --no-confirm &>/dev/null
+		pacman -S hcxtools xterm pixiewps bully mdk4 aircrack-ng hashcat hostapd --no-confirm &>/dev/null
 	fi
 
 	cd "${git_dir}"
