@@ -104,11 +104,11 @@ Checkout the [Wiki](https://github.com/D3Ext/WEF/wiki/Uninstallation)
 
 ### ⚪ Extra
 
-**If you are using bspwm, you can add this line to your bspwmrc for launching the *xterm* windows always beeing in floating mode** (for a prettier design)
+**If you are using bspwm, you can add this line to your bspwmrc for launching the *xterm* windows which is always in floating mode** (for a prettier design)
 
     bspc rule -a XTerm state=floating
 
-**If you consider this project has been useful, I would really appreciate supporting me by giving this repo a star or buying me a coffee.**
+**If you consider this project useful, I would really appreciate supporting me by giving this repo a star or buying me a coffee.**
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/d3ext)
 
