@@ -96,7 +96,7 @@ Checkout the [Wiki](https://github.com/D3Ext/WEF/wiki/Uninstallation)
 
 <img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo.png">
 
-### ⚪ Specials thanks to [ultrazar](https://github.com/ultrazar) who helped me a lot <3
+### ⚪ Special thanks to [ultrazar](https://github.com/ultrazar) who helped me a lot <3
 
 ### ⚪ Extra
 
