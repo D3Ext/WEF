@@ -11,7 +11,7 @@ If you don't know how wifi hacking works you can read my free course [here](http
 
 - I recommend you my alfa adapter: **Alfa AWUS036ACM**, which works really great with both, 2.4 and 5 Ghz
 
-## ⭕ SUPPORTED ATTACKS:
+## ⭕ SUPPORTED ATTACKS
 
 - Deauthentication Attack
 
@@ -21,7 +21,7 @@ If you don't know how wifi hacking works you can read my free course [here](http
 
 - PMKID Attack
 
-- EvilTwin Attack 
+- EvilTwin Attack
 
 - Passive/Stealthy Attack
 
@@ -35,7 +35,7 @@ If you don't know how wifi hacking works you can read my free course [here](http
 
 - GPS Spoofing with HackRF (not finished)
 
-## ⭕ FEATURES:
+## ⭕ FEATURES
 
 :ballot_box_with_check: Descriptives attack logs
 
@@ -53,21 +53,25 @@ If you don't know how wifi hacking works you can read my free course [here](http
 
 :ballot_box_with_check: Auto detect requirements
 
-## ⭕ USAGE:
+## ⭕ USAGE
+
 > Common usage of the framework
 
 ```sh
 wef -i wlan0 # Your interface name might be different
 ```
+
 or
+
 ```sh
 wef --interface wlan0
 ```
 
 Once the application is running, type `help` to view more functions and useful info.
 
-## ⭕ REQUIREMENTS:
-> Don't install them manually, WEF takes care of that if you don't already have them 
+## ⭕ REQUIREMENTS
+
+> Don't install them manually, WEF takes care of that if you don't already have them
 
     aircrack-ng
     reaver
@@ -82,29 +86,29 @@ Once the application is running, type `help` to view more functions and useful i
     hostadp
     dnsmasq
 
-## ⭕ INSTALLATION:
+## ⭕ INSTALLATION
 
 Checkout the [Wiki](https://github.com/D3Ext/WEF/wiki/Installation) where I have more info about the program
 
-## ⭕ UNINSTALLATION:
+## ⭕ UNINSTALLATION
 
 Checkout the [Wiki](https://github.com/D3Ext/WEF/wiki/Uninstallation)
 
-## ⭕ DEMO:
+## ⭕ DEMO
 
 > Demo on a Parrot OS with Kitty terminal
 
 <img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo.png">
 
-### ⚪ Specials thanks to [ultrazar](https://github.com/ultrazar) who helped me a lot <3
+### ⚪ Special thanks to [ultrazar](https://github.com/ultrazar) who helped me a lot <3
 
 ### ⚪ Extra
 
-**If you are using bspwm, you can add this line to your bspwmrc for launching the *xterm* windows always beeing in floating mode** (for a prettier design)
+**If you are using bspwm, you can add this line to your bspwmrc for launching the *xterm* windows which is always in floating mode** (for a prettier design)
 
     bspc rule -a XTerm state=floating
-    
-**If you consider this project has been useful, I would really appreciate supporting me by giving this repo a star or buying me a coffee.**
+
+**If you consider this project useful, I would really appreciate supporting me by giving this repo a star or buying me a coffee.**
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/d3ext)
 
