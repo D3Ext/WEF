@@ -7,11 +7,9 @@ Tested and supported in **Kali Linux**, **Parrot OS** and **Arch Linux**. If you
 
 If you don't know how wifi hacking works you can read my free course [here](https://d3ext.github.io/posts/Curso/), it's written in Spanish and I explain things from 0
 
-*\*However it's not finished and may have issues, but if you have one, feel free to contact me and I'll try to fix it.\**
-
 - I recommend you my alfa adapter: **Alfa AWUS036ACM**, which works really great with both, 2.4 and 5 Ghz
 
-## ⭕ SUPPORTED ATTACKS
+## Supported Attacks
 
 - Deauthentication Attack
 
@@ -35,7 +33,7 @@ If you don't know how wifi hacking works you can read my free course [here](http
 
 - GPS Spoofing with HackRF (not finished)
 
-## ⭕ FEATURES
+## Features
 
 :ballot_box_with_check: Descriptives attack logs
 
@@ -53,7 +51,7 @@ If you don't know how wifi hacking works you can read my free course [here](http
 
 :ballot_box_with_check: Auto detect requirements
 
-## ⭕ USAGE
+## Usage
 
 > Common usage of the framework
 
@@ -69,7 +67,7 @@ wef --interface wlan0
 
 Once the application is running, type `help` to view more functions and useful info.
 
-## ⭕ REQUIREMENTS
+## Requirements
 
 > Don't install them manually, WEF takes care of that if you don't already have them
 
@@ -86,29 +84,34 @@ Once the application is running, type `help` to view more functions and useful i
     hostadp
     dnsmasq
 
-## ⭕ INSTALLATION
+## Installation
 
 Checkout the [Wiki](https://github.com/D3Ext/WEF/wiki/Installation) where I have more info about the program
 
-## ⭕ UNINSTALLATION
+## Uninstallation
 
 Checkout the [Wiki](https://github.com/D3Ext/WEF/wiki/Uninstallation)
 
-## ⭕ DEMO
+## Demo
 
-> Demo on a Parrot OS with Kitty terminal
+> Demo on a Parrot OS
 
 <img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo.png">
 
-### ⚪ Special thanks to [ultrazar](https://github.com/ultrazar) who helped me a lot <3
+## Disclaimer
 
-### ⚪ Extra
+Creator isn't in charge of any and has no responsibility for any kind of:
 
-**If you are using bspwm, you can add this line to your bspwmrc for launching the *xterm* windows which is always in floating mode** (for a prettier design)
+- Unlawful or illegal use of the project.
+- Legal or Law infringement (acted in any country, state, municipality, place) by third parties and users.
+- Act against ethical and / or human moral, ethic, and peoples of the world.
+- Malicious act, capable of causing damage to third parties, promoted or distributed by third parties or the user through this software.
 
-    bspc rule -a XTerm state=floating
+## Special thanks to [ultrazar](https://github.com/ultrazar) who helped me a lot <3
 
-**If you consider this project useful, I would really appreciate supporting me by giving this repo a star or buying me a coffee.**
+## Support
+
+*If you consider this project useful, I would really appreciate supporting me by giving this repo a star or buying me a coffee.*
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/d3ext)
 
