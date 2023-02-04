@@ -126,7 +126,7 @@ if [ "$(id -u)" == "0" ]; then
 	fi
 
 	if [ ! -f "/opt/wef/main/wordlists/rockyou.txt" ]; then
-		log_p "Downloading necesary files, this will take some time"
+		log_p "Downloading necessary files, this will take some time"
 		wget "https://github.com/praetorian-inc/Hob0Rules/raw/master/wordlists/rockyou.txt.gz" &>/dev/null
 		mv rockyou.txt.gz /opt/wef/main/wordlists/rockyou.txt.gz 2>/dev/null
 		gunzip /opt/wef/main/wordlists/rockyou.txt.gz 2>/dev/null
