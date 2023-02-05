@@ -1776,7 +1776,7 @@ if [ "$(id -u)" == "0" ]; then
 
       elif [ "$option" == "exit" ] || [ "$option" == "exi" ] || [ "$option" == "quit" ] || [ "$option" == "qui" ] || [ "$option" == "salir" ] || [ "$option" == "sortir" ]; then
         ctrl_c
-			fi
+      fi
 
       if [ "${correct_counter}" != "3" ]; then
         for word in "${words[@]}"; do
@@ -1933,11 +1933,11 @@ if [ "$(id -u)" == "0" ]; then
     helpPanel
   fi
 else
-	echo -e "${yC} __      _____ ___ "
-	echo -e " \ \    / / __| __|"
-	echo -e "  \ \/\/ /| _|| _| "
-	echo -e "   \_/\_/ |___|_|  ${endC}"
-	color_output_ln "X" "Please, execute the program as root\n"
-	exit 1
+  echo -e "${yC} __      _____ ___ "
+  echo -e " \ \    / / __| __|"
+  echo -e "  \ \/\/ /| _|| _| "
+  echo -e "   \_/\_/ |___|_|  ${endC}"
+  color_output_ln "X" "Please, execute the program as root\n"
+  exit 1
 fi
 
