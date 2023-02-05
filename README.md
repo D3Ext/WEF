@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">WiFi Exploitation Framework</h1></br>
+  <h1 align="center">WiFi Exploitation Framework</h1>
 </p>
 
 <p align="center">
@@ -107,11 +107,23 @@ Checkout the [Wiki](https://github.com/D3Ext/WEF/wiki/Uninstallation)
 
 ## Special thanks to [ultrazar](https://github.com/ultrazar) who helped me a lot <3
 
-## Support
+## Contributing
 
-*If you consider this project useful, I would really appreciate supporting me by giving this repo a star or buying me a coffee.*
+Do you want to contribute with any interesting idea? You're in te right place
 
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/d3ext)
+`1` Open an issue to discuss your idea
+
+`2` Fork the repo
+
+`3` Create a branch
+
+`4` Commit your changes
+
+`5` Push to the branch
+
+`6` Create a new pull request
+
+***New features and bugs reports are welcome***
 
 ## Disclaimer
 
