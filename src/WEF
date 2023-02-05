@@ -1589,204 +1589,202 @@ if [ "$(id -u)" == "0" ]; then
 
         #tput civis
         all_banners; sleep 0.09
-				export PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/usr/share/games:/usr/local/sbin:/usr/sbin:/sbin:/snap/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
-				dir=$(pwd)
-				dependencies; sleep 0.09
-				active_card; sleep 0.09
-				card_status; sleep 0.09
-				mac_status; sleep 0.09
-				echo -e "\n${blueC}[${yC}1${blueC}] Beacon Flood Attack\t\t\t[${yC}10${blueC}] Pixie Dust Attack${endC}"
-				sleep 0.09
-				echo -e "${blueC}[${yC}2${blueC}] Deauthentication Attack\t\t[${yC}11${blueC}] Caffe-Latte Attack${endC}"
-				sleep 0.09
-				echo -e "${blueC}[${yC}3${blueC}] Authentication Attack\t\t[${yC}12${blueC}] ChopChop Attack${endC}"
-				sleep 0.09
-				echo -e "${blueC}[${yC}4${blueC}] PMKID Attack\t\t\t[${yC}13${blueC}] Michael Exploitation Attack${endC}"
-				sleep 0.09
-				echo -e "${blueC}[${yC}5${blueC}] Passive Attack\t\t\t[${yC}14${blueC}] Replay Attack${endC}"
-				sleep 0.09
-				echo -e "${blueC}[${yC}6${blueC}] Randomize MAC address\t\t[${yC}15${blueC}] Null Pin Attack${endC}"
-				sleep 0.09
-				echo -e "${blueC}[${yC}7${blueC}] Start network card${endC}"
-				sleep 0.09
-				echo -e "${blueC}[${yC}8${blueC}] Evil Twin Attack${endC}"
-				sleep 0.09
-				echo -e "${blueC}[${yC}9${blueC}] Attacks info${endC}"
-				sleep 0.09
-			elif [ "${correct_counter}" == "2" ]; then
-				clear; correct_counter="0"
-				#tput civis
+        export PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/usr/share/games:/usr/local/sbin:/usr/sbin:/sbin:/snap/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
+        dir=$(pwd)
+        dependencies; sleep 0.09
+        active_card; sleep 0.09
+        card_status; sleep 0.09
+        mac_status; sleep 0.09
+        echo -e "\n${blueC}[${yC}1${blueC}] Beacon Flood Attack\t\t\t[${yC}10${blueC}] Pixie Dust Attack${endC}"
+        sleep 0.09
+        echo -e "${blueC}[${yC}2${blueC}] Deauthentication Attack\t\t[${yC}11${blueC}] Caffe-Latte Attack${endC}"
+        sleep 0.09
+        echo -e "${blueC}[${yC}3${blueC}] Authentication Attack\t\t[${yC}12${blueC}] ChopChop Attack${endC}"
+        sleep 0.09
+        echo -e "${blueC}[${yC}4${blueC}] PMKID Attack\t\t\t[${yC}13${blueC}] Michael Exploitation Attack${endC}"
+        sleep 0.09
+        echo -e "${blueC}[${yC}5${blueC}] Passive Attack\t\t\t[${yC}14${blueC}] Replay Attack${endC}"
+        sleep 0.09
+        echo -e "${blueC}[${yC}6${blueC}] Randomize MAC address\t\t[${yC}15${blueC}] Null Pin Attack${endC}"
+        sleep 0.09
+        echo -e "${blueC}[${yC}7${blueC}] Start network card${endC}"
+        sleep 0.09
+        echo -e "${blueC}[${yC}8${blueC}] Evil Twin Attack${endC}"
+        sleep 0.09
+        echo -e "${blueC}[${yC}9${blueC}] Attacks info${endC}"
+        sleep 0.09
+      elif [ "${correct_counter}" == "2" ]; then
+        clear; correct_counter="0"
+        #tput civis
         all_banners
-				echo -e "\n${blueC}Type '${yC}help${blueC}' to view more functions${endC}"
-				dir=$(pwd)
-				active_card; card_status; mac_status
-				echo -e "\n${blueC}[${yC}1${blueC}] Beacon Flood Attack\t\t\t[${yC}10${blueC}] Pixie Dust Attack${endC}"
+        echo -e "\n${blueC}Type '${yC}help${blueC}' to view more functions${endC}"
+        dir=$(pwd)
+        active_card; card_status; mac_status
+        echo -e "\n${blueC}[${yC}1${blueC}] Beacon Flood Attack\t\t\t[${yC}10${blueC}] Pixie Dust Attack${endC}"
         echo -e "${blueC}[${yC}2${blueC}] Deauthentication Attack\t\t[${yC}11${blueC}] Caffe-Latte Attack${endC}"
         echo -e "${blueC}[${yC}3${blueC}] Authentication Attack$\t\t[${yC}12${blueC}] ChopChop Attack${endC}"
         echo -e "${blueC}[${yC}4${blueC}] PMKID Attack\t\t\t[${yC}13${blueC}] Michael Exploitation Attack${endC}"
-	      echo -e "${blueC}[${yC}5${blueC}] Passive Attack\t\t\t[${yC}14${blueC}] Replay Attack${endC}"
-	      echo -e "${blueC}[${yC}6${blueC}] Randomize MAC address\t\t[${yC}15${blueC}] Null Pin Attack${endC}"
+        echo -e "${blueC}[${yC}5${blueC}] Passive Attack\t\t\t[${yC}14${blueC}] Replay Attack${endC}"
+        echo -e "${blueC}[${yC}6${blueC}] Randomize MAC address\t\t[${yC}15${blueC}] Null Pin Attack${endC}"
         echo -e "${blueC}[${yC}7${blueC}] Start network card${endC}"
         echo -e "${blueC}[${yC}8${blueC}] Evil Twin Attack${endC}"
         echo -e "${blueC}[${yC}9${blueC}] Attacks info${endC}"
-			fi
+      fi
 
-			correct_counter="0"
-			echo -ne "\n${blueC}[${yC}WiFi${blueC}] Choose an option >${endC} " && read option
-			time_counter="1"
+      correct_counter="0"
+      echo -ne "\n${blueC}[${yC}WiFi${blueC}] Choose an option >${endC} " && read option
+      time_counter="1"
 
-			if [ "$option" == "1" ] || [ "$option" == "beacon" ] || [ "$option" == "beacon flood" ] || [ "$option" == "beacon-flood" ] || [ "$option" == "beaconflood" ] || [ "$option" == "Beacon" ] || [ "$option" == "Beacon Flood" ] || [ "$option" == "b" ]; then
-				sleep 0.15
-				type_of_attack="Beacon Flood Attack"
-				if [ "$(check_interface_mode)" == "monitor" ]; then
-					sleep 0.15; beacon_flood
-				else
-					correct_counter="3"
+      if [ "$option" == "1" ] || [ "$option" == "beacon" ] || [ "$option" == "beacon flood" ] || [ "$option" == "beacon-flood" ] || [ "$option" == "beaconflood" ] || [ "$option" == "Beacon" ] || [ "$option" == "Beacon Flood" ] || [ "$option" == "b" ]; then
+        sleep 0.15
+        type_of_attack="Beacon Flood Attack"
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          sleep 0.15; beacon_flood
+        else
+          correct_counter="3"
           log_monitor_is_disabled
-				fi
+        fi
 
-			elif [ "$option" == "2" ] || [ "$option" == "deauth" ] || [ "$option" == "deauthentication" ] || [ "$option" == "deauth attack" ] || [ "$option" == "deauth-attack" ] || [ "$option" == "deauthentication-attack" ] || [ "$option" == "Deauthentication" ] || [ "$option" == "d" ]; then
-				sleep 0.15
-				type_of_attack="Deauthentication Attack"
-				if [ "$(check_interface_mode)" == "monitor" ]; then
-					sleep 0.15; deauth_attack
-				else
-					correct_counter="3"
-					log_monitor_is_disabled
-				fi
+      elif [ "$option" == "2" ] || [ "$option" == "deauth" ] || [ "$option" == "deauthentication" ] || [ "$option" == "deauth attack" ] || [ "$option" == "deauth-attack" ] || [ "$option" == "deauthentication-attack" ] || [ "$option" == "Deauthentication" ] || [ "$option" == "d" ]; then
+        sleep 0.15
+        type_of_attack="Deauthentication Attack"
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          sleep 0.15; deauth_attack
+        else
+          correct_counter="3"
+          log_monitor_is_disabled
+        fi
 
-			elif [ "$option" == "3" ] || [ "$option" == "auth" ] || [ "$option" == "authentication" ] || [ "$option" == "auth attack" ] || [ "$option" == "auth-attack" ] || [ "$option" == "authentication-attack" ] || [ "$option" == "Authentication" ] || [ "" == "a" ]; then
-				sleep 0.15
+      elif [ "$option" == "3" ] || [ "$option" == "auth" ] || [ "$option" == "authentication" ] || [ "$option" == "auth attack" ] || [ "$option" == "auth-attack" ] || [ "$option" == "authentication-attack" ] || [ "$option" == "Authentication" ] || [ "" == "a" ]; then
+        sleep 0.15
         type_of_attack="Authentication Attack"
-				if [ "$(check_interface_mode)" == "monitor" ]; then
-					sleep 0.15; auth_attack
-				else
-					correct_counter="3"
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          sleep 0.15; auth_attack
+        else
+          correct_counter="3"
           log_monitor_is_disabled
-				fi
+        fi
 
-			elif [ "$option" == "4" ] || [ "$option" == "pmkid" ] || [ "$option" == "pmkid attack" ] || [ "$option" == "pmkid-attack" ] || [ "$option" == "PMKID" ]; then
-				sleep 0.15
-				type_of_attack="PMKID Attack"
-				if [ "$(check_interface_mode)" == "monitor" ]; then
-					sleep 0.15; pmkid_attack
-				else
-					correct_counter="3"
-					color_output_ln "*" "Your card is not in monitor mode."
-					echo -e "${blueC}[${endC}${yC}*${endC}${blueC}] Please before doing any attack press the ${endC}${yC}Start network card${endC}${blueC} option${endC}"
-				fi
+      elif [ "$option" == "4" ] || [ "$option" == "pmkid" ] || [ "$option" == "pmkid attack" ] || [ "$option" == "pmkid-attack" ] || [ "$option" == "PMKID" ]; then
+        sleep 0.15
+        type_of_attack="PMKID Attack"
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          sleep 0.15; pmkid_attack
+        else
+          correct_counter="3"
+          color_output_ln "*" "Your card is not in monitor mode."
+          echo -e "${blueC}[${yC}*${blueC}] Please before doing any attack press the ${yC}Start network card${blueC} option${endC}"
+        fi
 
-			elif [ "$option" == "5" ] || [ "$option" == "passive" ] || [ "$option" == "passive attack" ] || [ "$option" == "stealthy" ] || [ "$option" == "stealthy attack" ] || [ "$option" == "passive-attack" ] || [ "$option" == "Passive" ] || [ "$option" == "Stealthy" ]; then
-				sleep 0.15
-				type_of_attack="Passive/Stealthy Attack"
-				if [ "$(check_interface_mode)" == "monitor" ]; then
-					sleep 0.15; passive_attack
-				else
-					correct_counter="3"
+      elif [ "$option" == "5" ] || [ "$option" == "passive" ] || [ "$option" == "passive attack" ] || [ "$option" == "stealthy" ] || [ "$option" == "stealthy attack" ] || [ "$option" == "passive-attack" ] || [ "$option" == "Passive" ] || [ "$option" == "Stealthy" ]; then
+        sleep 0.15
+        type_of_attack="Passive/Stealthy Attack"
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          sleep 0.15; passive_attack
+        else
+          correct_counter="3"
           log_monitor_is_disabled
-				fi
+        fi
 
-			elif [ "${card_check}" != "${netCard}" ] && [ "$option" == "7" ] || [ "$option" == "start" ] || [ "$option" == "up" ] || [ "$option" == "start card" ] || [ "$option" == "start-card" ] || [ "$option" == "Start" ]; then
-          sleep 0.15
-					if [ "$start_counter" == "1" ]; then
-            correct_counter="3"
-						echo -e "\n${yC}Interface already in monitor mode${endC}"
-          else
-						card_setup
-					fi
-				#fi
+      elif [ "${card_check}" != "${netCard}" ] && [ "$option" == "7" ] || [ "$option" == "start" ] || [ "$option" == "up" ] || [ "$option" == "start card" ] || [ "$option" == "start-card" ] || [ "$option" == "Start" ]; then
+        sleep 0.15
+        if [ "$start_counter" == "1" ]; then
+          correct_counter="3"
+          echo -e "\n${yC}Interface already in monitor mode${endC}"
+        else
+          card_setup
+        fi
 
       elif [ "$option" == "7" ] || [ "$option" == "start" ] || [ "$option" == "up" ] || [ "$option" == "start card" ] || [ "$option" == "start-card" ] || [ "$option" == "Start" ]; then
         option=""
         good_output_ln "+" "Network card already in monitor mode"
 
-			elif [ "$option" == "8" ] || [ "$option" == "evil twin" ] || [ "$option" == "evil-twin" ] || [ "$option" == "eviltwin" ] || [ "$option" == "evil" ] || [ "$option" == "evil twin attack" ] || [ "$option" == "evil-twin-attack" ] || [ "$option" == "Evil" ] || [ "$option" == "EvilTwin" ] || [ "$option" == "Evil Twin" ] || [ "$option" == "Evil-Twin" ] || [ "$option" == "e" ]; then
-				sleep 0.15
-				if [ "$(check_interface_mode)" == "monitor" ]; then
-					sleep 0.15; evilTwin
-				else
-					correct_counter="3"
-          log_monitor_is_disabled
-				fi
-
-			elif [ "$option" == "9" ] || [ "$option" == "list" ] || [ "$option" == "help attacks" ] || [ "$option" == "attacks" ] || [ "$option" == "Attacks" ]; then
-				correct_counter="3"
-				sleep 0.1; clear
-				all_banners; sleep 0.1
-				functions_info; sleep 0.1
-
-			elif [ "$option" == "10" ] || [ "$option" == "pixie" ] || [ "$option" == "pixie dust" ] || [ "$option" == "pixie-dust" ] || [ "$option" == "Pixie" ] || [ "$option" == "Pixie Dust" ]; then
-				sleep 0.15
-				type_of_attack="Pixie Dust Attack"
-				if [ "$(check_interface_mode)" == "monitor" ]; then
-					sleep 0.15; pixie_dust
-				else
-					correct_counter="3"
-          log_monitor_is_disabled
-				fi
-
-			elif [ "$option" == "11" ] || [ "$option" == "caffe" ] || [ "$option" == "caffe latte" ] || [ "$option" == "caffe-latte" ] || [ "$option" == "Caffe-Latte" ] || [ "$option" == "Caffe Latte" ] || [ "$option" == "CaffeLatte" ]; then
-				sleep 0.15
-				type_of_attack="Caffe Latte Attack"
-				if [ "$(check_interface_mode)" == "monitor" ]; then
-					sleep 0.15; caffe-latte
+      elif [ "$option" == "8" ] || [ "$option" == "evil twin" ] || [ "$option" == "evil-twin" ] || [ "$option" == "eviltwin" ] || [ "$option" == "evil" ] || [ "$option" == "evil twin attack" ] || [ "$option" == "evil-twin-attack" ] || [ "$option" == "Evil" ] || [ "$option" == "EvilTwin" ] || [ "$option" == "Evil Twin" ] || [ "$option" == "Evil-Twin" ] || [ "$option" == "e" ]; then
+        sleep 0.15
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          sleep 0.15; evilTwin
         else
-					correct_counter="3"
+          correct_counter="3"
           log_monitor_is_disabled
-				fi
+        fi
 
-			elif [ "$option" == "12" ] || [ "$option" == "chopchop" ] || [ "$option" == "chopchop-atack" ] || [ "$option" == "ChopChop" ]; then
-				sleep 0.15
-				type_of_attack="ChopChop Attack"
-				if [ "$(check_interface_mode)" == "monitor" ]; then
-					sleep 0.15; chopchop
+      elif [ "$option" == "9" ] || [ "$option" == "list" ] || [ "$option" == "help attacks" ] || [ "$option" == "attacks" ] || [ "$option" == "Attacks" ]; then
+        correct_counter="3"
+        sleep 0.1; clear
+        all_banners; sleep 0.1
+        functions_info; sleep 0.1
+
+      elif [ "$option" == "10" ] || [ "$option" == "pixie" ] || [ "$option" == "pixie dust" ] || [ "$option" == "pixie-dust" ] || [ "$option" == "Pixie" ] || [ "$option" == "Pixie Dust" ]; then
+        sleep 0.15
+        type_of_attack="Pixie Dust Attack"
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          sleep 0.15; pixie_dust
         else
-					correct_counter="3"
+          correct_counter="3"
           log_monitor_is_disabled
-				fi
+        fi
 
-			elif [ "$option" == "13" ] || [ "$option" == "michael" ] || [ "$option" == "michael-attack" ] || [ "$option" == "Michael" ] || [ "$option" == "Michael Exploitation" ] || [ "$option" == "m" ]; then
-				sleep 0.15
-				type_of_attack="Michael Shutdown Exploitation Attack"
-				if [ "$(check_interface_mode)" == "monitor" ]; then
-					sleep 0.15; michael
-				else
-					correct_counter="3"
+      elif [ "$option" == "11" ] || [ "$option" == "caffe" ] || [ "$option" == "caffe latte" ] || [ "$option" == "caffe-latte" ] || [ "$option" == "Caffe-Latte" ] || [ "$option" == "Caffe Latte" ] || [ "$option" == "CaffeLatte" ]; then
+        sleep 0.15
+        type_of_attack="Caffe Latte Attack"
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          sleep 0.15; caffe-latte
+        else
+          correct_counter="3"
           log_monitor_is_disabled
-				fi
+        fi
+
+      elif [ "$option" == "12" ] || [ "$option" == "chopchop" ] || [ "$option" == "chopchop-atack" ] || [ "$option" == "ChopChop" ]; then
+        sleep 0.15
+        type_of_attack="ChopChop Attack"
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          sleep 0.15; chopchop
+        else
+          correct_counter="3"
+          log_monitor_is_disabled
+        fi
+
+      elif [ "$option" == "13" ] || [ "$option" == "michael" ] || [ "$option" == "michael-attack" ] || [ "$option" == "Michael" ] || [ "$option" == "Michael Exploitation" ] || [ "$option" == "m" ]; then
+        sleep 0.15
+        type_of_attack="Michael Shutdown Exploitation Attack"
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          sleep 0.15; michael
+        else
+          correct_counter="3"
+          log_monitor_is_disabled
+        fi
+
+      elif [ "$option" == "14" ] || [ "$option" == "replay" ] || [ "$option" == "replay-attack" ] || [ "$option" == "replay attack" ] || [ "$option" == "Replay" ] || [ "$option" == "Replay Attack" ] || [ "$option" == "r" ]; then
+        sleep 0.15
+        type_of_attack="Replay Attack"
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          sleep 0.15; replay
+        else
+          correct_counter="3"
+          log_monitor_is_disabled
+        fi
+
+      elif [ "$option" == "15" ] || [ "$option" == "null" ] || [ "$option" == "nullpin" ] || [ "$option" == "null pin" ] || [ "$option" == "null-pin" ] || [ "$option" == "Null" ] || [ "$option" == "Null Pin" ] || [ "$option" == "n" ]; then
+        sleep 0.15
+        type_of_attack="Null Pin Attack"
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          sleep 0.15; null-pin
+        else
+          correct_counter="3"
+          log_monitor_is_disabled
+        fi
+
+      elif [ "$option" == "exit" ] || [ "$option" == "exi" ] || [ "$option" == "quit" ] || [ "$option" == "qui" ] || [ "$option" == "salir" ] || [ "$option" == "sortir" ]; then
+        ctrl_c
 			fi
 
-			if [ "$option" == "14" ] || [ "$option" == "replay" ] || [ "$option" == "replay-attack" ] || [ "$option" == "replay attack" ] || [ "$option" == "Replay" ] || [ "$option" == "Replay Attack" ] || [ "$option" == "r" ]; then
-				sleep 0.15
-				type_of_attack="Replay Attack"
-				if [ "$(check_interface_mode)" == "monitor" ]; then
-					sleep 0.15; replay
-				else
-					correct_counter="3"
-          log_monitor_is_disabled
-				fi
-
-			elif [ "$option" == "15" ] || [ "$option" == "null" ] || [ "$option" == "nullpin" ] || [ "$option" == "null pin" ] || [ "$option" == "null-pin" ] || [ "$option" == "Null" ] || [ "$option" == "Null Pin" ] || [ "$option" == "n" ]; then
-				sleep 0.15
-				type_of_attack="Null Pin Attack"
-				if [ "$(check_interface_mode)" == "monitor" ]; then
-					sleep 0.15; null-pin
-				else
-					correct_counter="3"
-          log_monitor_is_disabled
-				fi
-
-			elif [ "$option" == "exit" ] || [ "$option" == "exi" ] || [ "$option" == "quit" ] || [ "$option" == "qui" ] || [ "$option" == "salir" ] || [ "$option" == "sortir" ]; then
-				ctrl_c
-			fi
-
-			if [ "${correct_counter}" != "3" ]; then
-				for word in "${words[@]}"; do
-					if [ "${option}" == "${word}" ]; then
-						correct_counter="2"
-					fi
-				done
-			fi
+      if [ "${correct_counter}" != "3" ]; then
+        for word in "${words[@]}"; do
+          if [ "${option}" == "${word}" ]; then
+            correct_counter="2"
+          fi
+        done
+      fi
 
       if [ "$option" == "help" ] || [ "$option" == "?" ] || [ "$option" == "Help" ]; then
         correct_counter="3"
@@ -1824,11 +1822,11 @@ if [ "$(id -u)" == "0" ]; then
 
       elif [ "$option" == "modules" ] || [ "$option" == "load" ]; then
         correct_counter="3"
-        echo -e "\n${yC}\tModules${endC}"
-        echo -e "${yC}\t-------${endC}"
-        echo -e "${blueC} \twifi${endC}"
-        echo -e "${blueC} \tbluetooth${endC}"
-        echo -e "\n${blueC} Load a module: load <module_name>${endC}"
+        echo -e "\n${yC}\tModules"
+        echo -e "\t-------${blueC}"
+        echo -e " \twifi"
+        echo -e " \tbluetooth"
+        echo -e "\n Load a module: load <module_name>${endC}"
 
       elif [ "$option" == "scan" ] || [ "$option" == "scanner" ]; then
         correct_counter="3"
@@ -1846,7 +1844,7 @@ if [ "$(id -u)" == "0" ]; then
         correct_counter="3"; sleep 0.15
         chipsets_panel
 
-	    elif [ "$(echo ${option} | awk '{print $1}')" == "enable" ] && [ "$(echo ${option} | awk '{print $2}')" == "auto" ]; then
+      elif [ "$(echo ${option} | awk '{print $1}')" == "enable" ] && [ "$(echo ${option} | awk '{print $2}')" == "auto" ]; then
         correct_counter="3"; sleep 0.2
         echo -e "0 0 * * sun root /opt/wef/extra/delete-creds.sh" >> /etc/crontab # Add cronjob which executes every week and removes harvested creds
         good_output_ln "+" "Auto credentials deletion enabled"
