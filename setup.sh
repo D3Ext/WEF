@@ -72,13 +72,11 @@ if [ "$(id -u)" == "0" ]; then
 	system=$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')
 
 	# libbluetooth: Workaround for pybluez dependency https://github.com/themagpimag/magpi-issue61/issues/1
-	apt install libbluetooth-dev moreutils -y &>/dev/null
-
 	# Check the actual OS between the supported ones
 	if [ "${system}" == "Kali" ] || [ "${system}" == "Parrot" ] || [ "${system}" == "Ubuntu"  ]; then
-		apt install hcxtools xterm pixiewps bully mdk4 aircrack-ng hashcat hostapd -y &>/dev/null
+		apt install hcxtools xterm pixiewps bully mdk4 aircrack-ng hashcat hostapd libbluetooth-dev moreutils -y &>/dev/null
 	elif [ "${system}" == "Arch" ]; then
-		pacman -S hcxtools xterm pixiewps bully mdk4 aircrack-ng hashcat hostapd --no-confirm &>/dev/null
+		pacman -S hcxtools hcxdumptool xterm pixiewps bully mdk4 aircrack-ng hashcat hostapd moreutils --no-confirm &>/dev/null
 	fi
 
 	cd "${git_dir}"
