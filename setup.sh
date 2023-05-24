@@ -76,7 +76,7 @@ if [ "$(id -u)" == "0" ]; then
   if [ "${system}" == "Kali" ] || [ "${system}" == "Parrot" ] || [ "${system}" == "Ubuntu"  ]; then
     apt install hcxtools xterm pixiewps bully mdk4 aircrack-ng hashcat hostapd libbluetooth-dev moreutils -y &>/dev/null
   elif [ "${system}" == "Arch" ]; then
-    pacman -S hcxtools hcxdumptool xterm pixiewps bully mdk4 aircrack-ng hashcat hostapd moreutils --no-confirm &>/dev/null
+    pacman -S hcxtools hcxdumptool xterm pixiewps bully mdk4 aircrack-ng hashcat hostapd moreutils reaver --no-confirm &>/dev/null
   fi
 
   cd "${git_dir}"
