@@ -16,7 +16,7 @@ grayC="\e[0;37m\033[1m"
 
 function log_progress(  ) {
 	# The main logging loop
-	echo -ne "\n--- ${blueC} $1 ";
+	echo -ne "\n--- ${blueC} $1 ${endC}";
 	spin='-\|/'
 	i=0
 	while :
@@ -52,30 +52,34 @@ if [ "$(id -u)" == "0" ]; then
   fi
 
   adir="$(pwd)/"
-  echo -e "\n${blueC}[${yC}WEF${blueC}] Preparing the setup for working properly${endC}"
+  echo -e "\n${blueC}[${yC}WEF${blueC}] Setup file${endC}"; sleep 0.75
+
   if [ ! "${git_dir}" ]; then
     # In the case this is the first setup or wef.cnf was deleted
-
     if [ -d ".git" ]; then
       # If there are git files in this dir
-      echo -ne "\n${blueC}[${rC}+${blueC}] Using $(pwd)/ as the WEF repo \n${endC}"
+      echo -ne "\n${blueC}[${rC}+${blueC}]  Using $(pwd)/ as the WEF repo \n${endC}"
       git_dir=$(pwd)
     else
-      printf "\n${blueC}[${rC}X${blueC}]${endC} ERROR: Cannot find WEF repository location, please execute this script inside where it was cloned"
-      printf "\n${blueC}[${rC}X${blueC}]${endC} ABORTING..."
+      printf "\n${blueC}[${rC}X${blueC}]${endC}  ERROR: Cannot find WEF repository location, please execute this script inside where it was cloned"
+      printf "\n${blueC}[${rC}X${blueC}]${endC}  ABORTING..."
       exit 1
     fi
-
   fi
-  system=$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')
 
-  dependencies=(systemctl iw hcxtools hcxdumptool xterm pixiewps bully mdk4 aircrack-ng hashcat john reaver hostapd hostapd-wpe dnsmasq iptables lighttpd moreutils lshw dhcp coreutils pocl libxcrypt-compat)
+  system=$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')
+  dependencies=(systemd iw hcxtools hcxdumptool xterm pixiewps bully mdk4 aircrack-ng hashcat john reaver hostapd hostapd-wpe dnsmasq iptables lighttpd moreutils lshw dhcp coreutils pocl libxcrypt-compat)
   # Check the actual OS between the supported ones
+  log_p "Installing required tools"
+  sleep 1
+  stop_p
+  echo -e "\n"
+
   if [ "${system}" == "Kali" ] || [ "${system}" == "Parrot" ]; then
     for req in ${dependencies[@]}; do
       apt install ${req} -y
     done
-  elif [ "${system}" == "Arch" ]; then
+  elif [ "$(echo "${system}" | grep -i "arch")" ]; then
     for req in ${dependencies[@]}; do
       pacman -S ${req} --noconfirm
     done
@@ -85,6 +89,7 @@ if [ "$(id -u)" == "0" ]; then
   cd "${git_dir}"
   git clean -f 2>/dev/null
   git pull >/dev/null 2>&1
+  sleep 1
 
   # Directories structure
   log_p "Creating directories structure"
@@ -94,11 +99,12 @@ if [ "$(id -u)" == "0" ]; then
     /opt/wef/main/wordlists \
     /opt/wef/main/captures \
     /opt/wef/main/logs 2>/dev/null
-  sleep 0.1
 
   cp -r captive-portals/ /opt/wef/main/
+  sleep 0.4
 
-  log_p "Installing/updating modules and other things"
+  log_p "Installing/updating requirements and config files"
+  sleep 0.3
 
   if [ ! -f "/opt/wef/main/wordlists/rockyou.txt" ]; then
     log_p "Downloading necessary wordlists, this will take some time"
@@ -114,21 +120,22 @@ if [ "$(id -u)" == "0" ]; then
 
   # Check if the wef config file exists in /opt/wef/
   if [ ! -f "/opt/wef/wef.cnf" ]; then
+    log_p "Creating config file (/opt/wef/wef.cnf)"
     touch /opt/wef/wef.cnf
     echo "repo_dir=${adir}" >> /opt/wef/wef.cnf
     echo "wef_dir=/opt/wef/" >> /opt/wef/wef.cnf
     echo "os=${system}" >> /opt/wef/wef.cnf
     echo "lang=en" >> /opt/wef/wef.cnf
     echo "use_colors=true" >> /opt/wef/wef.cnf
-  fi
+  fi; sleep 0.4
 
   # Giving permissions to files
+  log_p "Moving files and uninstaller to /opt/wef"
   ln -s "${adir}src/WEF" /usr/bin/wef 2>/dev/null 
   cp src/WEF /opt/wef/wef 2>/dev/null
   cp src/clear.sh /opt/wef/clear-logs.sh 2>/dev/null
   cp src/uninstaller.sh /opt/wef/uninstaller.sh 2>/dev/null
   cp setup.sh /opt/wef/update.sh 2>/dev/null
-  cp -r templates /opt/wef/main 2>/dev/null
   chmod +x src/WEF \
       /opt/wef/wef \
       /opt/wef/clear-logs.sh \
@@ -138,9 +145,12 @@ if [ "$(id -u)" == "0" ]; then
       src/clear.sh \
       setup.sh 2>/dev/null
 
+  sleep 0.4
+  stop_p
+
   cd "${adir}"
-  echo -e "\n\n${blueC}[${greenC}+${blueC}] Installation/update completed, I hope you enjoy WEF${endC}"
-  echo -e "${blueC}[${greenC}+${blueC}] You can execute it just by typing 'wef' in the terminal\n${endC}"
+  echo -e "\n\n${blueC}[${greenC}+${blueC}] Installation completed, I hope you enjoy WEF${endC}"
+  echo -e "${blueC}[${greenC}+${blueC}] You can use the tool just by executing 'wef' in the terminal\n${endC}"
   exit 0
 
 else
