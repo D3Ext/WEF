@@ -964,9 +964,11 @@ function enable_mon(){
           echo -ne "${blueC}[${yC}*${blueC}] Seguro que quieres ejecutar \"airmon-ng check kill\"? Esto cortará tus conexiones activas! [${yC}s${blueC}/${yC}n${blueC}]: ${endC}" && read k_n_s
         fi
         if [ "$k_n_s" == "y" ] || [ "$k_n_s" == "yes" ] || [ "$k_n_s" == "s" ] || [ "$k_n_s" == "si" ]; then
+          cat /opt/wef/wef.cnf | grep -v "airmon_check_kill" | sponge /opt/wef/wef.cnf
           echo "airmon_check_kill=true" >> /opt/wef/wef.cnf
           k_n_s="true"
         else
+          cat /opt/wef/wef.cnf | grep -v "airmon_check_kill" | sponge /opt/wef/wef.cnf
           echo "airmon_check_kill=false" >> /opt/wef/wef.cnf
           k_n_s="false"
         fi
@@ -1215,15 +1217,15 @@ function check_ap_list(){
       fi
 
       if [ "${scan_option}" == "2" ] || [ "${scan_option}" == "2.4" ]; then
-        cat /opt/wef/wef.cnf | grep -v "scan_type" > /opt/wef/wef.cnf # Avoid possible errors
+        cat /opt/wef/wef.cnf | grep -v "scan_type" | sponge /opt/wef/wef.cnf # Avoid possible errors
         echo "scan_type=2.4" >> /opt/wef/wef.cnf
         check_ap_list
       elif [ "${scan_option}" == "5" ]; then
-        cat /opt/wef/wef.cnf | grep -v "scan_type" > /opt/wef/wef.cnf # Avoid possible errors
+        cat /opt/wef/wef.cnf | grep -v "scan_type" | sponge /opt/wef/wef.cnf # Avoid possible errors
         echo "scan_type=5" >> /opt/wef/wef.cnf
         check_ap_list
       elif [ "${scan_option}" == "both" ]; then
-        cat /opt/wef/wef.cnf | grep -v "scan_type" > /opt/wef/wef.cnf # Avoid possible errors
+        cat /opt/wef/wef.cnf | grep -v "scan_type" | sponge /opt/wef/wef.cnf # Avoid possible errors
         echo "scan_type=both" >> /opt/wef/wef.cnf
         check_ap_list
       else
@@ -2826,18 +2828,20 @@ if [ "$(id -u)" == "0" ]; then
     elif [ "$verbose_config" == "" ]; then
       while true; do
         if [ "$lang" == "en" ]; then
+          echo
           color_output_no_line "*" "This is the first time you use the tool, do you want to enable verbose by default? [${yC}y${blueC}/${yC}n${blueC}]: " && read verbose_option
         else
+          echo
           color_output_no_line "*" "Esta es la primera vez que usas la herramienta, quieres activar por defecto el verbose? [${yC}s${blueC}/${yC}n${blueC}]: " && read verbose_option
         fi
 
         if [ "$verbose_option" == "y" ] || [ "$verbose_option" == "yes" ] || [ "$verbose_option" == "s" ] || [ "$verbose_option" == "si" ]; then
-          cat /opt/wef/wef.cnf | grep -v "verbose" > /opt/wef/wef.cnf
+          cat /opt/wef/wef.cnf | grep -v "verbose" | sponge /opt/wef/wef.cnf
           echo "verbose=true" >> /opt/wef/wef.cnf
           verbose=1
           break
         elif [ "$verbose_option" == "n" ] || [ "$verbose_option" == "no" ] ; then
-          cat /opt/wef/wef.cnf | grep -v "verbose" > /opt/wef/wef.cnf
+          cat /opt/wef/wef.cnf | grep -v "verbose" | sponge /opt/wef/wef.cnf
           echo "verbose=false" >> /opt/wef/wef.cnf
           verbose=0
           break
@@ -2849,19 +2853,19 @@ if [ "$(id -u)" == "0" ]; then
     if [ "$scan_on_each_attack" == "" ]; then
       while true; do
         if [ "$lang" == "en" ]; then
-          color_output_no_line "*" "Do you want to scan APs on each attack? Can be changed lated in /opt/wef/wef.cnf [${yC}y${blueC}/${yC}n${blueC}]: " && read scan_conf
+          color_output_no_line "*" "Do you want to scan APs on each attack? Can be changed later in /opt/wef/wef.cnf [${yC}y${blueC}/${yC}n${blueC}]: " && read scan_conf
         else
           color_output_no_line "*" "¿Quieres escanear APs en cada ataque? Se puede cambiar mas tarde en /opt/wef/wef.cnf [${yC}s${blueC}/${yC}n${blueC}]: " && read scan_conf
         fi
 
         if [ "$scan_conf" == "y" ] || [ "$scan_conf" == "yes" ] || [ "$scan_conf" == "s" ] || [ "$scan_conf" == "si" ]; then
           scan_on_each_attack="true"
-          cat /opt/wef/wef.cnf | grep -v "scan_on_each_attack" > /opt/wef/wef.cnf
+          cat /opt/wef/wef.cnf | grep -v "scan_on_each_attack" | sponge /opt/wef/wef.cnf
           echo "scan_on_each_attack=true" >> /opt/wef/wef.cnf
           break
         elif [ "" == "" ] || [ "" == "" ]; then
           scan_on_each_attack="false"
-          cat /opt/wef/wef.cnf | grep -v "scan_on_each_attack" > /opt/wef/wef.cnf
+          cat /opt/wef/wef.cnf | grep -v "scan_on_each_attack" | sponge /opt/wef/wef.cnf
           echo "scan_on_each_attack=false" >> /opt/wef/wef.cnf
           break
         else
