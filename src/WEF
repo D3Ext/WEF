@@ -589,11 +589,11 @@ function ask_handshakes(){
 # Ask user for new interface name if it has changed when enabling monitor mode
 function ask_new_name(){
   if [ "$lang" == "en" ]; then
-    echo -e "${blueC}In new interfaces nomenclature, names change after enabling monitor mode${endC}"
-    echo -ne "\n${blueC}[${yC}*${blueC}] Interface name has changed, how is it called now? (execute iwconfig to see its name): ${endC}" && read new_name
+    echo -e "${blueC}\nIn new interfaces nomenclature, names change after enabling monitor mode${endC}"
+    echo -ne "${blueC}[${yC}*${blueC}] Interface name has changed, how is it called now? (execute iwconfig to see its name): ${endC}" && read new_name
   else
-    echo -e "${blueC}Con la nueva nomenclatura de las interfaces, los nombre cambian despues de activar el modo monitor${endC}"
-    echo -ne "\n${blueC}[${yC}*${blueC}] El nombre de la interfaz ha cambiado, ¿como se llama ahora? (ejecuta iwconfig para verlo): ${endC}" && read new_name
+    echo -e "${blueC}\nCon la nueva nomenclatura de las interfaces, los nombre cambian despues de activar el modo monitor${endC}"
+    echo -ne "${blueC}[${yC}*${blueC}] El nombre de la interfaz ha cambiado, ¿como se llama ahora? (ejecuta iwconfig para verlo): ${endC}" && read new_name
   fi
 
   if [ ! -d "/sys/class/net/${new_name}" ]; then
@@ -607,6 +607,7 @@ function ask_new_name(){
 
   evilCard=${netCard}
   netCard=${new_name}
+  ifconfig "${netCard}" up 2>/dev/null; sleep 0.2
   start_counter=1
 }
 
@@ -807,7 +808,7 @@ function list_interfaces(){
 # Dependencies Function
 function dependencies(){
   # Programs array
-  programs=(macchanger aircrack-ng reaver mdk4 hashcat hcxdumptool xterm wget dnsmasq hostapd hostapd-wpe php lighttpd pixiewps)
+  programs=(macchanger aircrack-ng reaver mdk4 hashcat hcxdumptool xterm wget dnsmasq hostapd hostapd-wpe lighttpd pixiewps)
   system=$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')
   if [ "${system}"  == "Parrot" ] || [ "${system}"  == "Kali" ] || [ "${system}"  == "Ubuntu" ]; then
     for program in "${programs[@]}"; do
@@ -818,7 +819,7 @@ function dependencies(){
         else
           color_output "*" "Instalando ${program}"
         fi
-        apt install "${program}" -y &>/dev/null
+        apt install "${program}" -y
       fi
     done
 
@@ -831,7 +832,7 @@ function dependencies(){
         else
           color_output "*" "Instalando ${program}..."
         fi
-        pacman -S "${program}" --noconfirm &>/dev/null
+        pacman -S "${program}" --noconfirm
       fi
     done
   fi
@@ -897,7 +898,7 @@ function print_mac_address(){
     else
       echo -e "${blueC}[${greenC}+${blueC}] Dirección MAC: ${grayC}\t\t${current_mac}${endC}"
     fi
-  
+
   # Function enters here if the function isn't called at the start of the program
   elif [ "$(ifconfig | grep "${netCard}" | awk '{print $1}' | tr -d ':')" == "${netCard}" ] && [ "$(check_interface_mode)" == "monitor" ]; then
     current_mac=$(macchanger -s ${netCard} | grep "Curr" | awk '{print $3}')
@@ -943,19 +944,17 @@ function print_freq_band(){
 # Enable monitor mode
 function enable_mon(){
   # Function enters here if you've enabled monitor mode
-  #if [[ $start_counter != 1 ]]; then
   if [ "$(check_interface_mode)" != "monitor" ]; then
     card_check=$(ifconfig | grep "$netCard" | awk '{print $1}' | tr -d ":")
     # Check if the value is the same as the interface to avoid errors in the "else"
     if [ "${card_check}" == "${netCard}" ]; then
-      
       if [ "$lang" == "en" ]; then
         color_output_ln "*" "Configuring network card interface..."
       else
         color_output_ln "*" "Configurando la interfaz de la tarjeta de red..."
       fi
 
-      kill_network_services=$(awk -F '=' '/airmon_check_kill/ {print $2}' /opt/wef/wef.cnf)
+      kill_network_services=$(awk -F '=' '/airmon_check_kill/ {print $2}' /opt/wef/wef.cnf | awk '{print $1}')
 
       if [ "${kill_network_services}" == "" ]; then
         if [ "$lang" == "en" ]; then
@@ -972,7 +971,7 @@ function enable_mon(){
           echo "airmon_check_kill=false" >> /opt/wef/wef.cnf
           k_n_s="false"
         fi
-				
+
         if [ "$lang" == "en" ]; then
           echo -e "${blueC}[${yC}*${blueC}] airmon_check_kill set to ${k_n_s}. You can change this later in /opt/wef/wef.cnf${endC}"
         else
@@ -991,32 +990,39 @@ function enable_mon(){
       fi
 
       # Enable monitor mode
-      airmon-ng start ${netCard} &>/dev/null
+      mon_output="$(airmon-ng start ${netCard})"
+      oldCard="$(echo "${mon_output}" | grep "station mode vif disabled" | awk '{print $NF}' FS="]" | tr -d ")")"
+      netCard="$(echo "${mon_output}" | grep "monitor mode vif enabled" | awk '{print $NF}' FS="]")"
+      evilCard="${netCard}"
+      ifconfig "${netCard}" up 2>/dev/null # Avoid possible errors
+      start_counter=1
+      export netCard oldCard evilCard # Used on Evil Twin attack
 
       # Workaround for some weird interfaces which change its name radically after enabling monitor mode
       if [ ! -d "/sys/class/net/${netCard}" ] && [ ! -d "/sys/class/net/${netCard}mon" ]; then
         ask_new_name
+      fi
 
-      # Check if your interface name changes when starting in monitor mode by adding "mon" to its name  
-      elif [ "$(iwconfig ${netCard}mon | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')" == "Monitor" ]; then
-        if [ "$lang" == "en" ]; then
-          press_enter "Interface name has changed to ${netCard}mon, press Enter to continue "
-        else
-          press_enter "El nombre de la interfaz ha cambiado a ${netCard}mon, presiona Enter para continuar "
-        fi
-        oldCard="${netCard}"
-        evilCard="${netCard}"
-        netCard="${netCard}mon"
-        start_counter=1
-        export netCard oldCard evilCard
+      # Check if your interface name changes when starting in monitor mode by adding "mon" to its name
+      #elif [ "$(iwconfig ${netCard}mon | grep 'Mode' | awk '{print $4}' | awk '{print $2}' FS=':')" == "Monitor" ]; then
+        #if [ "$lang" == "en" ]; then
+          #press_enter "Interface name has changed to ${netCard}mon, press Enter to continue "
+        #else
+          #press_enter "El nombre de la interfaz ha cambiado a ${netCard}mon, presiona Enter para continuar "
+        #fi
+        #oldCard="${netCard}"
+        #evilCard="${netCard}"
+        #netCard="${netCard}mon"
+        #start_counter=1
+        #export netCard oldCard evilCard
 
       # Enter here if the name doesn't change when starting in monitor mode
-      elif [ "$(check_interface_mode)" == "monitor" ]; then
-        oldCard="${netCard}"
-        evilCard="${netCard}"
-        start_counter=1
-        export netCard oldCard evilCard
-      fi
+      #elif [ "$(check_interface_mode)" == "monitor" ]; then
+        #oldCard="${netCard}"
+        #evilCard="${netCard}"
+        #start_counter=1
+        #export netCard oldCard evilCard
+      #fi
     fi
   fi
 }
@@ -1208,12 +1214,12 @@ function check_captured_handshakes(){
 function check_ap_list(){
   if [ ! -f "/tmp/.scan_output" ] || [ "$scan_on_each_attack" == "true" ]; then # Check if an AP scan already exists
     # Check config file (first time)
-    scan_type=$(awk -F "=" '/scan_type/ {print $2}' /opt/wef/wef.cnf)
+    scan_type=$(awk -F "=" '/scan_type/ {print $2}' /opt/wef/wef.cnf | awk '{print $1}')
     if [ "${scan_type}" == "" ]; then
       if [ "$lang" == "en" ]; then
-        color_output_no_line "*" "This is the first time you scan APs, do you want to use 2.4Gh, 5Ghz or both? You can change this later in /opt/wef/wef.cnf [${yC}2.4${blueC}/${yC}5${blueC}/${yC}both${blueC}]: " && read scan_option
+        color_output_no_line "*" "This is the first time you scan nearby APs, do you want to use 2.4Gh, 5Ghz or both? You can change this later in /opt/wef/wef.cnf [${yC}2.4${blueC}/${yC}5${blueC}/${yC}both${blueC}]: " && read scan_option
       else
-        color_output_no_line "*" "Esta es la primera vez que escaneas APs, quieres usar 2.4Ghz, 5Ghz o ambos? Puedes cambiar esto mas tarde en /opt/wef/wef.cnf [${yC}2.4${blueC}/${yC}5${blueC}/${yC}both${blueC}]: " && read scan_option
+        color_output_no_line "*" "Esta es la primera vez que escaneas los APs cercanos, quieres usar 2.4Ghz, 5Ghz o ambos? Puedes cambiar esto mas tarde en /opt/wef/wef.cnf [${yC}2.4${blueC}/${yC}5${blueC}/${yC}both${blueC}]: " && read scan_option
       fi
 
       if [ "${scan_option}" == "2" ] || [ "${scan_option}" == "2.4" ]; then
@@ -1275,7 +1281,7 @@ function check_ap_list(){
 
 # Used to refresh/update AP list
 function ap_scan(){
-  scan_type=$(awk -F "=" '/scan_type/ {print $2}' /opt/wef/wef.cnf)
+  scan_type=$(awk -F "=" '/scan_type/ {print $2}' /opt/wef/wef.cnf | awk '{print $1}')
 
   if [ "${scan_type}" == "2.4" ]; then
     if [ "$lang" == "en" ]; then
@@ -1406,10 +1412,10 @@ function deauth_all_clients(){
 
   iwconfig ${netCard} channel ${channel} # Configure the interface on the same channel
   if [[ $verbose == 0 ]]; then
-    aireplay-ng -0 ${packets_to_send} -e "${name}" -c FF:FF:FF:FF:FF:FF ${netCard} &>/dev/null
+    aireplay-ng -0 ${packets_to_send} -e "${name}" -c FF:FF:FF:FF:FF:FF ${netCard} &>/dev/null # add "-D" to avoid errors
   elif [[ $verbose == 1 ]]; then
     echo
-    aireplay-ng -0 ${packets_to_send} -e "${name}" -c FF:FF:FF:FF:FF:FF ${netCard} 2>/dev/null
+    aireplay-ng -0 ${packets_to_send} -e "${name}" -c FF:FF:FF:FF:FF:FF ${netCard} 2>/dev/null # add "-D" to avoid errors
   fi
 
   if [ "${c_h}" == "true" ]; then # Enter here is user wants to capture handshakes
@@ -1470,6 +1476,8 @@ function deauth_one_client(){
   log_attack_info
   press_enter_attack
   echo
+
+  iwconfig ${netCard} channel ${channel} # Configure the interface on the same channel
   if [ "$lang" == "en" ]; then
     progress_bar 2 0.2 "*" "Starting Deauthentication attack, press Ctrl + C if you want to stop it"
   else
@@ -2213,10 +2221,10 @@ function inhibitor(){
   fi
 
   if [[ $verbose == 0 ]]; then
-    aireplay-ng -0 0 -e "${name}" -c FF:FF:FF:FF:FF:FF ${netCard} &>/dev/null
+    aireplay-ng -0 0 -e "${name}" -D -c FF:FF:FF:FF:FF:FF ${netCard} &>/dev/null
   elif [[ $verbose == 1 ]]; then
     echo
-    aireplay-ng -0 0 -e "${name}" -c FF:FF:FF:FF:FF:FF ${netCard}
+    aireplay-ng -0 0 -e "${name}" -D -c FF:FF:FF:FF:FF:FF ${netCard}
     echo
   fi
 
@@ -2533,7 +2541,7 @@ function evilTwin(){
   systemctl stop systemd-resolved &>/dev/null
   fuser -k 80/tcp &>/dev/null; sleep 0.1
 
-  kill_network_services=$(awk -F '=' '/airmon_check_kill/ {print $2}' /opt/wef/wef.cnf)
+  kill_network_services=$(awk -F '=' '/airmon_check_kill/ {print $2}' /opt/wef/wef.cnf | awk '{print $1}')
   if [ "${kill_network_services}" == "true" ]; then
     airmon-ng check kill &>/dev/null
   fi
@@ -2573,7 +2581,7 @@ function evilTwin(){
   create_template
 
   ifconfig $evilCard up
-  kill_network_services=$(awk -F '=' '/airmon_check_kill/ {print $2}' /opt/wef/wef.cnf)
+  kill_network_services=$(awk -F '=' '/airmon_check_kill/ {print $2}' /opt/wef/wef.cnf | awk '{print $1}')
 
   if [ "$lang" == "en" ]; then
     press_enter "Some windows will be open, don't close them. Press Enter to continue and launch attack "
@@ -2695,14 +2703,14 @@ export lang="en" # Default language
 
 SHELL="/bin/bash"
 
-config_lang=$(awk -F '=' '/lang/ {print $2}' /opt/wef/wef.cnf)
+config_lang=$(awk -F '=' '/lang/ {print $2}' /opt/wef/wef.cnf | awk '{print $1}')
 if [ "$config_lang" == "en" ]; then
   lang="en"
 elif [ "$config_lang" == "es" ]; then
   lang="es"
 fi
 
-use_colors=$(awk -F '=' '/use_colors/ {print $2}' /opt/wef/wef.cnf)
+use_colors=$(awk -F '=' '/use_colors/ {print $2}' /opt/wef/wef.cnf | awk '{print $1}')
 if [ "$use_colors" == "true" ]; then
   # Define colors and formats
   export greenC="\e[0;32m\033[1m"
@@ -2818,7 +2826,7 @@ if [ "$(id -u)" == "0" ]; then
     fi
 
     # If config has verbose enabled it will be used by default without the --verbose parameter
-    verbose_config=$(awk -F "=" '/verbose/ {print $2}' /opt/wef/wef.cnf)
+    verbose_config=$(awk -F "=" '/verbose/ {print $2}' /opt/wef/wef.cnf | awk '{print $1}')
     if [ "$verbose_config" == "true" ]; then
       verbose=1
 
@@ -2849,7 +2857,7 @@ if [ "$(id -u)" == "0" ]; then
       done
     fi
 
-    scan_on_each_attack=$(awk -F "=" '/scan_on_each_attack/ {print $2}' /opt/wef/wef.cnf)
+    scan_on_each_attack=$(awk -F "=" '/scan_on_each_attack/ {print $2}' /opt/wef/wef.cnf | awk '{print $1}')
     if [ "$scan_on_each_attack" == "" ]; then
       while true; do
         if [ "$lang" == "en" ]; then

@@ -39,7 +39,7 @@ if [ "$(id -u)" == "0" ]; then
   fi
 
   system=$(cat /etc/os-release | grep '^NAME=' | awk '{print $1}' FS=' ' | awk '{print $2}' FS='"')
-  dependencies=(systemd iw hcxtools hcxdumptool xterm pixiewps bully mdk4 aircrack-ng hashcat john reaver hostapd hostapd-wpe dnsmasq iptables lighttpd moreutils lshw dhcp coreutils pocl libxcrypt-compat)
+  dependencies=(systemd iw hcxtools hcxdumptool xterm pixiewps bully mdk4 aircrack-ng hashcat john reaver hostapd hostapd-wpe dnsmasq iptables lighttpd moreutils lshw dhcp coreutils php pocl libxcrypt-compat macchanger)
 
   if [ "$system" != "Kali" ] && [ "$system" != "Parrot" ] && [ ! "$(echo ${system} | grep -i "arch")" ]; then
     echo -ne "\n${blueC}[${yC}*${blueC}] Supported OS not detected, do you want to continue? [y/n]: " && read c
