@@ -992,8 +992,8 @@ function enable_mon(){
       # Enable monitor mode
       mon_output="$(airmon-ng start ${netCard})"
       oldCard="$(echo "${mon_output}" | grep "station mode vif disabled" | awk '{print $NF}' FS="]" | tr -d ")")"
-      netCard="$(echo "${mon_output}" | grep "monitor mode vif enabled" | awk '{print $NF}' FS="]")"
-      evilCard="${netCard}"
+      netCard="$(echo "${mon_output}" | grep "monitor mode vif enabled" | awk '{print $NF}' FS="]" | tr -d ")")"
+      evilCard="${oldCard}"
       ifconfig "${netCard}" up 2>/dev/null # Avoid possible errors
       start_counter=1
       export netCard oldCard evilCard # Used on Evil Twin attack
@@ -1456,6 +1456,7 @@ function deauth_one_client(){
     if [ "$c_h" == "true" ]; then
       kill -9 ${air_PID}; wait ${air_PID} 2>/dev/null
     fi
+    reset_info
     return
   fi
 
@@ -1469,6 +1470,7 @@ function deauth_one_client(){
     if [ "$c_h" == "true" ]; then
       kill -9 ${air_PID}; wait ${air_PID} 2>/dev/null
     fi
+    reset_info
     return
   fi; sleep 0.1
 
@@ -1531,6 +1533,7 @@ function auth_attack(){
 
   ask_essid
   if [ "$name" == "back" ]; then
+    reset_info
     return
   fi
   parse_info
@@ -1538,6 +1541,7 @@ function auth_attack(){
   default="120s"
   ask_time
   if [ "$attack_time" == "back" ]; then
+    reset_info
     return
   fi
 
@@ -2260,8 +2264,8 @@ function setup_interface_eviltwin(){
     iw "${evilCard}" interface add "mon${evilCard}" type monitor addr ${rand_mac}; sleep 0.3
 
   else
-    ifconfig "${evilCard}" down
-    iwconfig "${evilCard}" mode monitor
+    ifconfig "${evilCard}" down 2>/dev/null
+    iwconfig "${evilCard}" mode monitor 2>/dev/null
     # Check MAC spoofing
     if [ "$mac_spoof" == "y" ] || [ "$mac_spoof" == "yes" ] || [ "$mac_spoof" == "s" ] || [ "$mac_spoof" == "si" ]; then
       macchanger -m "${ap_mac}" ${evilCard} &>/dev/null

