@@ -60,7 +60,7 @@ if [ "$(id -u)" == "0" ]; then
     done
   elif [ "$(echo "${system}" | grep -i "arch")" ] || [ "$manager" == "pacman" ]; then
     for req in ${dependencies[@]}; do
-      pacman -S ${req} --noconfirm
+      pacman -S ${req} --noconfirm --needed
       sleep 0.1
     done
   fi
