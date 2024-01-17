@@ -109,16 +109,16 @@ wef -i wlan0 # El nombre de la interfaz puede ser diferente
 [WEF] Wi-Fi Exploitation Framework 1.3
 
 [*] Interfaces:
-    eth0
-	wlan0
+    docker0
+    ens33
+    lo
 
-Parametros requeridos:
-	-i, --interface) 	El nombre de la interfaz de tu tarjeta de red en modo managed
+Required parameters:
+    -i, --interface)    The name of your network adapter interface in managed mode
 
-Parametros opcionales:
-	-v, --verbose) 		Muestra mas información durante los ataques
-	-h, --help) 		Muestra este panel de ayuda
-	--version) 		    Imprime por pantalla la versión actual del programa
+Optional parameters:
+    -h, --help)         Show this help panel
+    --version)          Print the version and exit
 ```
 
 Mira [aqui](https://github.com/D3Ext/WEF/wiki/Usage-&-Tips) para mas información sobre como usar la herramienta y otros temas relacionados

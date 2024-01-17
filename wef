@@ -17,7 +17,7 @@ function check_dependencies(){
     color_output_no_line "*" "Comprobando herramientas instaladas y requisitos..."
   fi; echo; sleep 0.2
 
-  main_tools=(iw ip macchanger airmon-ng airodump-ng aireplay-ng aircrack-ng mdk4 xterm awk sed jq lspci column curl)
+  main_tools=(ip iw macchanger aircrack-ng airmon-ng aireplay-ng airodump-ng mdk4 xterm awk sed jq lspci column curl ps)
   for program in "${main_tools[@]}"; do
     if [ ! "$(command -v $program)" ]; then
       tools_missing="true"
@@ -40,7 +40,7 @@ function check_dependencies(){
     if [ "$lang" == "en" ]; then
       color_output "*" "Install necessary requirements before using this tool"
     else
-      color_output "*" "Instala los requisitos necesarias antes de usar esta herramienta"
+      color_output "*" "Instala los requisitos necesarios antes de usar esta herramienta"
     fi
 
     exit 0
@@ -1462,7 +1462,7 @@ function check_captured_handshakes(){
     fi
   elif [ "$(check_handshake)" -le "0" ] && [ "$(check_pmkid_handshake)" == "false" ]; then
     if [ "$lang" == "en" ]; then
-      color_output "*" "No WPA/WPA2 nor PMKID handshakes captured"
+      color_output "*" "Neither WPA/WPA2 nor PMKID handshakes were captured"
     else
       color_output "*" "Ningún handshake WPA/WPA2 ni PMKID ha sido capturado"
     fi
