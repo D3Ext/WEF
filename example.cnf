@@ -1,0 +1,31 @@
+# This is default config file
+# This file must be saved as /opt/wef/wef.cnf
+# Then you can edit it to make it much more flexible and to adapt to your requirements
+
+# Default lenguage to use. Values: en, es
+lang=en
+
+# Colorize output (recommended to be enabled)
+use_colors=true
+
+# Enable/disable verbose by default (recommended to be enabled)
+verbose=true
+
+# Automatically enable monitor mode during launch
+auto_enable_monitor=false
+
+# Wifi band in which to scan access points. Values: 2.4, 5, auto
+frequency_band=auto
+
+# Scan nearby access points each time you decide to perform an attack
+scan_on_each_attack=true
+
+# Identify vendor of each nearby device found, based on a database (i.e. TP-LINK)
+identify_devices=false
+
+# Execute 'airmon check kill' when you enable monitor mode (disable it on headless device)
+airmon_check_kill=true
+
+# Create a graph of every single scan you perform using airgraph-ng to see target devices and AP info
+create_graph=false
+

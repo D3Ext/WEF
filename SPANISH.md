@@ -1,50 +1,56 @@
 <p align="center">
-  <h1 align="center">WiFi Exploitation Framework</h1>
+  <h1 align="center">WEF</h1>
+  <h4 align="center">Wi-Fi Exploitation Framework</h4>
+  <h6 align="center">Hecho con 💙 por D3Ext</h6>
 </p>
 
 <p align="center">
-  <a href="#ataques">Ataques</a> •
-  <a href="#funciones">Funciones</a> •
-  <a href="#instalacion">Instalación</a> •
-  <a href="#desinstalacion">Desinstalación</a> •
-  <a href="#disclaimer">Disclaimer</a> •
+
+  <a href="https://opensource.org/licenses/MIT">
+    <img src="https://img.shields.io/badge/license-MIT-_red.svg">
+  </a>
+
+  <a href="https://github.com/D3Ext/D3Ext/blob/main/CHANGELOG.md">
+    <img src="https://img.shields.io/badge/maintained%3F-yes-brightgreen.svg">
+  </a>
+
+  <a href="https://github.com/D3Ext/WEF/issues">
+    <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat">
+  </a>
+
 </p>
 
-## Introduccion
+<p align="center">
+  <a href="#introduccion">Introducción</a> •
+  <a href="#ataques">Ataques</a> •
+  <a href="#funciones">Funciones</a> •
+  <a href="#instalación">Instalación</a> •
+  <a href="#requisitos">Requisitos</a>
+</p>
 
-Este proyecto comenzó hace un año como una herramienta personal para auditar redes fácilmente sin escribir comandos largos, ni configurar todos los valores uno a uno ademas de automatizar todo el proceso. Después de algún tiempo el repositorio obtuvo muchas estrellas así que decidí mejorarlo.
+## Introducción
 
-Es un framework ofensivo para auditar las redes y protocolos 802.11 con diferentes tipos de ataques WPA/WPA2 y WEP, cracking de hashes automatizado, y mucho más. Probado y mantenido para ***Kali Linux***, ***Parrot OS*** and ***ArchLinux***.
+Este proyecto comenzó alrededor de 2021 como una herramienta personal para auditar redes fácilmente sin escribir comandos largos, ni configurar todos los valores uno a uno ademas de automatizar todo el proceso. Esta no es una herramienta profesional, creé este proyecto para aprender y probar. Después de algún tiempo el repositorio obtuvo muchas estrellas así que decidí mejorarlo. Es un framework ofensivo para auditar redes wi-fi con diferentes tipos de ataques WPA/WPA2, WPS y WEP, cracking de hashes automatizado, y mucho más.
 
 Si tienes algun error abre un issue en el repositorio (puedes escribirlo en español o ingles, como prefieras). Si tienes alguna duda también puedes contactar conmigo por Discord, mi usuario es ***d3ext***
 
-Si no sabes como funciona el hacking wifi te recomiendo leer mi curso [aqui](https://d3ext.github.io/posts/Curso), es totalmente gratis, explico las cosas desde cero y está escrito en español.
-
-Te recomiendo mi adaptador de red ***Alfa AWUS036ACM*** ya que soporta 2.4Ghz y 5Ghz además es compatible con ***VIF*** (Interfaz Virtual). Mira [aqui](https://github.com/v1s1t0r1sh3r3/airgeddon/wiki/Cards%20and%20Chipsets) para mas información y sobre como elegir una buena antena.
-
 ## Ataques
 
-- Ataque de Deautenticación
-
-- Ataque de Autenticación
-
+- Ataque de deauthentication
+- Ataque de confusión WIDS
+- Ataque de autentication
 - Ataque Beacon Flood
-
-- Ataque PMKID
-
-- Ataque EvilTwin
-
-- Ataque Pasivo (captura de handshakes WPA)
-
+- Ataque TKIP (Michael Shutdown Exploitation)
 - Ataque Pixie Dust
-
-- Ataque de Pin nulo
-
-- Ataque Michael Exploitation
-
-- Ataque de Confusión WIDS
-
-- Ataques del protocolo WEP
+- Ataque de pin nulo 
+- Ataque de fuerza bruta de PIN
+- Ataque ARP Replay
+- Ataque HIRTE
+- Ataque Caffe Latte
+- Ataque de falsa autenticación
+- Ataque de captura de handshake WPA/WPA2
+- Ataque PMKID
+- Ataque EvilTwin
 
 Tienes una explicación de los diferentes ataques [aqui](https://github.com/D3Ext/WEF/wiki/Attacks) en la Wiki del repositorio
 
@@ -56,53 +62,54 @@ Tienes una explicación de los diferentes ataques [aqui](https://github.com/D3Ex
 
 :ballot_box_with_check: Multiples plantillas para el ataque EvilTwin (en diferentes idiomas)
 
-:ballot_box_with_check: Habilitar el modo monitor y randomizar la dirección MAC
+:ballot_box_with_check: Activar/desactivar el modo monitor y randomizar la dirección MAC
 
-:ballot_box_with_check: 2.4Ghz y 5Ghz soportados
+:ballot_box_with_check: 2.4 GHz y 5 GHz soportados
 
-:ballot_box_with_check: Logs informativos de los ataques (solo se registra del lado del usuario)
+:ballot_box_with_check: Logs informativos sobre los ataques (solo se registra del lado del usuario)
 
 :ballot_box_with_check: Diccionarios personalizados al crackear handshakes
 
 :ballot_box_with_check: Inglés y español soportados
 
+Y mucho mas
+
+## Instalación
+
+> Como root
+```sh
+git clone https://github.com/D3Ext/WEF
+cd WEF
+bash wef
+```
+
+Echa un ojo a la [Wiki](https://github.com/D3Ext/WEF/wiki/Installation) donde hay mas información sobre la instalación
+
+## Desinstalación
+
+```sh
+rm -rf /opt/wef \
+  /usr/bin/wef
+```
+
 ## Uso
 
 > Uso habitual del framework
-
 ```sh
 wef -i wlan0 # El nombre de la interfaz puede ser diferente
 ```
 
-o también
-
-```sh
-wef --interface wlan0
-```
-
-> Si quieres usar el framework en español también puedes
-
-```sh
-wef -i wlan0 -s
-```
-
-> Habilita el verbose para ver mas información
-
-```sh
-wef -i wlan0 -v
-```
-
 > Panel de ayuda
-
 ```
  __      _____ ___
  \ \    / / __| __|
   \ \/\/ /| _|| _|
    \_/\_/ |___|_|
 
-[WEF] Wi-Fi Exploitation Framework 1.2
+[WEF] Wi-Fi Exploitation Framework 1.3
 
 [*] Interfaces:
+    eth0
 	wlan0
 
 Parametros requeridos:
@@ -112,37 +119,9 @@ Parametros opcionales:
 	-v, --verbose) 		Muestra mas información durante los ataques
 	-h, --help) 		Muestra este panel de ayuda
 	--version) 		    Imprime por pantalla la versión actual del programa
-    -s)                 Cambia el idioma al español
 ```
 
 Mira [aqui](https://github.com/D3Ext/WEF/wiki/Usage-&-Tips) para mas información sobre como usar la herramienta y otros temas relacionados
-
-## Requisitos
-
-WEF necesita ciertos requisitos para funcionar correctamente, pero no te preocupes porque estos se instalan durante el proceso de instalación en caso de no estar instalados aun
-
-    aircrack-ng
-    reaver
-    mdk4
-    macchanger
-    hashcat
-    xterm
-    hcxtools
-    hcxdumptool
-    pixiewps
-    lighttpd
-    dhcp
-    hostapd
-    hostapd-wpe
-    dnsmasq
-
-## Instalación
-
-Echale un ojo a la [Wiki](https://github.com/D3Ext/WEF/wiki/Installation) donde hay mas información sobre la instalación
-
-## Desinstalación
-
-Visita la [Wiki](https://github.com/D3Ext/WEF/wiki/Uninstallation) para desinstalar WEF rapidamente
 
 ## Demo
 
@@ -152,25 +131,37 @@ Visita la [Wiki](https://github.com/D3Ext/WEF/wiki/Uninstallation) para desinsta
 
 <img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo3.png">
 
-<img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo4.png">
+<img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/help-panel.png">
+
+<img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/randomize-mac.png">
+
+<img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/info.png">
 
 ## TODO
 
-- Ataque EvilTwin para redes Enterprise
-
-- Mas opciones para crackear handshakes
-
-- Una mejor forma de escanear los APs
-
-- Mejoras generales
+- ~~Ataque EvilTwin para redes Enterprise~~
+- ~~Mas opciones para crackear handshakes~~
+- ~~Una mejor forma de escanear los APs~~
+- ~~Identifica el vendor de los dispositivos encontrados por su dirección MAC~~
+- ~~Archivo de config mejorado con mas ajustes~~
+- ~~Mejoras generales~~
+- Comprobar la compatibilidad con otros OS
+- Añadir ataque de diccionario WPA3
+- Ataque MANA y KARMA
+- Probar en profundidad las funcionalidades implementadas
+- Mas mejoras generales
 
 ## Contribuir
 
 Mira [CONTRIBUTING.md](https://github.com/D3Ext/WEF/blob/main/CONTRIBUTING.md)
 
+## Changelog
+
+Mira [CHANGELOG.md](https://github.com/D3Ext/WEF/blob/main/CHANGELOG.md)
+
 ## Creditos
 
-Gracias a [ultrazar](https://github.com/ultrazar) y [ErKbModifier](https://github.com/ErKbModifier) por ayudarme con la herramienta <3
+Gracias a [ultrazar](https://github.com/ultrazar) y a [ErKbModifier](https://github.com/ErKbModifier) por ayudarme con la herramienta <3
 
 ## Referencias
 
@@ -200,8 +191,7 @@ El creador no se hace cargo de:
 
 ## Licencia
 
-Este proyecto esta bajo licencia MIT
+Este proyecto está bajo licencia MIT
 
-Copyright © 2023, *D3Ext*
-
+Copyright © 2024, *D3Ext*
 

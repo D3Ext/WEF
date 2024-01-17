@@ -8,16 +8,15 @@ endC="\033[0m\e[0m"
 
 # Check uid
 if [ "$(id -u)" == "0" ]; then
-  echo -ne "\n${blueC}[${yC}+${blueC}] Uninstalling WEF"; sleep 0.5; echo -ne "."; sleep 0.5; echo -ne "."; sleep 0.5; echo -ne ".${endC}"; sleep 0.5
+  echo -ne "${blueC}[${yC}*${blueC}] Uninstalling WEF...${endC}"
   
   # Remove program from path and the wef folder structure under /opt/wef/
   rm -rf /opt/wef \
     /usr/bin/wef 2>/dev/null
   
-  sleep 1
-  echo -e "\n${blueC}[${greenC}+${blueC}] WEF uninstalled successfully${endC}"
-  sleep 0.2
+  sleep 0.5
+  echo -e "${blueC}[${greenC}+${blueC}] WEF uninstalled successfully${endC}"
 else
-  echo -e "\n${blueC}[${yC}X${blueC}] Please, execute the script as root${endC}"
+  echo -e "${blueC}[${yC}X${blueC}] Please, execute the script as root${endC}"
   exit 0
 fi
