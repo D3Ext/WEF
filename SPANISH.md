@@ -1,6 +1,6 @@
 <p align="center">
   <h1 align="center">WEF</h1>
-  <h4 align="center">Wi-Fi Exploitation Framework</h4>
+  <h4 align="center">WiFi Exploitation Framework</h4>
   <h6 align="center">Hecho con 💙 por D3Ext</h6>
 </p>
 
@@ -30,7 +30,7 @@
 
 ## Introducción
 
-Este proyecto comenzó alrededor de 2021 como una herramienta personal para auditar redes fácilmente sin escribir comandos largos, ni configurar todos los valores uno a uno ademas de automatizar todo el proceso. Esta no es una herramienta profesional, creé este proyecto para aprender y probar. Después de algún tiempo el repositorio obtuvo muchas estrellas así que decidí mejorarlo. Es un framework ofensivo para auditar redes wi-fi con diferentes tipos de ataques WPA/WPA2, WPS y WEP, cracking de hashes automatizado, y mucho más.
+Este proyecto comenzó alrededor de 2021 como una herramienta personal para auditar redes fácilmente sin escribir comandos largos, ni configurar todos los valores uno a uno ademas de automatizar todo el proceso. Esta no es una herramienta profesional, creé este proyecto para aprender y probar. Después de algún tiempo el repositorio obtuvo muchas estrellas así que decidí mejorarlo. Es un framework ofensivo para auditar redes wifi con diferentes tipos de ataques WPA/WPA2, WPS y WEP, cracking de hashes automatizado, y mucho más.
 
 Si tienes algun error abre un issue en el repositorio (puedes escribirlo en español o ingles, como prefieras). Si tienes alguna duda también puedes contactar conmigo por Discord, mi usuario es ***d3ext***
 
@@ -106,7 +106,7 @@ wef -i wlan0 # El nombre de la interfaz puede ser diferente
   \ \/\/ /| _|| _|
    \_/\_/ |___|_|
 
-[WEF] Wi-Fi Exploitation Framework 1.3
+[WEF] WiFi Exploitation Framework 1.3
 
 [*] Interfaces:
     docker0
