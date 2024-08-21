@@ -34,9 +34,9 @@
 
 ## Introduction
 
-This project started over 2021 as a personal tool to easily audit networks without writing long commands or setting all values one by one, in order to automate the whole processes. This is not a professional tool, this project was created to learn about wireless security and for testing purposes. This is a fully offensive framework to audit wifi networks with different types of attacks for WPA/WPA2, WPS and WEP, automated hash cracking and much more.
+This project started over 2021 as a personal tool to easily audit networks without writing long commands or setting all values one by one, in order to automate the whole processes. This is not a professional tool, this project was created to learn about wireless security and for testing purposes. This is a fully offensive framework to audit wifi networks with different types of attacks for WPA/WPA2, WPS and WEP, automated handshake cracking and much more.
 
-If you have any error please open an issue (if you want to write it in spanish you can do it). If you have any doubt contact me via Discord, my username is ***d3ext***
+If you find an error, please open an issue (you can write it in english or spanish, as you want). If you have any doubt contact me via Discord, my username is ***d3ext***
 
 ## Attacks
 
@@ -56,7 +56,7 @@ If you have any error please open an issue (if you want to write it in spanish y
 - PMKID attack
 - Evil Twin attack
 
-You have an explanation of the different attacks [here](https://github.com/D3Ext/WEF/wiki/Attacks) on Wiki's repo
+This attacks are explained [here](https://github.com/D3Ext/WEF/wiki/Attacks) on the Wiki
 
 ## Features
 
@@ -72,7 +72,7 @@ You have an explanation of the different attacks [here](https://github.com/D3Ext
 
 :ballot_box_with_check: Informative attack logs (just done user side)
 
-:ballot_box_with_check: Custom wordlist selector when cracking
+:ballot_box_with_check: Custom wordlist selector when cracking handshakes
 
 :ballot_box_with_check: English and spanish supported
 

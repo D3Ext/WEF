@@ -32,7 +32,7 @@
 
 Este proyecto comenzó alrededor de 2021 como una herramienta personal para auditar redes fácilmente sin escribir comandos largos, ni configurar todos los valores uno a uno además de automatizar todo el proceso. Esta no es una herramienta profesional, este proyecto fue creado para aprender acerca de la seguridad wireless. Esto un framework ofensivo para auditar redes wifi con diferentes tipos de ataques WPA/WPA2, WPS y WEP, cracking de hashes automatizado y mucho más.
 
-Si tienes algún error abre un issue en el repositorio (puedes escribirlo en español o inglés, como prefieras). Si tienes alguna duda también puedes contactar conmigo por Discord, mi usuario es ***d3ext***
+Si encuentras algún error, abre un issue en el repositorio (puedes escribirlo en español o inglés, como prefieras). Si tienes alguna duda también puedes contactar conmigo por Discord, mi usuario es ***d3ext***
 
 ## Ataques
 
@@ -52,7 +52,7 @@ Si tienes algún error abre un issue en el repositorio (puedes escribirlo en esp
 - Ataque PMKID
 - Ataque Evil Twin
 
-Tienes una explicación de los diferentes ataques [aqui](https://github.com/D3Ext/WEF/wiki/Attacks) en la Wiki del repositorio
+Los diferentes ataques están explicados [aquí](https://github.com/D3Ext/WEF/wiki/Attacks) en la Wiki del repositorio
 
 ## Funciones
 
@@ -120,7 +120,7 @@ Optional parameters:
     --version)          Print the version and exit
 ```
 
-Mira [aqui](https://github.com/D3Ext/WEF/wiki/Usage-&-Tips) para más información sobre como usar la herramienta y otros temas relacionados
+Mira [aquí](https://github.com/D3Ext/WEF/wiki/Usage-&-Tips) para más información sobre como usar la herramienta y otros temas relacionados
 
 ## Demo
 

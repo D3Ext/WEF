@@ -1,3 +1,4 @@
+- new update: pwnagotchi mode, more languages supported for EvilTwin portals, bugs fixed and more
 - some necessary changes to prevent errors on PMKID attack, and extra little changes
 - little changes
 - new version (a lot of big changes)
