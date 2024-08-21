@@ -1,3 +1,6 @@
+- some necessary changes to prevent errors on PMKID attack, and extra little changes
+- little changes
+- new version (a lot of big changes)
 - important fix
 - importan fix and more little changes
 - error fixes and little changes on setup.sh

@@ -34,7 +34,7 @@
 
 ## Introduction
 
-This project started over 2021 as a personal tool to easily audit networks without writing long commands nor setting all values one by one and to automate the whole processes. This is not a professional tool, I created this project to learn and for testing purposes. After some time the repository obtained a bunch of stars so I decided to improve it. It's a fully offensive framework to audit wifi networks with different types of attacks for WPA/WPA2, WPS and WEP, automated hash cracking, and much more.
+This project started over 2021 as a personal tool to easily audit networks without writing long commands or setting all values one by one, in order to automate the whole processes. This is not a professional tool, this project was created to learn about wireless security and for testing purposes. This is a fully offensive framework to audit wifi networks with different types of attacks for WPA/WPA2, WPS and WEP, automated hash cracking and much more.
 
 If you have any error please open an issue (if you want to write it in spanish you can do it). If you have any doubt contact me via Discord, my username is ***d3ext***
 
@@ -52,9 +52,9 @@ If you have any error please open an issue (if you want to write it in spanish y
 - HIRTE attack
 - Caffe Latte attack
 - Fake Authentication attack
-- WPA/WPA2 handshake capture attack
+- WPA/WPA2 handshake capture attack (passively)
 - PMKID attack
-- EvilTwin attack
+- Evil Twin attack
 
 You have an explanation of the different attacks [here](https://github.com/D3Ext/WEF/wiki/Attacks) on Wiki's repo
 
@@ -94,7 +94,7 @@ Take a look at the [Wiki](https://github.com/D3Ext/WEF/wiki/Installation) where 
 Simply execute this:
 
 ```sh
-rm -rf /opt/wef \
+rm -rf /usr/share/wef \
   /usr/bin/wef
 ```
 
@@ -112,12 +112,11 @@ wef -i wlan0 # Your interface name might be different
   \ \/\/ /| _|| _|
    \_/\_/ |___|_|
 
-[WEF] WiFi Exploitation Framework 1.3
+[WEF] WiFi Exploitation Framework 1.4
 
 [*] Interfaces:
-    docker0
+    wlan0
     ens33
-    lo
 
 Required parameters:
     -i, --interface)    The name of your network adapter interface in managed mode
@@ -145,17 +144,13 @@ See [here](https://github.com/D3Ext/WEF/wiki/Usage-&-Tips) for more information 
 
 ## TODO
 
-- ~~EvilTwin attack for Enterprise networks~~
-- ~~More options to crack handshakes~~
-- ~~Better way to scan APs~~
-- ~~Identify found devices vendors by their MAC addresses~~
-- ~~Config file improved with more settings~~
-- ~~General improvements~~
+- ~~Pwnagotchi mode~~
+- Add vendor logo to EvilTwin templates on the fly
 - Test compatibility with others OS
-- Support WPA3 dictionary attack
-- MANA and KARMA attack
+- ~~KARMA attack~~
 - In-depth testing of implemented features
-- More general improvement
+- ~~More general improvement~~
+- ~~More languages added to Evil Twin templates~~
 
 ## Contributing
 
@@ -172,17 +167,18 @@ Thanks to [ultrazar](https://github.com/ultrazar) and [ErKbModifier](https://git
 ## References
 
 ```
+https://github.com/aircrack-ng/aircrack-ng
+https://github.com/aircrack-ng/mdk4
 https://github.com/v1s1t0r1sh3r3/airgeddon
 https://github.com/FluxionNetwork/fluxion
 https://github.com/P0cL4bs/wifipumpkin3
 https://github.com/s0lst1c3/eaphammer
 https://github.com/derv82/wifite2
-https://github.com/aircrack-ng/mdk4
-https://github.com/aircrack-ng/aircrack-ng
 https://github.com/wifiphisher/wifiphisher
 https://github.com/ZerBea/hcxtools
 https://github.com/ZerBea/hcxdumptool
 https://github.com/Tylous/SniffAir
+https://github.com/evilsocket/pwnagotchi
 https://github.com/koutto/pi-pwnbox-rogueap
 https://github.com/koutto/pi-pwnbox-rogueap/wiki/01.-WiFi-Basics
 ```

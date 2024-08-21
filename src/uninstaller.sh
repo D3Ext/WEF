@@ -10,8 +10,8 @@ endC="\033[0m\e[0m"
 if [ "$(id -u)" == "0" ]; then
   echo -ne "${blueC}[${yC}*${blueC}] Uninstalling WEF...${endC}"
   
-  # Remove program from path and the wef folder structure under /opt/wef/
-  rm -rf /opt/wef \
+  # Remove program from path and the wef folder structure under /usr/share/wef/
+  rm -rf /usr/share/wef \
     /usr/bin/wef 2>/dev/null
   
   sleep 0.5

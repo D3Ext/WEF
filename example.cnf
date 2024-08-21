@@ -1,5 +1,5 @@
 # This is default config file
-# This file must be saved as /opt/wef/wef.cnf
+# This file must be saved as /usr/share/wef/wef.cnf
 # Then you can edit it to make it much more flexible and to adapt to your requirements
 
 # Default lenguage to use. Values: en, es

@@ -30,15 +30,15 @@
 
 ## Introducción
 
-Este proyecto comenzó alrededor de 2021 como una herramienta personal para auditar redes fácilmente sin escribir comandos largos, ni configurar todos los valores uno a uno ademas de automatizar todo el proceso. Esta no es una herramienta profesional, creé este proyecto para aprender y probar. Después de algún tiempo el repositorio obtuvo muchas estrellas así que decidí mejorarlo. Es un framework ofensivo para auditar redes wifi con diferentes tipos de ataques WPA/WPA2, WPS y WEP, cracking de hashes automatizado, y mucho más.
+Este proyecto comenzó alrededor de 2021 como una herramienta personal para auditar redes fácilmente sin escribir comandos largos, ni configurar todos los valores uno a uno además de automatizar todo el proceso. Esta no es una herramienta profesional, este proyecto fue creado para aprender acerca de la seguridad wireless. Esto un framework ofensivo para auditar redes wifi con diferentes tipos de ataques WPA/WPA2, WPS y WEP, cracking de hashes automatizado y mucho más.
 
-Si tienes algun error abre un issue en el repositorio (puedes escribirlo en español o ingles, como prefieras). Si tienes alguna duda también puedes contactar conmigo por Discord, mi usuario es ***d3ext***
+Si tienes algún error abre un issue en el repositorio (puedes escribirlo en español o inglés, como prefieras). Si tienes alguna duda también puedes contactar conmigo por Discord, mi usuario es ***d3ext***
 
 ## Ataques
 
-- Ataque de deauthentication
+- Ataque de deautenticación
 - Ataque de confusión WIDS
-- Ataque de autentication
+- Ataque de autenticación
 - Ataque Beacon Flood
 - Ataque TKIP (Michael Shutdown Exploitation)
 - Ataque Pixie Dust
@@ -48,9 +48,9 @@ Si tienes algun error abre un issue en el repositorio (puedes escribirlo en espa
 - Ataque HIRTE
 - Ataque Caffe Latte
 - Ataque de falsa autenticación
-- Ataque de captura de handshake WPA/WPA2
+- Ataque de captura de handshake WPA/WPA2 (de forma pasiva)
 - Ataque PMKID
-- Ataque EvilTwin
+- Ataque Evil Twin
 
 Tienes una explicación de los diferentes ataques [aqui](https://github.com/D3Ext/WEF/wiki/Attacks) en la Wiki del repositorio
 
@@ -72,7 +72,7 @@ Tienes una explicación de los diferentes ataques [aqui](https://github.com/D3Ex
 
 :ballot_box_with_check: Inglés y español soportados
 
-Y mucho mas
+Y mucho más
 
 ## Instalación
 
@@ -83,12 +83,12 @@ cd WEF
 bash wef
 ```
 
-Echa un ojo a la [Wiki](https://github.com/D3Ext/WEF/wiki/Installation) donde hay mas información sobre la instalación
+Echa un ojo a la [Wiki](https://github.com/D3Ext/WEF/wiki/Installation) donde hay más información sobre la instalación
 
 ## Desinstalación
 
 ```sh
-rm -rf /opt/wef \
+rm -rf /usr/share/wef \
   /usr/bin/wef
 ```
 
@@ -106,12 +106,11 @@ wef -i wlan0 # El nombre de la interfaz puede ser diferente
   \ \/\/ /| _|| _|
    \_/\_/ |___|_|
 
-[WEF] WiFi Exploitation Framework 1.3
+[WEF] WiFi Exploitation Framework 1.4
 
 [*] Interfaces:
-    docker0
+    wlan0
     ens33
-    lo
 
 Required parameters:
     -i, --interface)    The name of your network adapter interface in managed mode
@@ -121,7 +120,7 @@ Optional parameters:
     --version)          Print the version and exit
 ```
 
-Mira [aqui](https://github.com/D3Ext/WEF/wiki/Usage-&-Tips) para mas información sobre como usar la herramienta y otros temas relacionados
+Mira [aqui](https://github.com/D3Ext/WEF/wiki/Usage-&-Tips) para más información sobre como usar la herramienta y otros temas relacionados
 
 ## Demo
 
@@ -139,17 +138,13 @@ Mira [aqui](https://github.com/D3Ext/WEF/wiki/Usage-&-Tips) para mas informació
 
 ## TODO
 
-- ~~Ataque EvilTwin para redes Enterprise~~
-- ~~Mas opciones para crackear handshakes~~
-- ~~Una mejor forma de escanear los APs~~
-- ~~Identifica el vendor de los dispositivos encontrados por su dirección MAC~~
-- ~~Archivo de config mejorado con mas ajustes~~
-- ~~Mejoras generales~~
+- ~~Modo Pwnagotchi~~
+- Añadir logo a las plantillas del ataque EvilTwin automaticamente basado en el vendor
 - Comprobar la compatibilidad con otros OS
-- Añadir ataque de diccionario WPA3
-- Ataque MANA y KARMA
+- ~~Ataque KARMA~~
 - Probar en profundidad las funcionalidades implementadas
-- Mas mejoras generales
+- ~~Más mejoras generales~~
+- ~~Más lenguajes añadidos a las plantillas de Evil Twin~~
 
 ## Contribuir
 
@@ -166,17 +161,18 @@ Gracias a [ultrazar](https://github.com/ultrazar) y a [ErKbModifier](https://git
 ## Referencias
 
 ```
+https://github.com/aircrack-ng/aircrack-ng
+https://github.com/aircrack-ng/mdk4
 https://github.com/v1s1t0r1sh3r3/airgeddon
 https://github.com/FluxionNetwork/fluxion
 https://github.com/P0cL4bs/wifipumpkin3
 https://github.com/s0lst1c3/eaphammer
 https://github.com/derv82/wifite2
-https://github.com/aircrack-ng/mdk4
-https://github.com/aircrack-ng/aircrack-ng
 https://github.com/wifiphisher/wifiphisher
 https://github.com/ZerBea/hcxtools
 https://github.com/ZerBea/hcxdumptool
 https://github.com/Tylous/SniffAir
+https://github.com/evilsocket/pwnagotchi
 https://github.com/koutto/pi-pwnbox-rogueap
 https://github.com/koutto/pi-pwnbox-rogueap/wiki/01.-WiFi-Basics
 ```

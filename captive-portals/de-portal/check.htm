@@ -23,7 +23,7 @@ if [[ "${#password}" -ge 8 ]] && [[ "${#password}" -le 63 ]]; then
 rm -rf "/tmp/www/currentpass.txt" > /dev/null 2>&1
 echo "${password}" >\
 "/tmp/www/currentpass.txt"
-timeout 1.5 bash -c "aircrack-ng -a 2 -b XX:XX:XX:XX:XX:XX -w "/tmp/www/currentpass.txt" "/opt/wef/main/captures/XXXXXX/XXXX.cap" | grep "KEY FOUND!" > /dev/null"
+if [ "$(timeout 1.5 bash -c "aircrack-ng -a 2 -b XX:XX:XX:XX:XX:XX -w '/tmp/www/currentpass.txt' '/usr/share/wef/main/captures/XXXXXXX/XXXXXXXXXX.cap' 2>/dev/null | grep 'KEY FOUND'")" ]; then
 if [ "$?" = "0" ]; then
 touch "/tmp/www/success.txt" > /dev/null 2>&1
 echo 'Das Passwort ist richtig, die Verbindung wird in kurzer Zeit wiederhergestellt'

@@ -1,7 +1,7 @@
 FROM kalilinux/kali-rolling:latest
 
 # update packages and install main requirements
-RUN apt-get update && apt-get install -y git iproute2 iw macchanger aircrack-ng mdk4 xterm gawk sed jq pciutils bsdmainutils curl procps
+RUN apt-get update && apt-get install -y iproute2 iw macchanger aircrack-ng mdk4 xterm awk sed jq pciutils bsdmainutils curl procps john hashcat hcxtools hcxdumptool reaver pixiewps hostapd hostapd-wpe dnsmasq lighttpd bettercap
 
 # set work directory
 WORKDIR /app
@@ -15,5 +15,5 @@ WORKDIR /app/WEF
 # execute installer to install WEF
 RUN bash wef
 
-WORKDIR /opt/wef
+WORKDIR /usr/share/wef
 
