@@ -28,6 +28,8 @@
   <a href="#requisitos">Requisitos</a>
 </p>
 
+<img src="images/wef.webp" width=60% height=60%>
+
 ## Introducción
 
 Este proyecto comenzó alrededor de 2021 como una herramienta personal para auditar redes fácilmente sin escribir comandos largos, ni configurar todos los valores uno a uno además de automatizar todo el proceso. Esta no es una herramienta profesional, este proyecto fue creado para aprender acerca de la seguridad wireless. Esto un framework ofensivo para auditar redes wifi con diferentes tipos de ataques WPA/WPA2, WPS y WEP, cracking de hashes automatizado y mucho más.

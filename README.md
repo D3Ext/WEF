@@ -32,6 +32,10 @@
   <a href="SPANISH.md">Readme in spanish</a>
 </p>
 
+---
+
+<img src="images/wef.webp" width=60% height=60%>
+
 ## Introduction
 
 This project started over 2021 as a personal tool to easily audit networks without writing long commands or setting all values one by one, in order to automate the whole processes. This is not a professional tool, this project was created to learn about wireless security and for testing purposes. This is a fully offensive framework to audit wifi networks with different types of attacks for WPA/WPA2, WPS and WEP, automated handshake cracking and much more.
