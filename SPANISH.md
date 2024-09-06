@@ -28,9 +28,9 @@
   <a href="#requisitos">Requisitos</a>
 </p>
 
-<center>
-  <img src="images/wef.webp" width=23% height=50%>
-</center>
+<div align="center">
+  <img src="images/wef.webp" alt="WEF" width=23% height=50%>
+</div>
 
 ## Introducción
 
