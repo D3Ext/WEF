@@ -139,9 +139,9 @@ def write_cnf(target, cnf_type, password, country, state, org, common_name, loca
 
 
 def main():
-	parser = argparse.ArgumentParser(description='Facilitate the creation of hostapd-wpe configuration files \
-			and spoofed certificates for WPA2 Enterprise credential harvesting.')
-	# hostapd-wpe configuration file parameters
+	parser = argparse.ArgumentParser(description='Facilitate the creation of hostapd-wpe configuration files and spoofed certificates for WPA2 Enterprise credential harvesting.')
+	
+    # hostapd-wpe configuration file parameters
 	parser.add_argument('-t', '--target', dest='target', required=True, help='Name of target organization. Used to create directory. Required.')
 	parser.add_argument('-s', '--ssid', dest='ssid', required=True, help='SSID of wireless network. Required.')
 	parser.add_argument('-i', '--interface', dest='interface', required=True, help='Wireless interface on which to broadcast. Required.')
@@ -149,7 +149,8 @@ def main():
 	parser.add_argument('-bc', '--broadcast', dest='broadcast', type=int, default=0, choices=set((0, 1, 2)), help='Broadcast or cloak SSID. 0=Broadcast SSID; 1=Send empty SSID beacon (length=0); 2=Send SSID beacon with length (length=N) (default 0).')
 	parser.add_argument('-br', '--bridge', dest='bridge', help='Bridge interface to use for MitM (default none).')
 	parser.add_argument('-w', '--wpa', dest='wpa_version', type=int, default=2, choices=set((1,2)), help='Version of WPA (default "2")')
-	# certificate generation parameters
+	
+    # certificate generation parameters
 	parser.add_argument('-cn', '--common-name', dest='common_name', required=True, help='Common name for certificate. Required.')
 	parser.add_argument('-o', '--org', dest='org', help='Organization for certificate. Optional.')
 	parser.add_argument('-st', '--state', dest='state', help='State or province for certificate. Optional.')
@@ -222,9 +223,9 @@ def main():
 		'cd ./{}; openssl ca -batch -keyfile ca.key -cert ca.pem -in server.csr  -key {} -out server.crt -extensions xpserver_ext -extfile {} -config ./server.cnf; cd ../'.format(target, password, xpextensions_path),
 		'openssl pkcs12 -export -in ./{}/server.crt -inkey ./{}/server.key -out ./{}/server.p12  -passin pass:{} -passout pass:{}'.format(target, target, target, password, password),
 		'openssl pkcs12 -in ./{}/server.p12 -out ./{}/server.pem -passin pass:{} -passout pass:{}'.format(target, target, password, password),
-		#'openssl verify -CAfile ./{}/ca.pem ./{}/server.pem'.format(target, target),  This line will always throw an error since we're generating self-signed certificates.
 		'openssl x509 -inform PEM -outform DER -in ./{}/ca.pem -out ./{}/ca.der'.format(target, target)
 	]
+
 	for command in commands:
 		if args.verbose:
 			print('[*] Running command: ' + command)
@@ -238,6 +239,7 @@ def main():
 	else:
 		print('[+] All commands completed successfully')
 		print("[*] To run hostapd type: hostapd-wpe ./{0}/{0}.conf -s".format(target))
+
 	os.unlink(xpextensions_path)
 
 if __name__ == '__main__':

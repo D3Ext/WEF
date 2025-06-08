@@ -1,31 +1,30 @@
-# This is default config file
+# This is the default configuration file
 # This file must be saved as /usr/share/wef/wef.cnf
-# Then you can edit it to make it much more flexible and to adapt to your requirements
 
 # Default lenguage to use. Values: en, es
 lang=en
 
-# Colorize output (recommended to be enabled)
-use_colors=true
-
-# Enable/disable verbose by default (recommended to be enabled)
+# Enable/disable verbose (recommended to be enabled)
 verbose=true
 
+# Execute 'airmon check kill' when monitor mode is enabled (you should disable it on headless devices)
+airmon_check_kill=true
+
 # Automatically enable monitor mode during launch
-auto_enable_monitor=false
+auto_enable_monitor=true
+
+# Automatically randomize the MAC address during launch (this option requires auto_enable_monitor to be enabled)
+auto_random_mac=true
 
 # Wifi band in which to scan access points. Values: 2.4, 5, auto
 frequency_band=auto
 
-# Scan nearby access points each time you decide to perform an attack
-scan_on_each_attack=true
-
-# Identify vendor of each nearby device found, based on a database (i.e. TP-LINK)
-identify_devices=false
-
-# Execute 'airmon check kill' when you enable monitor mode (disable it on headless device)
-airmon_check_kill=true
-
-# Create a graph of every single scan you perform using airgraph-ng to see target devices and AP info
+# Create a graph of every single scan you perform using airgraph-ng to see found APs, their devices and the relationship between them
 create_graph=false
+
+# Pwnagotchi whitelist to avoid attacking APs based on their BSSID
+whitelist=XX:XX:XX:XX:XX:XX
+
+# WPA-SEC private key to upload handshakes (if you don't have one, obtain it here https://wpa-sec.stanev.org/)
+wpa_sec_key=
 

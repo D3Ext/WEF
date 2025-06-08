@@ -35,50 +35,67 @@
 ---
 
 <div align="center">
-  <img src="images/wef.webp" alt="WEF" width=23% height=50%>
+  <img src="images/logo.png" alt="WEF" width=23% height=50%>
 </div>
 
 ## Introduction
 
-This project started over 2021 as a personal tool to easily audit networks without writing long commands or setting all values one by one, in order to automate the whole processes. This is not a professional tool, this project was created to learn about wireless security and for testing purposes. This is a fully offensive framework to audit wifi networks with different types of attacks for WPA/WPA2, WPS and WEP, automated handshake cracking and much more.
+This tool is designed for security researchers and penetration testers to analyze and exploit vulnerabilities in Wi-Fi networks. It provides an intuitive interface with a wide range of automated and manual attack techniques to test WPA/WPA2, WPS, and WEP security. With support for both 2.4 GHz and 5 GHz networks, detailed logging and customizable attack options, it offers flexibility for different testing scenarios. This is not a professional tool.
 
-If you find an error, please open an issue (you can write it in english or spanish, as you want). If you have any doubt contact me via Discord, my username is ***d3ext***
+If you find an error, please open an issue (you can write it in english or spanish, as you want).
 
-## Attacks
+## Supported attacks
 
-- Deauthentication attack
-- WIDS Confusion attack
-- Authentication attack
-- Beacon Flood attack
-- TKIP attack (Michael Shutdown Exploitation)
-- Pixie Dust attack
-- Null Pin attack
-- PIN Bruteforce attack
-- ARP Replay attack
-- HIRTE attack
-- Caffe Latte attack
-- Fake Authentication attack
-- WPA/WPA2 handshake capture attack (passively)
-- PMKID attack
-- Evil Twin attack
+- DoS (optional handshake capture):
+    - Deauthentication attack
+    - WIDS Confusion attack
+    - Authentication attack
+    - Beacon Flood attack
+    - TKIP attack (Michael Shutdown Exploitation)
+- WPS:
+    - Pixie Dust attack
+    - PIN Bruteforce attack
+    - Null Pin attack
+- WEP:
+    - ARP Replay attack
+    - HIRTE attack
+    - Caffe Latte attack
+    - Fake Authentication attack
+- Handshake:
+    - WPA handshake capture (without deauth)
+    - PMKID attack (clientless)
+    - Pwnagotchi mode
+- Rogue AP:
+    - Evil Twin attack
+        - BSSID spoofing
+        - Karma mode
+        - Enterprise WPA supported
+        - Deauth supported
+- Other attacks:
+    - Automatic attack mode (Auto PWN)
+    - WPA3 dictionary attack
 
-This attacks are explained [here](https://github.com/D3Ext/WEF/wiki/Attacks) on the Wiki
+All the mentioned attacks/techniques are explained [here](https://github.com/D3Ext/WEF/wiki/Attacks) on the Wiki
 
 ## Features
 
-:ballot_box_with_check: WPA/WPA2, WPS and WEP Attacks
+This are some of the most notable features:
 
-:ballot_box_with_check: Automatic handshake capture and cracking
+:ballot_box_with_check: WPA/WPA2, WPS, WEP, Rogue-AP, and Handshake Attacks
 
-:ballot_box_with_check: Multiple templates for EvilTwin attack (different languages)
+:ballot_box_with_check: Automatic attack mode based on the features of the AP
 
-:ballot_box_with_check: Enable/disable monitor mode and view interface info (frequencies, chipset, MAC...)
+:ballot_box_with_check: Automatic handshake capture
+
+:ballot_box_with_check: Online and offline handshake cracking
+
+:ballot_box_with_check: Simple login template for Evil Twin attack (different languages)
+
+:ballot_box_with_check: Enable/disable monitor mode and view information about the network interface (frequencies, chipset, MAC...)
 
 :ballot_box_with_check: 2.4 GHz and 5 GHz supported
 
-:ballot_box_with_check: Informative attack logs (just done user side)
-
-:ballot_box_with_check: Custom wordlist selector when cracking handshakes
+:ballot_box_with_check: Informative reports using HTML templates
 
 :ballot_box_with_check: English and spanish supported
 
@@ -106,9 +123,9 @@ rm -rf /usr/share/wef \
 
 ## Usage
 
-> Common usage of the framework
+> Common usage of the framework (your interface may have other name)
 ```sh
-wef -i wlan0 # Your interface name might be different
+wef -i wlan0
 ```
 
 > Help panel
@@ -118,7 +135,7 @@ wef -i wlan0 # Your interface name might be different
   \ \/\/ /| _|| _|
    \_/\_/ |___|_|
 
-[WEF] WiFi Exploitation Framework 1.4
+[WEF] WiFi Exploitation Framework 1.5
 
 [*] Interfaces:
     wlan0
@@ -142,6 +159,10 @@ See [here](https://github.com/D3Ext/WEF/wiki/Usage-&-Tips) for more information 
 
 <img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo3.png">
 
+<img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo4.png">
+
+<img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo5.png">
+
 <img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/help-panel.png">
 
 <img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/randomize-mac.png">
@@ -150,13 +171,23 @@ See [here](https://github.com/D3Ext/WEF/wiki/Usage-&-Tips) for more information 
 
 ## TODO
 
-- ~~Pwnagotchi mode~~
-- Add vendor logo to EvilTwin templates on the fly
+- ~~Online cracking (WPA-SEC)~~
+- ~~WPA3 dictionary attack~~
+- ~~Enhanced reports using HTML~~~~
+- ~~Modify regulatory domain to change txpower~~
+- ~~More languages added as Evil Twin templates~~
+- ~~Randomize MAC address automatically during launch~~
+- ~~General improvement and minor fixes~~
+- ~~Bugs fixed~~
+- ~~Auto-exploit mode~~
+- ~~APs scan now shows if WPS is enabled without wash~~
+- ~~Path autocompletion supported~~
+- ~~Better output logging~~
+- ~~Better code readability (code optimized)~~
+- ~~Add vendor logo to Evil Twin templates on the fly~~
+- ~~MAC vendors have been updated and optimized using official OUI list~~
 - Test compatibility with others OS
-- ~~KARMA attack~~
-- In-depth testing of implemented features
-- ~~More general improvement~~
-- ~~More languages added to Evil Twin templates~~
+- ~~In-depth testing of implemented features~~
 
 ## Contributing
 
@@ -168,7 +199,7 @@ See [CHANGELOG.md](https://github.com/D3Ext/WEF/blob/main/CHANGELOG.md)
 
 ## Credits
 
-Thanks to [ultrazar](https://github.com/ultrazar) and [ErKbModifier](https://github.com/ErKbModifier), they helped me a lot <3
+Thanks to [ultrazar](https://github.com/ultrazar) and [ErKbModifier](https://github.com/ErKbModifier)
 
 ## References
 
@@ -184,6 +215,7 @@ https://github.com/wifiphisher/wifiphisher
 https://github.com/ZerBea/hcxtools
 https://github.com/ZerBea/hcxdumptool
 https://github.com/Tylous/SniffAir
+https://github.com/blunderbuss-wctf/wacker
 https://github.com/evilsocket/pwnagotchi
 https://github.com/koutto/pi-pwnbox-rogueap
 https://github.com/koutto/pi-pwnbox-rogueap/wiki/01.-WiFi-Basics
@@ -191,17 +223,13 @@ https://github.com/koutto/pi-pwnbox-rogueap/wiki/01.-WiFi-Basics
 
 ## Disclaimer
 
-Creator has no responsibility for any kind of:
-
-- Illegal use of the project.
-- Law infringement by third parties and users.
-- Malicious act, capable of causing damage to third parties, promoted by the user through this software.
+The creator has no responsibility for any kind of illegal use of the project.
 
 ## License
 
 This project is under MIT license
 
-Copyright © 2024, *D3Ext*
+Copyright © 2025, *D3Ext*
 
 
 

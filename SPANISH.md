@@ -29,50 +29,65 @@
 </p>
 
 <div align="center">
-  <img src="images/wef.webp" alt="WEF" width=23% height=50%>
+  <img src="images/logo.png" alt="WEF" width=23% height=50%>
 </div>
 
 ## Introducción
 
-Este proyecto comenzó alrededor de 2021 como una herramienta personal para auditar redes fácilmente sin escribir comandos largos, ni configurar todos los valores uno a uno además de automatizar todo el proceso. Esta no es una herramienta profesional, este proyecto fue creado para aprender acerca de la seguridad wireless. Esto un framework ofensivo para auditar redes wifi con diferentes tipos de ataques WPA/WPA2, WPS y WEP, cracking de hashes automatizado y mucho más.
+Esta herramienta está diseñada para que los investigadores de seguridad y los penetration testers analicen y exploten las vulnerabilidades de las redes Wi-Fi. Proporciona una interfaz intuitiva con una amplia gama de técnicas de ataque automatizadas y manuales para probar la seguridad WPA/WPA2, WPS y WEP. Con soporte para redes de 2,4 GHz y 5 GHz, registro detallado y opciones de ataque personalizables, ofrece flexibilidad para diferentes escenarios de prueba. No se trata de una herramienta profesional.
 
-Si encuentras algún error, abre un issue en el repositorio (puedes escribirlo en español o inglés, como prefieras). Si tienes alguna duda también puedes contactar conmigo por Discord, mi usuario es ***d3ext***
+Si encuentras algún error, abre un issue en el repositorio (puedes escribirlo en español o inglés, como prefieras).
 
 ## Ataques
 
-- Ataque de deautenticación
-- Ataque de confusión WIDS
-- Ataque de autenticación
-- Ataque Beacon Flood
-- Ataque TKIP (Michael Shutdown Exploitation)
-- Ataque Pixie Dust
-- Ataque de pin nulo 
-- Ataque de fuerza bruta de PIN
-- Ataque ARP Replay
-- Ataque HIRTE
-- Ataque Caffe Latte
-- Ataque de falsa autenticación
-- Ataque de captura de handshake WPA/WPA2 (de forma pasiva)
-- Ataque PMKID
-- Ataque Evil Twin
+- DoS:
+    - Ataque de deautenticación
+    - Ataque de confusión WIDS
+    - Ataque de autenticación
+    - Ataque Beacon Flood
+    - Ataque TKIP (Michael Shutdown Exploitation)
+- WPS:
+    - Ataque Pixie Dust
+    - Ataque de fuerza bruta de PIN
+    - Ataque de pin nulo
+- WEP:
+    - Ataque ARP Replay
+    - Ataque HIRTE
+    - Ataque Caffe Latte
+    - Ataque de falsa autenticación
+- Handshake:
+    - Captura de handshake WPA (sin deauth)
+    - Ataque PMKID (sin clientes)
+- Rogue-AP:
+    - EvilTwin:
+        - Modo KARMA
+        - WPA Enterprise
+        - Deautenticación soportada
+- Otros ataques:
+    - Modo de ataque automatico (Auto PWN)
+    - Ataque WPA3 con diccionario
 
-Los diferentes ataques están explicados [aquí](https://github.com/D3Ext/WEF/wiki/Attacks) en la Wiki del repositorio
+Todos los ataques mencionados arriba están explicados [aquí](https://github.com/D3Ext/WEF/wiki/Attacks) en la Wiki de este repositorio
 
 ## Funciones
 
-:ballot_box_with_check: Ataques WPA/WPA2, WPS y WEP
+Estas son algunas de las funciones mas destacadas:
 
-:ballot_box_with_check: Captura y crackeo automático de handshakes
+:ballot_box_with_check: Ataques WPA, WPS, WEP, Rogue-AP y de Handshake
 
-:ballot_box_with_check: Multiples plantillas para el ataque EvilTwin (en diferentes idiomas)
+:ballot_box_with_check: Modo de ataque automático en función de las características del AP
 
-:ballot_box_with_check: Activar/desactivar el modo monitor y randomizar la dirección MAC
+:ballot_box_with_check: Captura y cracking automático de handshakes
+
+:ballot_box_with_check: Cracking de handshakes online y offline
+
+:ballot_box_with_check: Plantilla simple de login para el ataque Evil Twin (en diferentes idiomas)
+
+:ballot_box_with_check: Activar/desactivar el modo monitor y ver información sobre la interfaz de red (frecuencias, chipset, dirección MAC...)
 
 :ballot_box_with_check: 2.4 GHz y 5 GHz soportados
 
-:ballot_box_with_check: Logs informativos sobre los ataques (solo se registra del lado del usuario)
-
-:ballot_box_with_check: Diccionarios personalizados al crackear handshakes
+:ballot_box_with_check: Reportes informativos sobre los ataques en formato HTML
 
 :ballot_box_with_check: Inglés y español soportados
 
@@ -98,9 +113,9 @@ rm -rf /usr/share/wef \
 
 ## Uso
 
-> Uso habitual del framework
+> Uso habitual del framework (el nombre de la interfaz puede ser diferente)
 ```sh
-wef -i wlan0 # El nombre de la interfaz puede ser diferente
+wef -i wlan0
 ```
 
 > Panel de ayuda
@@ -110,9 +125,9 @@ wef -i wlan0 # El nombre de la interfaz puede ser diferente
   \ \/\/ /| _|| _|
    \_/\_/ |___|_|
 
-[WEF] WiFi Exploitation Framework 1.4
+[WEF] WiFi Exploitation Framework 1.5
 
-[*] Interfaces:
+Interfaces:
     wlan0
     ens33
 
@@ -134,6 +149,10 @@ Mira [aquí](https://github.com/D3Ext/WEF/wiki/Usage-&-Tips) para más informaci
 
 <img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo3.png">
 
+<img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo4.png">
+
+<img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/wef-demo5.png">
+
 <img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/help-panel.png">
 
 <img src="https://raw.githubusercontent.com/D3Ext/WEF/main/images/randomize-mac.png">
@@ -142,13 +161,22 @@ Mira [aquí](https://github.com/D3Ext/WEF/wiki/Usage-&-Tips) para más informaci
 
 ## TODO
 
-- ~~Modo Pwnagotchi~~
-- Añadir logo a las plantillas del ataque EvilTwin automaticamente basado en el vendor
+- ~~Online handshake cracking (WPA-SEC)~~
+- ~~Ataque WPA3 con diccionario~~
+- ~~Modificar el dominio regulatorio para cambiar el txpower~~
+- ~~Mas idiomas añadidos a las plantillas del ataque Evil Twin~~
+- ~~Randomiza la direccion MAC automaticamente durante el inicio~~
+- ~~Mejoras generales y arreglos menores~~
+- ~~Errores solucionados~~
+- ~~Modo automatico de exploit~~
+- ~~Los escaneos de APs ahora muestran si WPS está activado~~
+- ~~Soporte para autocompletar las rutas de los archivos~~
+- ~~Mejor logging por pantalla~~
+- ~~Mejor redibilidad del codigo (codigo optimizado)~~
+- ~~Añadir logo a las plantillas del ataque EvilTwin automaticamente basado en el vendor~~
 - Comprobar la compatibilidad con otros OS
-- ~~Ataque KARMA~~
-- Probar en profundidad las funcionalidades implementadas
-- ~~Más mejoras generales~~
-- ~~Más lenguajes añadidos a las plantillas de Evil Twin~~
+- ~~Los vendors de las direcciones MAC han sido actualizados y optimizados~~
+- ~~Probar en profundidad las funcionalidades implementadas~~
 
 ## Contribuir
 
@@ -160,7 +188,7 @@ Mira [CHANGELOG.md](https://github.com/D3Ext/WEF/blob/main/CHANGELOG.md)
 
 ## Creditos
 
-Gracias a [ultrazar](https://github.com/ultrazar) y a [ErKbModifier](https://github.com/ErKbModifier) por ayudarme con la herramienta <3
+Gracias a [ultrazar](https://github.com/ultrazar) y a [ErKbModifier](https://github.com/ErKbModifier)
 
 ## Referencias
 
@@ -183,15 +211,11 @@ https://github.com/koutto/pi-pwnbox-rogueap/wiki/01.-WiFi-Basics
 
 ## Disclaimer
 
-El creador no se hace cargo de:
-
-- Uso ilegal del proyecto.
-- Infracción legal por parte de terceros y usuarios.
-- Acto maliciosos, capaz de causar daños a terceros, promovido por el usuario a través de este software.
+El creador no se hace cargo de ningún uso ilegal del proyecto
 
 ## Licencia
 
 Este proyecto está bajo licencia MIT
 
-Copyright © 2024, *D3Ext*
+Copyright © 2025, *D3Ext*
 
