@@ -1,5 +1,8 @@
+<div align="center">
+  <img src="images/logo.png" alt="WEF" width=23% height=50%>
+</div>
+
 <p align="center">
-  <h1 align="center">WEF</h1>
   <h4 align="center">WiFi Exploitation Framework</h4>
   <h6 align="center">Hecho con 💙 por D3Ext</h6>
 </p>
@@ -22,15 +25,11 @@
 
 <p align="center">
   <a href="#introduccion">Introducción</a> •
-  <a href="#ataques">Ataques</a> •
+  <a href="#ataques-soportados">Ataques</a> •
   <a href="#funciones">Funciones</a> •
   <a href="#instalación">Instalación</a> •
   <a href="#requisitos">Requisitos</a>
 </p>
-
-<div align="center">
-  <img src="images/logo.png" alt="WEF" width=23% height=50%>
-</div>
 
 ## Introducción
 
@@ -38,7 +37,7 @@ Esta herramienta está diseñada para que los investigadores de seguridad y los 
 
 Si encuentras algún error, abre un issue en el repositorio (puedes escribirlo en español o inglés, como prefieras).
 
-## Ataques
+## Ataques soportados
 
 - DoS:
     - Ataque de deautenticación
@@ -90,8 +89,6 @@ Estas son algunas de las funciones mas destacadas:
 :ballot_box_with_check: Reportes informativos sobre los ataques en formato HTML
 
 :ballot_box_with_check: Inglés y español soportados
-
-Y mucho más
 
 ## Instalación
 
@@ -174,8 +171,8 @@ Mira [aquí](https://github.com/D3Ext/WEF/wiki/Usage-&-Tips) para más informaci
 - ~~Mejor logging por pantalla~~
 - ~~Mejor redibilidad del codigo (codigo optimizado)~~
 - ~~Añadir logo a las plantillas del ataque EvilTwin automaticamente basado en el vendor~~
-- Comprobar la compatibilidad con otros OS
 - ~~Los vendors de las direcciones MAC han sido actualizados y optimizados~~
+- Comprobar la compatibilidad con otros OS
 - ~~Probar en profundidad las funcionalidades implementadas~~
 
 ## Contribuir

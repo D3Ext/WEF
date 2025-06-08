@@ -1,5 +1,8 @@
+<div align="center">
+  <img src="images/logo.png" alt="WEF" width=23% height=50%>
+</div>
+
 <p align="center">
-  <h1 align="center">WEF</h1>
   <h4 align="center">WiFi Exploitation Framework</h4>
   <h6 align="center">Coded with 💙 by D3Ext</h6>
 </p>
@@ -22,21 +25,15 @@
 
 <p align="center">
   <a href="#introduction">Introduction</a> •
-  <a href="#attacks">Attacks</a> •
+  <a href="#supported-attacks">Attacks</a> •
   <a href="#features">Features</a> •
   <a href="#installation">Installation</a> •
-  <a href="#requirements">Requirements</a>
+  <a href="#Usage">Usage</a>
 </p></br>
 
 <p align="center">
-  <a href="SPANISH.md">Readme in spanish</a>
+  <a href="SPANISH.md">README in spanish</a>
 </p>
-
----
-
-<div align="center">
-  <img src="images/logo.png" alt="WEF" width=23% height=50%>
-</div>
 
 ## Introduction
 
@@ -98,8 +95,6 @@ This are some of the most notable features:
 :ballot_box_with_check: Informative reports using HTML templates
 
 :ballot_box_with_check: English and spanish supported
-
-And much more
 
 ## Installation
 
@@ -173,7 +168,7 @@ See [here](https://github.com/D3Ext/WEF/wiki/Usage-&-Tips) for more information 
 
 - ~~Online cracking (WPA-SEC)~~
 - ~~WPA3 dictionary attack~~
-- ~~Enhanced reports using HTML~~~~
+- ~~Enhanced reports using HTML~~
 - ~~Modify regulatory domain to change txpower~~
 - ~~More languages added as Evil Twin templates~~
 - ~~Randomize MAC address automatically during launch~~
