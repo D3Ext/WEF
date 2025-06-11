@@ -60,7 +60,7 @@ function check_dependencies(){
     info "Comprobando herramientas instaladas y requisitos..."
   fi; sleep 0.2
 
-  main_tools=(ip iw macchanger aircrack-ng airmon-ng aireplay-ng airodump-ng mdk4 reaver wash xterm awk sed jq lspci column curl ps)
+  main_tools=(ip iw macchanger aircrack-ng airmon-ng aireplay-ng airodump-ng mdk4 reaver wash xterm awk sed jq lspci locate column curl ps)
   for program in "${main_tools[@]}"; do
     if [ ! "$(command -v $program)" ]; then
       tools_missing="true"
