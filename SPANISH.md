@@ -94,7 +94,7 @@ Estas son algunas de las funciones mas destacadas:
 
 > Como root
 ```sh
-git clone https://github.com/D3Ext/WEF
+git clone --depth 1 https://github.com/D3Ext/WEF
 cd WEF
 bash wef
 ```

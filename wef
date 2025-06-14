@@ -1284,10 +1284,10 @@ function ask_new_name(){
   while true; do
     if [ "$lang" == "en" ]; then
       info_ln "In new interfaces nomenclature, the name changes after enabling monitor mode"
-      input_no_line "Interface name has changed, how is it called now?: " new_name
+      input_no_line "The name of your network interface has changed, how is it called now?: " new_name
     else
       info_ln "Con la nueva nomenclatura de las interfaces, el nombre cambia despues de activar el modo monitor"
-      input_no_line "El nombre de la interfaz ha cambiado, ¿como se llama ahora?: " new_name
+      input_no_line "El nombre de tu interfaz de red ha cambiado, ¿como se llama ahora?: " new_name
     fi
 
     if [ -d "/sys/class/net/${new_name}" ]; then
@@ -1925,11 +1925,28 @@ function list_interfaces(){
 
 # Check if interface is in managed or monitor mode
 function print_interface_mode(){
-  # Check if the network adapter is in monitor mode or not
-  if [ "$lang" == "en" ]; then
-    echo -e "${blueC}Interface mode: ${grayC}$(check_interface_mode)${endC}"
+  mode=$(check_interface_mode)
+
+  if [ "${mode}" ]; then
+    # Check if the network adapter is in monitor mode or not
+    if [ "$lang" == "en" ]; then
+      echo -e "${blueC}Interface mode: ${grayC}${mode}${endC}"
+    else
+      echo -e "${blueC}Modo de la interfaz: ${grayC}${mode}${endC}"
+    fi
   else
-    echo -e "${blueC}Modo de la interfaz: ${grayC}$(check_interface_mode)${endC}"
+    if [ "$lang" == "en" ]; then
+      error "Interface mode not found (managed or monitor)"
+    else
+      error "El modo de la interfaz no se ha podido encontrar (managed o monitor)"
+    fi
+
+    # Show info to aid debugging
+    error "managed_interface=${managed_interface}; monitor_interface=${monitor_interface}"
+    error "mon_output:"
+    echo "${mon_output}"
+
+    exit_wef
   fi
 }
 
@@ -1955,6 +1972,13 @@ function print_interface_name(){
     else
       error "Interfaz no encontrada"
     fi
+    
+    # Show info to aid debugging
+    error "managed_interface=${managed_interface}; monitor_interface=${monitor_interface}"
+    error "mon_output:"
+    echo "${mon_output}"
+
+    exit_wef
   fi
 }
 
@@ -1992,6 +2016,11 @@ function print_mac_address(){
     else
       error_ln "Ha ocurrido un error al obtener la dirección MAC"
     fi
+
+    # Show info to aid debugging
+    error "managed_interface=${managed_interface}; monitor_interface=${monitor_interface}"
+    error "mon_output:"
+    echo "${mon_output}"
 
     exit_wef
   fi 
@@ -2078,10 +2107,10 @@ function enable_mon(){
     mon_output="$(airmon-ng start "${managed_interface}")"
     
     # Parse interface name when managed mode is enabled
-    managed_interface="$(echo "${mon_output}" | grep "station mode vif disabled" | awk '{print $NF}' FS="]" | tr -d ")")"
+    managed_interface="$(echo -e "${mon_output}" | grep "station mode vif disabled" | awk '{print $NF}' FS="]" | tr -d ")")"
     
     # Parse interface name when monitor mode is enabled
-    monitor_interface="$(echo "${mon_output}" | grep "monitor mode vif enabled" | awk '{print $NF}' FS="]" | tr -d ")")"
+    monitor_interface="$(echo -e "${mon_output}" | grep "monitor mode vif enabled" | awk '{print $NF}' FS="]" | tr -d ")")"
     
     # Evil Twin interface is the same as the managed
     evil_twin_interface="${managed_interface}"
@@ -5862,7 +5891,7 @@ fi
 if [ "$(check_interface_mode)" == "monitor" ]; then
   if [ "$lang" == "en" ]; then
     warning_ln "Please, disable monitor mode in order to use this tool"
-  elese
+  else
     warning_ln "Por favor, desactiva el modo monitor para poder usar esta herramienta"
   fi
 
