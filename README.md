@@ -100,7 +100,7 @@ This are some of the most notable features:
 
 > As root
 ```sh
-git clone https://github.com/D3Ext/WEF
+git clone --depth 1 https://github.com/D3Ext/WEF
 cd WEF
 bash wef
 ```
