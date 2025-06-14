@@ -1662,7 +1662,7 @@ function check_vif(){
 }
 
 function get_active_interface(){
-  if [ -d "/sys/class/net/${monitor_interface}" ]; then
+  if [ "${monitor_interface}" ] && [ -d "/sys/class/net/${monitor_interface}" ]; then
     echo "${monitor_interface}"
   elif [ -d "/sys/class/net/${managed_interface}" ]; then
     echo "${managed_interface}"
@@ -2118,6 +2118,13 @@ function enable_mon(){
         break
       fi
     done
+
+    # Check if there was no change (interfaces were the same which could indicate that the name has not changed)
+    if [ ! "${monitor_interface}" ]; then
+      if [ "$(iw dev "${managed_interface}" info 2>/dev/null | grep 'type' | awk '{print $2})" == "monitor" ]; then
+        monitor_interface="${managed_interface}"
+      fi
+    fi
 
     #echo -e "before_list: $before_list"
     #echo -e "after_list: $after_list"
