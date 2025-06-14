@@ -1291,7 +1291,6 @@ function ask_new_name(){
     fi
 
     if [ -d "/sys/class/net/${new_name}" ]; then
-      evil_twin_interface=${monitor_interface}
       monitor_interface=${new_name}
       ip link set "${monitor_interface}" up 2>/dev/null
       sleep 0.2
@@ -2103,15 +2102,26 @@ function enable_mon(){
       airmon-ng check kill &>/dev/null
     fi
 
-    # Enable monitor mode and save output
-    mon_output="$(airmon-ng start "${managed_interface}")"
+    # Get available interfaces
+    before_list=($(iw dev | awk '/Interface/ {print $2}'))
+
+    # Enable monitor mode
+    airmon-ng start "${managed_interface}" &>/dev/null
     
-    # Parse interface name when managed mode is enabled
-    managed_interface="$(echo -e "${mon_output}" | grep "station mode vif disabled" | awk '{print $NF}' FS="]" | tr -d ")")"
-    
-    # Parse interface name when monitor mode is enabled
-    monitor_interface="$(echo -e "${mon_output}" | grep "monitor mode vif enabled" | awk '{print $NF}' FS="]" | tr -d ")")"
-    
+    # Get available interfaces
+    after_list=($(iw dev | awk '/Interface/ {print $2}'))
+
+    monitor_interface=""
+    for iface in "${after_list[@]}"; do
+      if [[ ! " ${before_list[*]} " =~ " $iface " ]]; then
+        monitor_interface="$iface"
+        break
+      fi
+    done
+
+    #echo -e "before_list: $before_list"
+    #echo -e "after_list: $after_list"
+
     # Evil Twin interface is the same as the managed
     evil_twin_interface="${managed_interface}"
 
@@ -2133,7 +2143,7 @@ function enable_mon(){
     fi
 
     # Workaround for some weird interfaces which change its name radically after enabling monitor mode (i.e. from wlan0 to wlx00c0ca9208dc)
-    if [ ! -d "/sys/class/net/${managed_interface}" ] && [ ! -d "/sys/class/net/${managed_interface}mon" ]; then
+    if [ ! -d "/sys/class/net/${managed_interface}" ] && [ ! -d "/sys/class/net/${monitor_interface}" ]; then
       ask_new_name
     fi
   fi
@@ -3193,9 +3203,17 @@ function beacon_flood_attack(){
       input_no_line "Archivo con los nombres de los APs a crear (dejalo en blanco para nombres aleatorios): " beacon_option
     fi
 
-    if [ "${beacon_option}" == "back" ]; then
+    if [ ! "${beacon_option}" ]; then
+      break
+    elif [ "${beacon_option}" == "back" ]; then
+      if [ "${c_h}" == "true" ]; then
+        kill_processes ${airodump_PID}
+      fi
       return
     elif [ "${beacon_option}" == "exit" ] || [ "${beacon_option}" == "quit" ]; then
+      if [ "${c_h}" == "true" ]; then
+        kill_processes ${airodump_PID}
+      fi
       exit_wef
     elif [ -f "${beacon_option}" ]; then
       break
