@@ -2121,7 +2121,7 @@ function enable_mon(){
 
     # Check if there was no change (interfaces were the same which could indicate that the name has not changed)
     if [ ! "${monitor_interface}" ]; then
-      if [ "$(iw dev "${managed_interface}" info 2>/dev/null | grep 'type' | awk '{print $2})" == "monitor" ]; then
+      if [ "$(iw dev "${managed_interface}" info 2>/dev/null | grep 'type' | awk '{print $2}')" == "monitor" ]; then
         monitor_interface="${managed_interface}"
       fi
     fi
@@ -2651,10 +2651,10 @@ function format_csv_info(){
     while read -r line; do
       counter=$((counter+1))
 
-      ap_bssid="$(echo -e "${line}" | awk '{print $1}' FS=",")"
+      ap_bssid="$(echo -e "${line}" | awk '{print $1}' FS=',')"
       wps_security="$(echo -e "${wash_output}" | grep -i "${ap_bssid}" | awk '{print $4}')"
 
-      if [ "${airmon_check_kill}" == "true" ] || [ "${ctrl_c_pressed}" == true ]; then
+      if [ "${airmon_check_kill}" == "true" ] || [ "${ctrl_c_pressed}" == "true" ]; then
         router_vendor="$(get_vendor_by_mac "${ap_bssid}" | sed 's/\r//g' | sed 's/,/;;/g')"
 
         if [ "$(echo -e "${router_vendor}" | wc -l)" -gt 1 ]; then
